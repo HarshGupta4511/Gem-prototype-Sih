@@ -44,7 +44,7 @@ function formatCurrencyINR(val?: number | null) {
 }
 
 export default function Tenders() {
-  const { canDecide } = useAuth();
+  const { isOfficer } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -107,7 +107,7 @@ export default function Tenders() {
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
               Refresh
             </Button>
-            {canDecide && (
+            {isOfficer && (
               <Button
                 size="sm"
                 onClick={() => navigate('/app/tenders/create')}
@@ -184,7 +184,7 @@ export default function Tenders() {
                   : 'Publish your first tender to start bidder evaluation.'
               }
               action={
-                canDecide && data.length === 0 ? (
+                isOfficer && data.length === 0 ? (
                   <Button onClick={() => setDialogOpen(true)} size="sm">
                     <Plus className="mr-1.5 h-4 w-4" />
                     Create First Tender
