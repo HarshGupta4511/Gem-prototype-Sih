@@ -1,0 +1,66 @@
+# Render Blueprint — CPCL BidVerify (SIH26100 demo)
+# Usage: push this repo to GitHub, then in Render Dashboard → New → Blueprint → select the repo.
+# Render will create: 1 Postgres DB + backend (Docker) + frontend (static site).
+#
+# NOTE: after the first deploy, the backend URL is https://<backend-name>.onrender.com.
+# If you rename the backend service below, update VITE_API_URL in the frontend
+# service to https://<new-name>.onrender.com/api and redeploy the frontend.
+
+databases:
+  - name: bidverify-db
+    plan: free
+
+services:
+  # ---------------- Backend (FastAPI, Docker) ----------------
+  - type: web
+    name: bidverify-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bidverify-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LLM_PROVIDER
+        value: mock
+      - key: OCR_PROVIDER
+        value: paddle
+      - key: AUTO_SEED
+        value: true
+      # Must match the frontend service name above (CORS).
+      # sync:false -> managed in the Render dashboard, Blueprint syncs will NOT
+      # overwrite it. Set to your REAL frontend URL after the first deploy
+      # (Render appends a random suffix, e.g. https://bidverify-frontend-b0j0.onrender.com).
+      - key: CORS_ORIGINS
+        sync: false
+      # Optional: set in the Render dashboard after deploy (never commit keys).
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash-lite
+
+  # ---------------- Frontend (React static site) ----------------
+  # Note: static sites are always free — no `plan` field allowed here.
+  - type: web
+    name: bidverify-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      # sync:false -> managed in the Render dashboard, Blueprint syncs will NOT
+      # overwrite it. Set to your REAL backend URL after the first deploy
+      # (e.g. https://bidverify-backend-1g5h.onrender.com/api), then redeploy
+      # the frontend (Vite bakes this in at build time).
+      - key: VITE_API_URL
+        sync: false
+    # SPA fallback: serve index.html for all client-side routes (/login, /tenders/...)
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-slate-100 text-slate-800;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full border-2 border-transparent bg-clip-padding;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+}
+
+@layer components {
+  /* Numeric tabular figures for tables */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Institutional design-system helpers ---- */
+
+  /* Official section label: small caps-ish formal heading used above panels */
+  .section-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500;
+  }
+
+  /* Dossier-style metadata definition list */
+  .meta-grid {
+    @apply grid gap-x-8 gap-y-3;
+  }
+  .meta-item dt {
+    @apply text-xs text-slate-500;
+  }
+  .meta-item dd {
+    @apply mt-0.5 text-sm font-medium text-slate-900;
+  }
+
+  /* Compact enterprise panel — flatter than a card, separated by dividers */
+  .panel {
+    @apply rounded-lg border border-slate-200 bg-white shadow-panel;
+  }
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3;
+  }
+  .panel-title {
+    @apply text-sm font-semibold text-slate-900;
+  }
+  .panel-body {
+    @apply px-4 py-4;
+  }
+}

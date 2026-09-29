@@ -1,0 +1,402 @@
+import * as React from 'react';
+import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  FileText,
+  FileCheck,
+  ScrollText,
+  User as UserIcon,
+  LogOut,
+  Menu,
+  X,
+  ShieldCheck,
+  Bell,
+  ChevronRight,
+  Settings,
+  Scale,
+  Inbox,
+} from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { useAuth } from '../../context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { reportsApi } from '../../lib/api';
+import { Badge } from '../ui/badge';
+import { labelize } from '../../lib/utils';
+import type { Role } from '../../types';
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
+  roles: Role[];
+  badge?: boolean; // show unread-count badge (officer inbox)
+}
+
+// Role-aware navigation. ADMIN is intentionally limited to Dashboard / Audit /
+// Profile / Settings — system administration stays separate from procurement
+// decision authority.
+const OFFICER: Role = 'PROCUREMENT_OFFICER';
+const STAFF_NAV: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR'];
+const ALL_ROLES: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR', 'ADMIN'];
+
+const PRIMARY_NAV: NavItem[] = [
+  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ALL_ROLES },
+  { to: '/app/tenders', label: 'Tenders', icon: FileText, roles: STAFF_NAV },
+  { to: '/app/inbox', label: 'Verification Reports', icon: Inbox, roles: [OFFICER], badge: true },
+  { to: '/app/documents', label: 'Test Your Document', icon: FileCheck, roles: [OFFICER, 'VERIFIER'] },
+  { to: '/app/audit', label: 'Audit Trail', icon: ScrollText, roles: ALL_ROLES },
+];
+
+const ADMIN_NAV: NavItem[] = [
+  { to: '/app/profile', label: 'Profile', icon: UserIcon, roles: ALL_ROLES },
+  { to: '/app/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
+];
+
+export function ProtectedRoute({
+  children,
+  roles,
+}: {
+  children: React.ReactNode;
+  roles?: Role[];
+}) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) navigate('/login', { replace: true });
+  }, [isLoading, isAuthenticated, navigate]);
+  React.useEffect(() => {
+    if (!isLoading && isAuthenticated && roles && user && !roles.includes(user.role)) {
+      navigate('/app/dashboard', { replace: true });
+    }
+  }, [isLoading, isAuthenticated, roles, user, navigate]);
+  if (isLoading) return null;
+  if (!isAuthenticated) return null;
+  if (roles && user && !roles.includes(user.role)) return null;
+  return <>{children}</>;
+}
+
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const onLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Officer inbox unread count (for the nav badge). Only fetched for officers.
+  const { data: inboxItems } = useQuery({
+    queryKey: ['reports-inbox'],
+    queryFn: reportsApi.inbox,
+    enabled: user?.role === 'PROCUREMENT_OFFICER',
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const unreadCount = (inboxItems ?? []).filter((i) => i.is_new).length;
+
+  const primaryItems = PRIMARY_NAV.filter(
+    (item) => user?.role && item.roles.includes(user.role)
+  );
+  const adminItems = ADMIN_NAV.filter(
+    (item) => user?.role && item.roles.includes(user.role)
+  );
+
+  return (
+    <div className="flex h-full flex-col justify-between bg-slate-900 text-slate-200">
+      <div>
+        {/* Brand identity header */}
+        <div className="border-b border-slate-800/80 px-5 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 border border-blue-500/30 text-white shadow-sm">
+              <ShieldCheck className="h-6 w-6 text-blue-200" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold tracking-tight text-white font-serif">
+                  GEVRA
+                </span>
+                <span className="rounded bg-blue-500/20 px-1.5 py-0.2 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
+                  CPSE
+                </span>
+              </div>
+              <p className="truncate text-[11px] font-medium text-slate-300">
+                GeM Verification &amp; Risk Assessment
+              </p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20" />
+                <span className="text-[10px] font-medium text-blue-300/90 tracking-wide uppercase">
+                  AI-Assisted Bid Compliance
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Primary Navigation */}
+        <nav className="px-3 pt-4" aria-label="Primary">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+            Procurement Operations
+          </p>
+          <ul className="space-y-1">
+            {primaryItems.map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition-colors',
+                      isActive
+                        ? 'bg-blue-600/30 text-white border-l-2 border-blue-400 shadow-sm'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    )
+                  }
+                >
+                  <item.icon className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span className="flex-1">{item.label}</span>
+                  {item.badge && unreadCount > 0 && (
+                    <span className="ml-auto rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+
+          <div className="my-4 border-t border-slate-800" />
+
+          {/* Administration section */}
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+            Administration
+          </p>
+          <ul className="space-y-1">
+            {adminItems.map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition-colors',
+                      isActive
+                        ? 'bg-blue-600/30 text-white border-l-2 border-blue-400 shadow-sm'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    )
+                  }
+                >
+                  <item.icon className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span>{item.label}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      {/* Institutional mandate notice & Officer identity */}
+      <div className="border-t border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="mb-3 rounded border border-blue-900/60 bg-blue-950/40 p-2.5 text-[11px] leading-relaxed text-blue-200/90">
+          <div className="flex items-center gap-1.5 font-semibold text-blue-100 mb-1">
+            <Scale className="h-3.5 w-3.5 text-blue-400" />
+            <span>Statutory Mandate</span>
+          </div>
+          <p className="text-[10.5px] text-slate-300">
+            AI verifies &amp; explains. Rules evaluate. The{' '}
+            <strong className="text-white font-medium">Procurement Officer</strong> retains sole decision authority.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 rounded-md bg-slate-800/60 p-2 border border-slate-800">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-700 text-xs font-bold text-white shadow-inner">
+            {user?.name?.charAt(0)?.toUpperCase() ?? 'O'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-white">{user?.name}</p>
+            <p className="truncate text-[10px] font-medium text-slate-400">
+              {labelize(user?.role)}
+            </p>
+          </div>
+          <button
+            onClick={onLogout}
+            className="rounded p-1.5 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+            title="Sign out of portal"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AppLayout() {
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Compute breadcrumbs
+  const path = location.pathname;
+  const breadcrumbItems = React.useMemo(() => {
+    const crumbs: { label: string; to?: string }[] = [{ label: 'GEVRA', to: '/app/dashboard' }];
+
+    if (path.startsWith('/app/dashboard')) {
+      crumbs.push({ label: 'Executive Dashboard' });
+    } else if (path.startsWith('/app/tenders')) {
+      crumbs.push({ label: 'Tenders', to: '/app/tenders' });
+      const parts = path.split('/').filter(Boolean);
+      if (parts.length > 2 && (parts[2] === 'create' || parts[2] === 'new')) {
+        crumbs.push({ label: 'Create Tender & Register Bidders' });
+      } else if (parts.length > 2 && parts[2] !== '') {
+        crumbs.push({ label: `Tender Dossier #${parts[2]}` });
+      }
+    } else if (path.startsWith('/app/bids')) {
+      crumbs.push({ label: 'Tenders', to: '/app/tenders' });
+      crumbs.push({ label: 'Bidder Evaluation Dossier' });
+    } else if (path.startsWith('/app/documents')) {
+      crumbs.push({ label: 'Test Your Document (Verification Lab)' });
+    } else if (path.startsWith('/app/audit')) {
+      crumbs.push({ label: 'Statutory Audit Trail' });
+    } else if (path.startsWith('/app/profile')) {
+      crumbs.push({ label: 'Officer Profile' });
+    } else if (path.startsWith('/app/settings')) {
+      crumbs.push({ label: 'System Configuration' });
+    }
+    return crumbs;
+  }, [path]);
+
+  const pageTitle = breadcrumbItems[breadcrumbItems.length - 1]?.label ?? 'Portal Workspace';
+
+  return (
+    <div className="flex min-h-screen bg-slate-100 text-slate-900 font-sans">
+      {/* Desktop Sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 bg-slate-900 shadow-md lg:block z-40">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden
+          />
+          <aside className="absolute inset-y-0 left-0 w-72 bg-slate-900 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 p-3">
+              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                GEVRA Navigation
+              </span>
+              <button
+                className="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close navigation"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[calc(100%-53px)]">
+              <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Main Content Column */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Institutional Top Header */}
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+          <div className="flex items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open navigation"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+
+              {/* Breadcrumb path */}
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-600 truncate">
+                {breadcrumbItems.map((crumb, idx) => {
+                  const isLast = idx === breadcrumbItems.length - 1;
+                  return (
+                    <React.Fragment key={idx}>
+                      {idx > 0 && <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />}
+                      {crumb.to && !isLast ? (
+                        <Link
+                          to={crumb.to}
+                          className="hover:text-blue-700 transition-colors font-medium hover:underline text-slate-600 truncate"
+                        >
+                          {crumb.label}
+                        </Link>
+                      ) : (
+                        <span className={cn('truncate', isLast ? 'font-semibold text-slate-900' : 'text-slate-500')}>
+                          {crumb.label}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Contextual institutional badges and officer indicators */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="hidden md:flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-[11px] font-medium text-blue-900">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>GeM Portal Sync: Connected</span>
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                  title="Notifications & System Alerts"
+                >
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
+                </button>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3">
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-slate-900 leading-tight">{user?.name}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">{labelize(user?.role)}</p>
+                </div>
+                <div className="h-7 w-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                  {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main id="main-content" className="flex-1 bg-slate-50/60">
+          <div className="mx-auto max-w-[1440px] p-4 sm:p-6 lg:p-7">
+            <Outlet />
+          </div>
+        </main>
+
+        {/* Institutional Footer */}
+        <footer className="border-t border-slate-200 bg-white py-3 px-4 sm:px-6">
+          <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-700">GEVRA</span>
+              <span>— GeM Verification &amp; Risk Assessment Platform</span>
+              <span className="hidden md:inline text-slate-300">|</span>
+              <span className="hidden md:inline text-slate-500">Procurement Decision Support System</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+                Evidence-Backed Auditability
+              </span>
+              <span>CPCL Manali Refinery</span>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}

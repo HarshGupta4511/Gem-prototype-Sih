@@ -1,0 +1,29 @@
+# Secrets / local config — never commit
+.env
+*.env
+
+# Databases (local dev)
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (user files)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.venv/
+backend/*.egg-info/
+.pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,72 @@
+{
+  "UDYAM-MH-19-0012345": {
+    "category": "MEDIUM",
+    "enterprise_name": "Apex Flow Systems Private Limited",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0012345"
+  },
+  "UDYAM-MH-19-0023456": {
+    "category": "SMALL",
+    "enterprise_name": "Bharat Mech Works",
+    "registration_date": "2019-04-15",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0023456"
+  },
+  "UDYAM-MH-19-0034567": {
+    "category": "SMALL",
+    "enterprise_name": "Crestline Pumps Pvt Ltd",
+    "registration_date": "2020-08-10",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0034567"
+  },
+  "UDYAM-MH-19-0045678": {
+    "category": "MEDIUM",
+    "enterprise_name": "Deccan Industrial Traders",
+    "registration_date": "2018-12-01",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0045678"
+  },
+  "UDYAM-MH-19-0056789": {
+    "category": "SMALL",
+    "enterprise_name": "Everest Engineering Co",
+    "registration_date": "2017-06-20",
+    "status": "EXPIRED",
+    "udyam_number": "UDYAM-MH-19-0056789"
+  },
+  "UDYAM-MH-19-0067890": {
+    "category": "MEDIUM",
+    "enterprise_name": "Fusion Petro Equipment LLP",
+    "registration_date": "2021-10-12",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0067890"
+  },
+  "UDYAM-MH-19-0078901": {
+    "category": "SMALL",
+    "enterprise_name": "Ganesh Controls",
+    "registration_date": "2020-03-05",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0078901"
+  },
+  "UDYAM-MH-19-0089012": {
+    "category": "MICRO",
+    "enterprise_name": "Harsh Safety Gear",
+    "registration_date": "2023-08-15",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-19-0089012"
+  },
+  "UDYAM-MH-27-0011001": {
+    "udyam_number": "UDYAM-MH-27-0011001",
+    "enterprise_name": "Apex MediSupply Private Limited",
+    "registration_date": "2022-05-09",
+    "status": "ACTIVE",
+    "category": "SMALL"
+  },
+  "UDYAM-MH-27-0022002": {
+    "udyam_number": "UDYAM-MH-27-0022002",
+    "enterprise_name": "BrightCare Traders Pvt Ltd",
+    "registration_date": "2021-10-11",
+    "status": "SUSPENDED",
+    "category": "MICRO"
+  }
+}

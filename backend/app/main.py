@@ -1,0 +1,164 @@
+"""BidVerify FastAPI application entrypoint."""
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api import (
+    audit,
+    auth,
+    bids,
+    compliance,
+    dashboard,
+    documents,
+    officer,
+    recommendation,
+    seed,
+    tenders,
+    verification,
+    verifier_reports,
+)
+from app.core.config import is_dev_secret, settings
+from app.database.base import Base
+from app.database.session import SessionLocal, engine
+
+logger = logging.getLogger(__name__)
+
+
+def _ensure_tender_wizard_columns() -> None:
+    """Additive, idempotent migration for the tender-wizard fields.
+
+    ``create_all`` does not add columns to an existing ``tenders`` table, so
+    databases created before the wizard shipped would otherwise miss the new
+    nullable columns. This adds only the missing ones and never touches data.
+    """
+    from sqlalchemy import inspect, text
+
+    wanted = {
+        "tender_type": "VARCHAR(20)",
+        "bid_type": "VARCHAR(20)",
+        "emd_amount_inr": "INTEGER",
+        "delivery_period": "VARCHAR(255)",
+        "place_of_delivery": "VARCHAR(255)",
+    }
+    try:
+        existing = {c["name"] for c in inspect(engine).get_columns("tenders")}
+    except Exception:
+        logger.exception("Could not inspect tenders table; skipping column migration")
+        return
+    missing = [name for name in wanted if name not in existing]
+    if not missing:
+        return
+    try:
+        with engine.begin() as conn:
+            for name in missing:
+                conn.execute(text(f"ALTER TABLE tenders ADD COLUMN {name} {wanted[name]}"))
+        logger.info("Added tender columns: %s", ", ".join(missing))
+    except Exception:
+        logger.exception("Failed to add tender wizard columns")
+
+
+def _backfill_tender_wizard_fields(db=None) -> None:
+    """Fill Step-1 wizard fields on demo tenders that predate the wizard.
+
+    Databases seeded before the tender-wizard fields existed have NULLs in
+    the new columns, so Tender Detail would show blanks for the synthetic
+    demo tenders. This fills only NULL fields, only for the known demo
+    tender numbers in ``DEMO_TENDER_WIZARD_FIELDS`` — officer-created
+    tenders are never touched. Idempotent.
+    """
+    from app.models.models import Tender
+    from app.seed.seed_data import DEMO_TENDER_WIZARD_FIELDS
+
+    own_session = db is None
+    if own_session:
+        from app.database.session import SessionLocal
+        db = SessionLocal()
+    try:
+        for number, fields in DEMO_TENDER_WIZARD_FIELDS.items():
+            tender = db.query(Tender).filter(Tender.tender_number == number).first()
+            if tender is None:
+                continue
+            changed = False
+            for field, value in fields.items():
+                if getattr(tender, field, None) is None and value is not None:
+                    setattr(tender, field, value)
+                    changed = True
+            if changed:
+                db.commit()
+                logger.info("Backfilled tender-wizard fields for %s", number)
+    except Exception:
+        logger.exception("Tender-wizard field backfill failed; continuing")
+        db.rollback()
+    finally:
+        if own_session:
+            db.close()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    _ensure_tender_wizard_columns()
+    _backfill_tender_wizard_fields()
+    if is_dev_secret():
+        logger.warning("JWT_SECRET is the dev default — set JWT_SECRET env var")
+    # Demo bootstrap: seed the database on startup so the app is immediately
+    # usable (docker compose up → working demo). run_seed is idempotent per
+    # tender — it backfills any demo tender missing from the database, so
+    # databases seeded before a new demo tender existed still get it.
+    # Disable with AUTO_SEED=false.
+    if settings.AUTO_SEED:
+        db = SessionLocal()
+        try:
+            from app.seed.seed_data import run_seed
+            result = run_seed(db)
+            logger.info("Demo seed check complete: %s", result)
+        except Exception:
+            logger.exception("Auto-seed failed; continuing with existing database")
+        finally:
+            db.close()
+    yield
+
+
+app = FastAPI(
+    title="BidVerify — AI-Powered Bid Compliance Verification Platform",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8080",
+        # Hosted frontend(s), e.g. Render: set CORS_ORIGINS env var.
+        *[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+for router in (
+    auth.router,
+    tenders.router,
+    bids.router,
+    documents.router,
+    verification.router,
+    compliance.router,
+    recommendation.router,
+    officer.router,
+    audit.router,
+    dashboard.router,
+    seed.router,
+    verifier_reports.router,
+):
+    app.include_router(router)
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}

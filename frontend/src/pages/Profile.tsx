@@ -1,0 +1,221 @@
+import { Building2, Check, KeyRound, LogOut, ShieldCheck, UserCheck, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { formatDate, labelize } from '../lib/utils';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { SystemLayerTag } from '../components/common/SystemLayerTag';
+import type { Role } from '../types';
+
+interface Capability {
+  label: string;
+  desc: string;
+  allowed: boolean;
+}
+
+function capabilitiesFor(role: Role | undefined): Capability[] {
+  const r = role;
+  const isOfficer = r === 'PROCUREMENT_OFFICER';
+  const isAdmin = r === 'ADMIN';
+  const isVerifier = r === 'VERIFIER';
+  const isAuditor = r === 'AUDITOR';
+
+  return [
+    {
+      label: 'View Tenders, Bids & Evidence',
+      desc: 'Access public and restricted procurement packages across all stages',
+      allowed: true,
+    },
+    {
+      label: 'Ingest & Process Bid Documents',
+      desc: 'Trigger OCR extraction, classification, and entity parsing pipelines',
+      allowed: isOfficer || isAdmin || isVerifier,
+    },
+    {
+      label: 'Execute Statutory Verification Adapters',
+      desc: 'Cross-reference taxpayer GSTN, PAN, MCA21, EPFO, and Debarment APIs',
+      allowed: isOfficer || isAdmin || isVerifier,
+    },
+    {
+      label: 'Evaluate Deterministic Compliance Rules',
+      desc: 'Compute requirement thresholds and weighted compliance percentages',
+      allowed: isOfficer || isAdmin || isVerifier,
+    },
+    {
+      label: 'Record Formal Officer Verdicts',
+      desc: 'Sign off on Approve, Reject, or Escalate determinations with audit hashing',
+      allowed: isOfficer || isAdmin,
+    },
+    {
+      label: 'Record Administrative Overrides',
+      desc: 'Record officer justification to override automated rule findings',
+      allowed: isOfficer || isAdmin,
+    },
+    {
+      label: 'Cryptographic Audit Trail Verification',
+      desc: 'Verify SHA-256 hash continuity and inspect tamper-evident logs',
+      allowed: true,
+    },
+    {
+      label: 'Administrative Configuration & Seeding',
+      desc: 'Configure platform parameters, user roles, and benchmark data',
+      allowed: isAdmin,
+    },
+  ];
+}
+
+export default function Profile() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const capabilities = capabilitiesFor(user?.role);
+
+  return (
+    <div className="space-y-6">
+      {/* 1. Header */}
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-800 font-mono">
+                Officer Administration
+              </span>
+              <SystemLayerTag layer="HUMAN_DECISION" size="sm" />
+            </div>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 font-serif">
+              Officer Profile &amp; Delegations
+            </h1>
+            <p className="mt-0.5 text-xs text-slate-600">
+              Account credentials, statutory delegations, and role access permissions on GEVRA portal.
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSignOut}
+            className="border-slate-300 text-rose-700 hover:bg-rose-50 text-xs self-start sm:self-auto"
+          >
+            <LogOut className="mr-1.5 h-3.5 w-3.5" />
+            Sign Out of Session
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Officer Card */}
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-5">
+          <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-900 text-lg font-bold text-white shadow-sm font-serif">
+              {user?.name?.charAt(0)?.toUpperCase() ?? 'O'}
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
+              <p className="text-xs text-slate-500 font-mono">{user?.email}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div>
+              <span className="text-slate-500 block">Assigned Role &amp; Privilege:</span>
+              <span className="inline-block mt-1 rounded bg-blue-50 px-2 py-0.5 font-bold text-blue-900 border border-blue-200 text-xs">
+                {labelize(user?.role)}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-slate-500 block">Procuring Entity:</span>
+              <span className="font-semibold text-slate-800 block mt-0.5">
+                Chennai Petroleum Corporation Limited (CPCL)
+              </span>
+            </div>
+
+            <div>
+              <span className="text-slate-500 block">Ministry / Department:</span>
+              <span className="font-semibold text-slate-800 block mt-0.5">
+                Ministry of Petroleum &amp; Natural Gas
+              </span>
+            </div>
+
+            <div>
+              <span className="text-slate-500 block">Account Status:</span>
+              <span className="inline-flex items-center gap-1.5 text-emerald-800 font-semibold mt-0.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                Active &amp; Empaneled
+              </span>
+            </div>
+
+            <div>
+              <span className="text-slate-500 block">Audit Signature ID:</span>
+              <span className="font-mono text-slate-600 block mt-0.5">
+                OFFICER-UID-{user?.id ?? '001'}
+              </span>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4">
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              className="w-full border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-800 text-xs font-semibold"
+            >
+              <LogOut className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
+              Terminate Active Session
+            </Button>
+          </div>
+        </div>
+
+        {/* Role Permissions Matrix */}
+        <div className="lg:col-span-2 rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Statutory Delegations &amp; Capabilities Matrix
+              </h3>
+              <p className="mt-0.5 text-xs text-slate-500">
+                System permissions enforced based on your assigned enterprise role.
+              </p>
+            </div>
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-700 border border-slate-200">
+              Role: {user?.role || 'PROCUREMENT_OFFICER'}
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {capabilities.map((cap) => (
+              <div key={cap.label} className="py-3 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-900">{cap.label}</p>
+                  <p className="text-[11px] text-slate-500 leading-snug mt-0.5">{cap.desc}</p>
+                </div>
+                <div className="shrink-0">
+                  {cap.allowed ? (
+                    <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
+                      <Check className="h-3 w-3 text-emerald-600" /> Allowed
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 border border-slate-200">
+                      <X className="h-3 w-3 text-slate-400" /> Restricted
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-3.5 text-xs text-blue-900 mt-4 flex items-start gap-2">
+            <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Statutory Accountability:</strong> In compliance with General Financial Rules (GFR), all decision recording and administrative overrides require justification and are permanently recorded in the SHA-256 audit ledger.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
