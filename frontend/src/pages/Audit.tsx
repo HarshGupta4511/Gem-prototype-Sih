@@ -46,7 +46,7 @@ export default function Audit() {
 
   const { data: logs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['audit'],
-    queryFn: () => auditApi.list({ limit: 250 }),
+    queryFn: () => auditApi.list({ limit: 200 }),
   });
 
   const verifyMutation = useMutation({

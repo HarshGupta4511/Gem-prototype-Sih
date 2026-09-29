@@ -1237,6 +1237,7 @@ export default function BidDetailPage() {
             </div>
 
             {/* AI Recommendation Box */}
+            {recommendation ? (
             <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50/50 p-5 shadow-2xs">
               <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -1260,6 +1261,14 @@ export default function BidDetailPage() {
                 <span>Advisory recommendation only. The Procurement Officer retains sole statutory award authority.</span>
               </div>
             </div>
+            ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+              <p className="text-sm font-semibold text-slate-700">No AI recommendation generated yet.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Click “Refresh AI Recommendation” above to generate an advisory recommendation for this bid.
+              </p>
+            </div>
+            )}
 
             {/* Policy Citations (RAG) */}
             <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-2xs">
@@ -1268,7 +1277,7 @@ export default function BidDetailPage() {
                 Retrieved Policy Citations (RAG Knowledge Base)
               </h4>
 
-              {(recommendation as any).policy_context && (recommendation as any).policy_context.length > 0 ? (
+              {(recommendation as any)?.policy_context && (recommendation as any).policy_context.length > 0 ? (
                 <div className="space-y-3">
                   {(recommendation as any).policy_context.map((ctx: any, idx: number) => (
                     <div key={idx} className="rounded border border-slate-200 bg-slate-50 p-3 text-xs">
