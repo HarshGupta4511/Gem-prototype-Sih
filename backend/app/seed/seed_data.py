@@ -794,6 +794,9 @@ def run_seed(db=None) -> dict:
 
         # GeM-style synthetic demo dataset — seeds independently of T1..T3.
         result["gem_demo"] = seed_gem_demo_tender(db, admin_id)
+        # Clearly-labelled synthetic history for the integrity demo.
+        from app.seed.demo_history_seed import seed_demo_history
+        result["demo_history"] = seed_demo_history(db, admin_id)
         log.info("Seed complete: %s", result)
         return result
     finally:
