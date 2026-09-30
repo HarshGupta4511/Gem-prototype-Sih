@@ -10,7 +10,7 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, captchaId: string, captchaText: string) => Promise<void>;
   demoLogin: () => Promise<void>;
   logout: () => void;
   /** Always true for the authenticated officer: final decisions, overrides, clarifications, tender/bidder CRUD. */
@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.setQueryData(['me'], u);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, captchaId: string, captchaText: string) => {
     try {
-      const res = await authApi.login({ email, password });
+      const res = await authApi.login({ email, password, captcha_id: captchaId, captcha_text: captchaText });
       applyAuth(res.user, res.access_token);
       toast('success', `Welcome, ${res.user.name}`);
     } catch (err) {

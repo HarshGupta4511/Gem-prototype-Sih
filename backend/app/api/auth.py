@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_user, get_db
 from app.core.security import create_access_token, verify_password
 from app.models.models import User
-from app.schemas.schemas import LoginRequest, TokenResponse, UserOut
-from app.services import audit_service
+from app.schemas.schemas import CaptchaOut, LoginRequest, TokenResponse, UserOut
+from app.services import audit_service, captcha_service
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -23,7 +23,12 @@ def _token_for(user: User) -> TokenResponse:
 
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    """Authenticate with email/password and return a JWT."""
+    """Authenticate with email/password + CAPTCHA and return a JWT."""
+    if not captcha_service.verify(payload.captcha_id, payload.captcha_text):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired security code. Please try a new code.",
+        )
     user = db.query(User).filter(User.email == payload.email).one_or_none()
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
@@ -39,6 +44,13 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         metadata={"email": user.email},
     )
     return _token_for(user)
+
+
+@router.get("/captcha", response_model=CaptchaOut)
+def get_captcha():
+    """Issue a fresh CAPTCHA challenge for the login form."""
+    captcha_id, image = captcha_service.generate()
+    return CaptchaOut(captcha_id=captcha_id, image=image)
 
 
 @router.post("/demo", response_model=TokenResponse)

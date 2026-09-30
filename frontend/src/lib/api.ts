@@ -6,6 +6,7 @@ import type {
   BidDetail,
   BidSubmission,
   BidSummary,
+  CaptchaChallenge,
   Clarification,
   ComparisonData,
   ComplianceResult,
@@ -89,6 +90,7 @@ export function documentFileUrl(id: number): string {
 export const authApi = {
   login: (body: LoginRequest) =>
     api.post<AuthResponse>('/auth/login', body).then((r) => r.data),
+  captcha: () => api.get<CaptchaChallenge>('/auth/captcha').then((r) => r.data),
   demo: () => api.post<AuthResponse>('/auth/demo', {}).then((r) => r.data),
   me: () => api.get<User>('/auth/me').then((r) => r.data),
 };

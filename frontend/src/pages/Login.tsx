@@ -9,6 +9,7 @@ import {
   Lock,
   Building2,
   KeyRound,
+  RefreshCw,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,10 +17,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useAuth } from '../context/AuthContext';
+import { authApi } from '../lib/api';
 
 const schema = z.object({
   email: z.string().email('Please enter a valid official email address'),
   password: z.string().min(1, 'Password is required'),
+  captchaText: z.string().min(1, 'Security code is required'),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -57,6 +60,24 @@ export default function Login() {
   const [busy, setBusy] = React.useState(false);
   const [demoBusy, setDemoBusy] = React.useState(false);
   const [authError, setAuthError] = React.useState<string | null>(null);
+  const [captcha, setCaptcha] = React.useState<{ id: string; image: string } | null>(null);
+  const [captchaLoading, setCaptchaLoading] = React.useState(false);
+
+  const loadCaptcha = React.useCallback(async () => {
+    setCaptchaLoading(true);
+    try {
+      const c = await authApi.captcha();
+      setCaptcha({ id: c.captcha_id, image: c.image });
+    } catch {
+      setCaptcha(null);
+    } finally {
+      setCaptchaLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadCaptcha();
+  }, [loadCaptcha]);
 
   const {
     register,
@@ -70,14 +91,16 @@ export default function Login() {
 
   const onSubmit = async (values: FormValues) => {
     const parsed = schema.safeParse(values);
-    if (!parsed.success) return;
+    if (!parsed.success || !captcha) return;
     setBusy(true);
     setAuthError(null);
     try {
-      await login(parsed.data.email, parsed.data.password);
+      await login(parsed.data.email, parsed.data.password, captcha.id, parsed.data.captchaText);
       navigate('/app/dashboard');
     } catch (err: unknown) {
-      setAuthError('Authentication failed. Please verify credentials or try Demo sign-in.');
+      setAuthError('Authentication failed. Please verify your credentials and security code, or try Demo sign-in.');
+      // Challenges are single-use — always issue a fresh one after an attempt.
+      loadCaptcha();
     } finally {
       setBusy(false);
     }
@@ -256,6 +279,47 @@ export default function Login() {
                   />
                 </div>
                 {errors.password && <p className="mt-1 text-xs text-rose-600">{errors.password.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="captchaText">
+                  Security Check
+                </label>
+                <div className="mt-1.5 flex items-stretch gap-2">
+                  <div className="flex h-11 items-center overflow-hidden rounded-md border border-slate-300 bg-slate-100 select-none">
+                    {captcha ? (
+                      <img src={captcha.image} alt="Security code" className="h-full" draggable={false} />
+                    ) : (
+                      <span className="px-4 text-xs text-slate-400">
+                        {captchaLoading ? 'Loading…' : 'Unavailable'}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={loadCaptcha}
+                    disabled={captchaLoading}
+                    title="Get a new security code"
+                    aria-label="Get a new security code"
+                    className="flex w-11 items-center justify-center rounded-md border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+                <div className="mt-1.5">
+                  <Input
+                    id="captchaText"
+                    type="text"
+                    placeholder="Enter the code shown above"
+                    autoComplete="off"
+                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm uppercase"
+                    {...register('captchaText')}
+                  />
+                </div>
+                {errors.captchaText && <p className="mt-1 text-xs text-rose-600">{errors.captchaText.message}</p>}
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Type the characters shown in the image. Each code works once and expires after 5 minutes.
+                </p>
               </div>
 
               <div className="pt-1">

@@ -475,6 +475,14 @@ export interface ProviderStatus {
 export interface LoginRequest {
   email: string;
   password: string;
+  captcha_id: string;
+  captcha_text: string;
+}
+
+export interface CaptchaChallenge {
+  captcha_id: string;
+  /** data:image/svg+xml URI — use directly as <img src> */
+  image: string;
 }
 
 export interface AuthResponse {

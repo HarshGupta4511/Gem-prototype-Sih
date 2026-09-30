@@ -36,6 +36,13 @@ _orm = ConfigDict(from_attributes=True)
 class LoginRequest(BaseModel):
     email: str
     password: str
+    captcha_id: str
+    captcha_text: str
+
+
+class CaptchaOut(BaseModel):
+    captcha_id: str
+    image: str  # data:image/svg+xml URI for <img src>
 
 
 class UserOut(BaseModel):
