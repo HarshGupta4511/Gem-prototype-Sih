@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     AuditLog,
     BidSubmission,
@@ -42,10 +42,8 @@ from app.services import audit_service
 
 router = APIRouter(prefix="/api/bids", tags=["bids"])
 
-_SUBMITTER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
-# Deletion is a procurement-officer-only destructive action (verifier may
-# register/process, but only the officer may delete).
-_OFFICER = require_roles("PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
+# Deletion is a procurement-officer-only destructive action.
 
 
 def _utcnow() -> datetime:
@@ -56,7 +54,7 @@ def _utcnow() -> datetime:
 def create_bid(
     payload: BidCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(_SUBMITTER),
+    user: User = Depends(_OFFICER),
 ):
     """Register a bidder and create its bid submission (status SUBMITTED)."""
     tender = db.get(Tender, payload.tender_id)
@@ -281,7 +279,7 @@ def seed_demo_evidence(
     bid_id: int,
     payload: DemoEvidenceSeedRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(_SUBMITTER),
+    user: User = Depends(_OFFICER),
 ):
     """Attach a fictional demo-bidder evidence dossier to an existing bid.
 

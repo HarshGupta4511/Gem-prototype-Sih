@@ -179,7 +179,7 @@ _WORK_QUEUE_ORDER = (
     (2, "STATUTORY_MISMATCH", "Statutory mismatch"),
     (3, "MISSING_MANDATORY_REQUIREMENT", "Missing mandatory requirement"),
     (4, "INTEGRITY_SIGNAL", "Integrity signal"),
-    (5, "PENDING_VERIFIER_REPORT", "Pending verifier report"),
+    (5, "PENDING_SUMMARY", "Verification summary not generated"),
     (6, "PENDING_OFFICER_DECISION", "Pending officer decision"),
 )
 
@@ -340,7 +340,7 @@ def _build_work_queue(db: Session) -> list[dict]:
             finding_id=f.id)
         n += 1
 
-    # -- 5. Pending verifier report -------------------------------------------
+    # -- 5. Verification summary not generated --------------------------------
     def _audit_bid_ids(action) -> set[int]:
         out = set()
         for (entity_id,) in db.query(AuditLog.entity_id).filter(
@@ -353,26 +353,27 @@ def _build_work_queue(db: Session) -> list[dict]:
                 continue
         return out
 
-    sent = _audit_bid_ids("VERIFICATION_REPORT_SENT")
+    generated = _audit_bid_ids("VERIFICATION_REPORT_GENERATED")
     decided = _audit_bid_ids("OFFICER_DECISION") | _audit_bid_ids("OFFICER_DECISION_CHANGED")
+    evaluated = {row[0] for row in db.query(ComplianceResult.bid_id).distinct().all()}
     n = 0
-    for bid_id in sorted(sent - decided):
+    for bid_id in sorted(evaluated - generated - decided):
         if n >= _QUEUE_LIMIT_PER_CATEGORY:
             break
         b = bids.get(bid_id)
         if b is None:
             continue
-        add(5, "PENDING_VERIFIER_REPORT", "Pending verifier report",
-            f"{bidder_names.get(b.bidder_id) or f'Bid #{bid_id}'} — report sent, awaiting officer",
-            "The verifier sent the verification report. Acknowledge receipt, "
-            "review the evidence and record the decision.",
+        add(5, "PENDING_SUMMARY", "Verification summary not generated",
+            f"{bidder_names.get(b.bidder_id) or 'Bid #' + str(bid_id)} — compliance evaluated, no summary yet",
+            "The bid has been evaluated but the Procurement Officer has not "
+            "generated a verification summary. Generate it from the bid workspace.",
             "ELEVATED",
             {**_queue_bid_ref(b, bidder_names, tender_numbers),
-             "link": f"/app/bids/{bid_id}/report"})
+             "link": f"/app/bids/{bid_id}/summary"})
         n += 1
 
     # -- 6. Pending officer decision -------------------------------------------
-    covered = sent - decided  # already surfaced under priority 5
+    covered = evaluated - decided  # already surfaced under priority 5
     n = 0
     for b in sorted(bids.values(), key=lambda x: x.id):
         if n >= _QUEUE_LIMIT_PER_CATEGORY:

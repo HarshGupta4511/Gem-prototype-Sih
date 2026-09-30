@@ -476,7 +476,7 @@ def _detect_officer_bidder_association(db: Session) -> list[dict]:
                     "the dataset."
                 ),
                 "recommended_action": (
-                    "Consider decision-rotation or a second reviewer for this "
+                    "Consider decision-rotation for this "
                     "bidder's future bids."
                 ),
                 "is_demo_history": False,

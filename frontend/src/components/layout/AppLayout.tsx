@@ -20,60 +20,38 @@ import {
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { reportsApi } from '../../lib/api';
-import { Badge } from '../ui/badge';
-import { labelize } from '../../lib/utils';
-import type { Role } from '../../types';
+import { dashboardApi } from '../../lib/api';
 
 interface NavItem {
   to: string;
   label: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
-  roles: Role[];
-  badge?: boolean; // show unread-count badge (officer inbox)
+  badge?: boolean; // show unread-count badge (officer notifications)
 }
 
-// Role-aware navigation. ADMIN is intentionally limited to Dashboard / Audit /
-// Profile / Settings — system administration stays separate from procurement
-// decision authority.
-const OFFICER: Role = 'PROCUREMENT_OFFICER';
-const STAFF_NAV: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR'];
-const ALL_ROLES: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR', 'ADMIN'];
-
+// Single-role navigation: the only user is the Procurement Officer.
 const PRIMARY_NAV: NavItem[] = [
-  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ALL_ROLES },
-  { to: '/app/tenders', label: 'Tenders', icon: FileText, roles: STAFF_NAV },
-  { to: '/app/inbox', label: 'Verification Reports', icon: Inbox, roles: [OFFICER], badge: true },
-  { to: '/app/documents', label: 'Test Your Document', icon: FileCheck, roles: [OFFICER, 'VERIFIER'] },
-  { to: '/app/integrity', label: 'Integrity', icon: ShieldAlert, roles: STAFF_NAV },
-  { to: '/app/audit', label: 'Audit Trail', icon: ScrollText, roles: ALL_ROLES },
+  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/app/tenders', label: 'Tenders', icon: FileText },
+  { to: '/app/inbox', label: 'Notifications', icon: Inbox, badge: true },
+  { to: '/app/documents', label: 'Test Your Document', icon: FileCheck },
+  { to: '/app/integrity', label: 'Integrity', icon: ShieldAlert },
+  { to: '/app/audit', label: 'Audit Trail', icon: ScrollText },
 ];
 
-const ADMIN_NAV: NavItem[] = [
-  { to: '/app/profile', label: 'Profile', icon: UserIcon, roles: ALL_ROLES },
-  { to: '/app/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
+const ACCOUNT_NAV: NavItem[] = [
+  { to: '/app/profile', label: 'Profile', icon: UserIcon },
+  { to: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
-export function ProtectedRoute({
-  children,
-  roles,
-}: {
-  children: React.ReactNode;
-  roles?: Role[];
-}) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) navigate('/login', { replace: true });
   }, [isLoading, isAuthenticated, navigate]);
-  React.useEffect(() => {
-    if (!isLoading && isAuthenticated && roles && user && !roles.includes(user.role)) {
-      navigate('/app/dashboard', { replace: true });
-    }
-  }, [isLoading, isAuthenticated, roles, user, navigate]);
   if (isLoading) return null;
   if (!isAuthenticated) return null;
-  if (roles && user && !roles.includes(user.role)) return null;
   return <>{children}</>;
 }
 
@@ -86,22 +64,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     navigate('/login');
   };
 
-  // Officer inbox unread count (for the nav badge). Only fetched for officers.
-  const { data: inboxItems } = useQuery({
-    queryKey: ['reports-inbox'],
-    queryFn: reportsApi.inbox,
-    enabled: user?.role === 'PROCUREMENT_OFFICER',
+  // Officer notifications unread count (work-queue items needing attention).
+  const { data: dashboard } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: dashboardApi.get,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
-  const unreadCount = (inboxItems ?? []).filter((i) => i.is_new).length;
+  const unreadCount = (dashboard?.work_queue ?? []).length;
 
-  const primaryItems = PRIMARY_NAV.filter(
-    (item) => user?.role && item.roles.includes(user.role)
-  );
-  const adminItems = ADMIN_NAV.filter(
-    (item) => user?.role && item.roles.includes(user.role)
-  );
+  const primaryItems = PRIMARY_NAV;
+  const accountItems = ACCOUNT_NAV;
 
   return (
     <div className="flex h-full flex-col justify-between bg-slate-900 text-slate-200">
@@ -168,12 +141,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
           <div className="my-4 border-t border-slate-800" />
 
-          {/* Administration section */}
+          {/* Account section */}
           <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-            Administration
+            Account
           </p>
           <ul className="space-y-1">
-            {adminItems.map((item) => (
+            {accountItems.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
@@ -216,7 +189,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-white">{user?.name}</p>
             <p className="truncate text-[10px] font-medium text-slate-400">
-              {labelize(user?.role)}
+              Procurement Officer
             </p>
           </div>
           <button
@@ -255,6 +228,10 @@ export function AppLayout() {
     } else if (path.startsWith('/app/bids')) {
       crumbs.push({ label: 'Tenders', to: '/app/tenders' });
       crumbs.push({ label: 'Bidder Evaluation Dossier' });
+    } else if (path.startsWith('/app/inbox')) {
+      crumbs.push({ label: 'Notifications' });
+    } else if (path.startsWith('/app/integrity')) {
+      crumbs.push({ label: 'Integrity Signals' });
     } else if (path.startsWith('/app/documents')) {
       crumbs.push({ label: 'Test Your Document (Verification Lab)' });
     } else if (path.startsWith('/app/audit')) {
@@ -364,7 +341,7 @@ export function AppLayout() {
               <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3">
                 <div className="text-right">
                   <p className="text-xs font-semibold text-slate-900 leading-tight">{user?.name}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">{labelize(user?.role)}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">Procurement Officer</p>
                 </div>
                 <div className="h-7 w-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
                   {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}

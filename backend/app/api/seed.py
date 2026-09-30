@@ -2,13 +2,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, require_roles
+from app.core.deps import get_db, require_officer
 from app.models.models import User
 from app.services import audit_service
 
 router = APIRouter(prefix="/api/seed", tags=["seed"])
 
-_ADMIN = require_roles("ADMIN")
+_OFFICER = require_officer()
 
 
 def _seed_data():
@@ -26,7 +26,7 @@ def _seed_data():
 @router.post("")
 def run_seed(
     db: Session = Depends(get_db),
-    user: User = Depends(_ADMIN),
+    user: User = Depends(_OFFICER),
 ):
     """Run the demo seed. Idempotent per tender: tenders that already exist
     are skipped, missing demo tenders are backfilled."""

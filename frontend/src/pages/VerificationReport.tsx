@@ -3,17 +3,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   FileCheck2,
-  Send,
   Plus,
   CheckCircle2,
   XCircle,
   AlertTriangle,
   MessageSquare,
   Eye,
+  RefreshCw,
 } from 'lucide-react';
-import { reportsApi, officerApi, getErrorMessage } from '../lib/api';
+import { summariesApi, officerApi, getErrorMessage } from '../lib/api';
 import { useToast } from '../components/ui/toaster';
-import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { PageHeader, BackLink, LoadingBlock } from '../components/common/ui-helpers';
@@ -31,16 +30,15 @@ import {
 import { cn, labelize } from '../lib/utils';
 import type { ReportStatus, OfficerDecision } from '../types';
 
+// Officer-owned: the Procurement Officer generates the verification
+// summary directly. There is no report handoff — the officer generates,states.
 const STATUS_META: Record<ReportStatus, { label: string; classes: string }> = {
   DRAFT: { label: 'Draft', classes: 'bg-slate-100 text-slate-700 border-slate-300' },
   GENERATED: { label: 'Generated', classes: 'bg-blue-50 text-blue-800 border-blue-200' },
-  SENT: { label: 'Sent to Procurement Officer', classes: 'bg-amber-50 text-amber-800 border-amber-200' },
-  RECEIVED: { label: 'Received by Officer', classes: 'bg-teal-50 text-teal-800 border-teal-200' },
-  UNDER_REVIEW: { label: 'Under Officer Review', classes: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
-  DECISION: { label: 'Decision Made', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  UPDATED: { label: 'Updated', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
 };
 
-const LIFECYCLE_STEPS: ReportStatus[] = ['DRAFT', 'GENERATED', 'SENT', 'RECEIVED', 'UNDER_REVIEW', 'DECISION'];
+const LIFECYCLE_STEPS: ReportStatus[] = ['DRAFT', 'GENERATED', 'UPDATED'];
 
 function formatDateTime(iso: string | null) {
   if (!iso) return '—';
@@ -89,48 +87,30 @@ export default function VerificationReport() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { canReport, isOfficer, isAuditor } = useAuth();
 
   const [observation, setObservation] = React.useState('');
-  const [sendOpen, setSendOpen] = React.useState(false);
   const [decisionDialog, setDecisionDialog] = React.useState<OfficerDecision | null>(null);
   const [decisionReason, setDecisionReason] = React.useState('');
   const [decisionError, setDecisionError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
-  const openedRef = React.useRef(false);
 
   const { data: report, isLoading, error, refetch } = useQuery({
-    queryKey: ['verification-report', bid_id],
-    queryFn: () => reportsApi.get(bid_id),
+    queryKey: ['verification-summary', bid_id],
+    queryFn: () => summariesApi.get(bid_id),
     enabled: Number.isFinite(bid_id),
   });
 
-  // Officer opening a RECEIVED report marks it RECEIVED -> UNDER REVIEW (idempotent).
-  // A SENT report stays at SENT until the officer explicitly acknowledges
-  // receipt — auto-open must never skip the RECEIVED stage.
   React.useEffect(() => {
-    if (isOfficer && report && report.status === 'RECEIVED' && !openedRef.current) {
-      openedRef.current = true;
-      reportsApi
-        .markOpened(bid_id)
-        .then(() => {
-          qc.invalidateQueries({ queryKey: ['verification-report', bid_id] });
-          qc.invalidateQueries({ queryKey: ['reports-inbox'] });
-        })
-        .catch(() => {});
-    }
-  }, [isOfficer, report, bid_id, qc]);
-
-  React.useEffect(() => {
-    if (error) toast('error', 'Could not load report', getErrorMessage(error));
+    if (error) toast('error', 'Could not load summary', getErrorMessage(error));
   }, [error, toast]);
 
   async function runAction(label: string, fn: () => Promise<unknown>) {
     setBusy(true);
     try {
       await fn();
-      await qc.invalidateQueries({ queryKey: ['verification-report', bid_id] });
-      await qc.invalidateQueries({ queryKey: ['reports-inbox'] });
+      await qc.invalidateQueries({ queryKey: ['verification-summary', bid_id] });
+      await qc.invalidateQueries({ queryKey: ['summary-lifecycle', bid_id] });
+      await qc.invalidateQueries({ queryKey: ['dashboard'] });
     } catch (e) {
       toast('error', `${label} failed`, getErrorMessage(e));
     } finally {
@@ -145,17 +125,9 @@ export default function VerificationReport() {
       return;
     }
     await runAction('Add observation', async () => {
-      await reportsApi.addObservation(bid_id, text);
+      await summariesApi.addObservation(bid_id, text);
       setObservation('');
       toast('success', 'Observation recorded');
-    });
-  }
-
-  async function confirmSend() {
-    setSendOpen(false);
-    await runAction('Send report', async () => {
-      await reportsApi.send(bid_id);
-      toast('success', 'Report sent to Procurement Officer', 'The officer has been notified for review.');
     });
   }
 
@@ -172,12 +144,11 @@ export default function VerificationReport() {
       await officerApi.decision({
         bid_id,
         decision: decisionDialog,
-        reason: decisionReason.trim() || 'Approved by Procurement Officer after reviewing the verification report.',
+        reason: decisionReason.trim() || 'Approved by Procurement Officer after reviewing the verification summary.',
       });
       setDecisionDialog(null);
       setDecisionReason('');
-      await qc.invalidateQueries({ queryKey: ['verification-report', bid_id] });
-      await qc.invalidateQueries({ queryKey: ['reports-inbox'] });
+      await qc.invalidateQueries({ queryKey: ['verification-summary', bid_id] });
       await qc.invalidateQueries({ queryKey: ['bid', bid_id] });
       toast('success', 'Decision recorded', `Bid marked as ${labelize(decisionDialog)}.`);
     } catch (e) {
@@ -198,18 +169,16 @@ export default function VerificationReport() {
   if (!report) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-sm text-red-800">
-        Verification report could not be loaded.
+        Verification summary could not be loaded.
       </div>
     );
   }
 
   const statusMeta = STATUS_META[report.status];
   const reachedIdx = LIFECYCLE_STEPS.indexOf(report.status);
-  const canGenerate = canReport && (report.status === 'DRAFT' || report.status === 'GENERATED');
-  const canSend = canReport && report.status === 'GENERATED';
-  const canObserve = canReport && (report.status === 'DRAFT' || report.status === 'GENERATED');
-  const showDecisionBar =
-    isOfficer && !report.decision && (report.status === 'SENT' || report.status === 'RECEIVED' || report.status === 'UNDER_REVIEW');
+  const canGenerate = report.status === 'DRAFT';
+  const canRegenerate = report.status === 'GENERATED' || report.status === 'UPDATED';
+  const showDecisionBar = !report.decision;
 
   const decisionButtons: { decision: OfficerDecision; label: string; icon: React.ReactNode; classes: string }[] = [
     { decision: 'APPROVE', label: 'Approve Bid', icon: <CheckCircle2 className="mr-1.5 h-4 w-4" />, classes: 'bg-emerald-700 hover:bg-emerald-800 text-white' },
@@ -221,8 +190,8 @@ export default function VerificationReport() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Verification Report"
-        description="Evidence-based handoff from the verifier. The Procurement Officer reviews the evidence and makes the final decision."
+        title="Verification Summary"
+        description="Evidence-backed summary generated directly by the Procurement Officer. Decision support — the final decision always rests with the officer."
         back={<BackLink to={`/app/bids/${bid_id}`} label="Back to Bid" />}
         actions={
           <Badge variant="outline" className={cn('text-xs', statusMeta.classes)}>
@@ -257,6 +226,54 @@ export default function VerificationReport() {
               </React.Fragment>
             );
           })}
+        </div>
+      </div>
+
+      {/* Officer summary actions */}
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
+        <h2 className="text-sm font-bold text-slate-900">Summary Actions</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          {report.status === 'DRAFT' && 'Generate the summary from the current evidence for this bid.'}
+          {report.status !== 'DRAFT' && 'Regenerate the summary at any time to pick up the latest evidence.'}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {canGenerate && (
+            <Button
+              size="sm"
+              onClick={() =>
+                runAction('Generate summary', async () => {
+                  await summariesApi.generate(bid_id);
+                  toast('success', 'Verification summary generated');
+                })
+              }
+              disabled={busy}
+              className="bg-brand-700 hover:bg-brand-800 text-white"
+            >
+              <FileCheck2 className="mr-1.5 h-4 w-4" />
+              Generate Verification Summary
+            </Button>
+          )}
+          {canRegenerate && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                runAction('Regenerate summary', async () => {
+                  await summariesApi.regenerate(bid_id);
+                  toast('success', 'Verification summary regenerated from current evidence');
+                })
+              }
+              disabled={busy}
+              className="border-slate-300 text-slate-700"
+            >
+              <RefreshCw className="mr-1.5 h-4 w-4" />
+              Regenerate Summary
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={() => navigate(`/app/bids/${bid_id}`)} className="border-slate-300 text-slate-700">
+            <Eye className="mr-1.5 h-4 w-4" />
+            Open Bid Detail
+          </Button>
         </div>
       </div>
 
@@ -515,46 +532,43 @@ export default function VerificationReport() {
         )}
       </SectionCard>
 
-      {/* Verifier observations */}
-      <SectionCard title="Verifier Observations" badge={<ProvenanceBadge kind="officer" />}>
+      {/* Officer observations */}
+      <SectionCard title="Officer Observations" badge={<ProvenanceBadge kind="officer" />}>
         {report.observations.length > 0 ? (
           <ul className="space-y-2.5">
             {report.observations.map((o, i) => (
               <li key={i} className="rounded-md border border-slate-200 bg-slate-50/60 px-3 py-2.5">
                 <p className="text-sm text-slate-800">“{o.text}”</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  — {o.added_by ?? 'Verifier'} · {formatDateTime(o.added_at)}
+                  — {o.added_by ?? 'Procurement Officer'} · {formatDateTime(o.added_at)}
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-500">No verifier observations recorded yet.</p>
+          <p className="text-sm text-slate-500">No officer observations recorded yet.</p>
         )}
-        {canObserve && (
-          <div className="rounded-md border border-dashed border-slate-300 p-3">
-            <label className="mb-1.5 block text-xs font-semibold text-slate-700">
-              Add a professional observation
-            </label>
-            <textarea
-              value={observation}
-              onChange={(e) => setObservation(e.target.value)}
-              rows={3}
-              maxLength={2000}
-              placeholder="e.g. All submitted statutory documents were reviewed. GST and Udyam records were successfully verified. PAN/entity-name mismatch requires officer attention."
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none"
-            />
-            <div className="mt-2 flex justify-end">
-              <Button size="sm" onClick={addObservation} disabled={busy || !observation.trim()} className="bg-brand-700 hover:bg-brand-800 text-white">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add Observation
-              </Button>
-            </div>
+        <div className="rounded-md border border-dashed border-slate-300 p-3">
+          <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+            Add a professional observation
+          </label>
+          <textarea
+            value={observation}
+            onChange={(e) => setObservation(e.target.value)}
+            rows={3}
+            maxLength={2000}
+            placeholder="e.g. All submitted statutory documents were reviewed. GST and Udyam records were successfully verified. PAN/entity-name mismatch requires officer attention."
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none"
+          />
+          <div className="mt-2 flex justify-end">
+            <Button size="sm" onClick={addObservation} disabled={busy || !observation.trim()} className="bg-brand-700 hover:bg-brand-800 text-white">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Observation
+            </Button>
           </div>
-        )}
+        </div>
       </SectionCard>
 
-      {/* AI summary */}
       {/* Cross-document consistency (mismatches only) */}
       <SectionCard
         title="Cross-Document Consistency"
@@ -646,81 +660,12 @@ export default function VerificationReport() {
         )}
       </SectionCard>
 
-      {/* Verifier handoff actions */}
-      {canReport && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-          <h2 className="text-sm font-bold text-slate-900">Verifier Handoff</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            {report.status === 'DRAFT' && 'Finalise the report from the current evidence, then send it to the Procurement Officer.'}
-            {report.status === 'GENERATED' && 'The report is ready. Send it to the Procurement Officer for review and decision.'}
-            {report.status === 'SENT' && 'Report sent. It is now with the Procurement Officer — the verifier’s responsibility ends here.'}
-            {report.status === 'RECEIVED' && 'Receipt acknowledged. Open the report to begin the officer review.'}
-            {report.status === 'UNDER_REVIEW' && 'The Procurement Officer has opened the report and is reviewing it.'}
-            {report.status === 'DECISION' && 'The Procurement Officer has recorded a final decision.'}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {canGenerate && (
-              <Button
-                size="sm"
-                onClick={() =>
-                  runAction('Generate report', async () => {
-                    await reportsApi.generate(bid_id);
-                    toast('success', 'Verification report generated');
-                  })
-                }
-                disabled={busy}
-                className="bg-brand-700 hover:bg-brand-800 text-white"
-              >
-                <FileCheck2 className="mr-1.5 h-4 w-4" />
-                Generate Verification Report
-              </Button>
-            )}
-            {canSend && (
-              <Button size="sm" onClick={() => setSendOpen(true)} disabled={busy} className="bg-amber-600 hover:bg-amber-700 text-white">
-                <Send className="mr-1.5 h-4 w-4" />
-                Send to Procurement Officer
-              </Button>
-            )}
-            <Button size="sm" variant="outline" onClick={() => navigate(`/app/bids/${bid_id}`)} className="border-slate-300 text-slate-700">
-              <Eye className="mr-1.5 h-4 w-4" />
-              Open Bid Detail
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Officer receipt acknowledgement */}
-      {isOfficer && report.status === 'SENT' && (
-        <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-5">
-          <h2 className="text-sm font-bold text-slate-900">Acknowledge Receipt</h2>
-          <p className="mt-1 text-xs text-slate-600">
-            Confirm you have received this verification report. This moves it from Sent to Received in the report lifecycle.
-          </p>
-          <div className="mt-3">
-            <Button
-              size="sm"
-              disabled={busy}
-              onClick={() =>
-                runAction('Acknowledge receipt', async () => {
-                  await reportsApi.markReceived(bid_id);
-                  toast('success', 'Receipt acknowledged');
-                })
-              }
-              className="bg-teal-700 hover:bg-teal-800 text-white"
-            >
-              <CheckCircle2 className="mr-1.5 h-4 w-4" />
-              Acknowledge Receipt
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Officer decision bar */}
       {showDecisionBar && (
         <div className="rounded-lg border-2 border-brand-200 bg-brand-50/50 p-5">
           <h2 className="text-sm font-bold text-slate-900">Procurement Officer Decision</h2>
           <p className="mt-1 text-xs text-slate-600">
-            You are the final decision maker. The report above is decision <em>support</em> — review the evidence before deciding.
+            You are the final decision maker. The summary above is decision <em>support</em> — review the evidence before deciding.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {decisionButtons.map((b) => (
@@ -733,7 +678,7 @@ export default function VerificationReport() {
         </div>
       )}
 
-      {isOfficer && report.decision && (
+      {report.decision && (
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
           <h2 className="text-sm font-bold text-slate-900">Recorded Decision</h2>
           <dl className="mt-2 divide-y divide-slate-100">
@@ -743,44 +688,10 @@ export default function VerificationReport() {
             <KeyValue k="Decided At" v={formatDateTime(report.decision.decided_at)} />
           </dl>
           <p className="mt-2 text-xs text-slate-500">
-            To change this decision, use the Change Decision workflow on the bid detail page.
+            To change this decision, use the Modify Decision workflow on the bid detail page.
           </p>
         </div>
       )}
-
-      {isAuditor && (
-        <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-          You are viewing this report in a read-only capacity as Auditor.
-        </p>
-      )}
-
-      {/* Send confirmation */}
-      <Dialog open={sendOpen} onOpenChange={setSendOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Send this verification report to the Procurement Officer?</DialogTitle>
-            <DialogDescription>
-              The report will be handed over for officer review and final decision.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody>
-            <dl className="divide-y divide-slate-100 rounded-md border border-slate-200 px-4">
-              <KeyValue k="Bidder" v={report.bid_info.bidder_name ?? '—'} />
-              <KeyValue k="Tender" v={report.bid_info.tender_number ?? '—'} />
-              <KeyValue k="Report status" v={STATUS_META[report.status].label} />
-            </dl>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSendOpen(false)} className="border-slate-300">
-              Cancel
-            </Button>
-            <Button onClick={confirmSend} disabled={busy} className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Send className="mr-1.5 h-4 w-4" />
-              Send Report
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Decision confirmation */}
       <Dialog open={decisionDialog !== null} onOpenChange={(o) => !o && setDecisionDialog(null)}>
@@ -788,7 +699,7 @@ export default function VerificationReport() {
           <DialogHeader>
             <DialogTitle>{decisionDialog ? `${labelize(decisionDialog)} this bid?` : ''}</DialogTitle>
             <DialogDescription>
-              This records the final procurement decision. The report remains available as decision support.
+              This records the final procurement decision. The summary remains available as decision support.
             </DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
@@ -800,7 +711,7 @@ export default function VerificationReport() {
                 v={report.compliance_score != null ? `${report.compliance_score.toFixed(1)} / 100` : 'Not evaluated'}
               />
               <KeyValue k="Risk Level" v={report.risk ? labelize(report.risk.level) : 'Not assessed'} />
-              <KeyValue k="Verification Report" v={STATUS_META[report.status].label} />
+              <KeyValue k="Verification Summary" v={STATUS_META[report.status].label} />
             </dl>
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-700">

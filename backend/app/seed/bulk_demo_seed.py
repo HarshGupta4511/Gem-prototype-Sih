@@ -11,7 +11,7 @@ bidders per tender, and runs EVERY bidder through the REAL pipeline:
 
 Nothing is hardcoded: compliance scores, risk levels and recommendations
 are engine-generated from the seeded evidence. Officer decisions and
-verifier reports are then recorded through the existing workflows, so the
+verification summaries are then recorded through the existing workflows, so the
 dashboard, tenders list, bidder evaluation and bid detail pages are
 naturally populated.
 
@@ -572,7 +572,7 @@ def _seed_tender(db, spec: tuple, users: dict, bidders: list[dict],
         log.info("Bulk seed: %s already exists; skipped", number)
         return
 
-    admin = users["admin@demo.cpcl.in"]
+    officer = users["officer@demo.cpcl.in"]
     rng = random.Random(SEED + suffix)  # per-tender requirement variation
     tender_type = rng.choice(["OPEN", "LIMITED", "OPEN"])
     bid_type = rng.choice(["SINGLE", "TWO_PACKET", "SINGLE"])
@@ -580,7 +580,7 @@ def _seed_tender(db, spec: tuple, users: dict, bidders: list[dict],
         db, number=number, title=title, department=department,
         issue=issue, closing=closing, value=value_inr,
         requirements=requirements_for(req_profile, emd_inr, rng),
-        created_by=admin.id, tender_type=tender_type, bid_type=bid_type,
+        created_by=officer.id, tender_type=tender_type, bid_type=bid_type,
         emd_amount_inr=emd_inr,
         delivery_period=f"{rng.choice([30, 45, 60, 90, 120, 180])} days",
         place_of_delivery="CPCL Refinery, Manali, Chennai",
@@ -624,7 +624,7 @@ def _seed_tender(db, spec: tuple, users: dict, bidders: list[dict],
         }
         try:
             bid, processed, _rows = _seed_bidder(
-                db, tender, specs, admin.id, dossier=dossier)
+                db, tender, specs, officer.id, dossier=dossier)
         except Exception:  # noqa: BLE001 - one bad bidder never kills the seed
             log.exception("Bulk seed: bidder failed %s (%s)",
                           b["legal_name"], b["scenario"])
@@ -740,7 +740,7 @@ def _record_decisions(db, users: dict, stats: dict) -> None:
 
 
 # --------------------------------------------------------------------------
-# Verifier reports (through the real report workflow)
+# Verification summaries (through the real summary workflow)
 # --------------------------------------------------------------------------
 
 _OBSERVATIONS = [
@@ -757,16 +757,14 @@ _OBSERVATIONS = [
 
 def _seed_reports(db, users: dict, stats: dict) -> None:
     from collections import Counter
-    from app.services import verifier_report_service as vrs
+    from app.services import verification_summary_service as vss
 
-    verifier = users["verifier@demo.cpcl.in"]
     officer = users["officer@demo.cpcl.in"]
     rng = random.Random(SEED + 4242)
     for bid_id in stats["new_bid_ids"]:
-        # Bids the officer already decided on sit at DECISION_MADE in the
-        # lifecycle; only DRAFT reports can move forward.
+        # Only DRAFT summaries can move forward.
         try:
-            if vrs.report_lifecycle(db, bid_id)["status"] != "DRAFT":
+            if vss.summary_lifecycle(db, bid_id)["status"] != "DRAFT":
                 continue
         except Exception:  # noqa: BLE001
             continue
@@ -774,27 +772,22 @@ def _seed_reports(db, users: dict, stats: dict) -> None:
             continue
         try:
             if rng.random() < 0.30:
-                vrs.add_observation(
-                    db, bid_id, verifier, rng.choice(_OBSERVATIONS))
-            vrs.generate_report(db, bid_id, verifier)
+                vss.add_observation(
+                    db, bid_id, officer, rng.choice(_OBSERVATIONS))
+            vss.generate_summary(db, bid_id, officer)
         except Exception:  # noqa: BLE001
-            log.exception("Bulk seed: report generate failed for bid %s", bid_id)
+            log.exception("Bulk seed: summary generate failed for bid %s", bid_id)
             continue
-        if rng.random() < 0.70:
+        if rng.random() < 0.40:
             try:
-                vrs.send_report(db, bid_id, verifier)
+                vss.regenerate_summary(db, bid_id, officer)
             except Exception:  # noqa: BLE001
                 continue
-            if rng.random() < 0.50:
-                try:
-                    vrs.mark_opened(db, bid_id, officer)
-                except Exception:  # noqa: BLE001
-                    pass
     # True distribution, derived from the audit-backed lifecycle.
     dist: Counter = Counter()
     for bid_id in stats["new_bid_ids"]:
         try:
-            dist[vrs.report_lifecycle(db, bid_id)["status"]] += 1
+            dist[vss.summary_lifecycle(db, bid_id)["status"]] += 1
         except Exception:  # noqa: BLE001
             pass
     stats["reports"] = dict(dist)
@@ -859,7 +852,7 @@ def _final_report(db, stats: dict) -> dict:
     report["risk_distribution"] = dict(Counter(r.risk_level for r in risks))
 
     report["officer_decisions"] = dict(stats["decisions"])
-    report["verifier_reports"] = dict(stats["reports"])
+    report["verification_summaries"] = dict(stats["reports"])
     report["bidders_failed"] = stats["bidders_failed"]
     report["mock_records_added"] = stats["mock_added"]
     return report

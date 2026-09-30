@@ -25,7 +25,6 @@ import type {
   OverrideRequest,
   ProviderStatus,
   RecommendationResult,
-  ReportInboxItem,
   ReportObservation,
   ReportStatus,
   ReportTimelineEvent,
@@ -219,25 +218,22 @@ export const auditApi = {
   verify: () => api.post<AuditVerifyResult>('/audit/verify').then((r) => r.data),
 };
 
-// ------------------------------------------------------- verifier reports
-export const reportsApi = {
-  inbox: () => api.get<ReportInboxItem[]>('/verifier-reports/inbox').then((r) => r.data),
+// ------------------------------------------------------- verification summaries
+// Officer-owned: the Procurement Officer generates the verification
+// summary directly. There is no report handoff (no send/receive/acknowledge).
+export const summariesApi = {
   get: (bidId: number) =>
-    api.get<VerificationReportData>(`/verifier-reports/bids/${bidId}/report`).then((r) => r.data),
+    api.get<VerificationReportData>(`/verification-summaries/bids/${bidId}`).then((r) => r.data),
   lifecycle: (bidId: number) =>
     api.get<{ status: ReportStatus; observations: ReportObservation[]; timeline: ReportTimelineEvent[] }>(
-      `/verifier-reports/bids/${bidId}/lifecycle`
+      `/verification-summaries/bids/${bidId}/lifecycle`
     ).then((r) => r.data),
   addObservation: (bidId: number, observation: string) =>
-    api.post(`/verifier-reports/bids/${bidId}/observations`, { observation }).then((r) => r.data),
+    api.post(`/verification-summaries/bids/${bidId}/observations`, { observation }).then((r) => r.data),
   generate: (bidId: number) =>
-    api.post<VerificationReportData>(`/verifier-reports/bids/${bidId}/generate`).then((r) => r.data),
-  send: (bidId: number) =>
-    api.post<VerificationReportData>(`/verifier-reports/bids/${bidId}/send`).then((r) => r.data),
-  markOpened: (bidId: number) =>
-    api.post(`/verifier-reports/bids/${bidId}/opened`).then((r) => r.data),
-  markReceived: (bidId: number) =>
-    api.post(`/verifier-reports/bids/${bidId}/received`).then((r) => r.data),
+    api.post<VerificationReportData>(`/verification-summaries/bids/${bidId}/generate`).then((r) => r.data),
+  regenerate: (bidId: number) =>
+    api.post<VerificationReportData>(`/verification-summaries/bids/${bidId}/regenerate`).then((r) => r.data),
 };
 
 // ------------------------------------------------------------------- seed

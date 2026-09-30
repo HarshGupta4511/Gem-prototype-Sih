@@ -2,8 +2,10 @@ import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi, getErrorMessage, setToken } from '../lib/api';
 import { useToast } from '../components/ui/toaster';
-import type { Role, User } from '../types';
+import type { User } from '../types';
 
+// Single-role application: the ONLY human user is the Procurement Officer.
+// Every authenticated user therefore has full operational authority.
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
@@ -11,13 +13,12 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   demoLogin: () => Promise<void>;
   logout: () => void;
-  hasRole: (...roles: Role[]) => boolean;
-  canDecide: boolean; // procurement officer only: final decisions, overrides, clarifications, tender/bidder CRUD
-  canVerify: boolean; // procurement officer + verifier: run verification, process/evaluate docs
-  canReport: boolean; // verifier only: generate + send verification reports
+  /** Always true for the authenticated officer: final decisions, overrides, clarifications, tender/bidder CRUD. */
+  canDecide: boolean;
+  /** Always true for the authenticated officer: run verification, process/evaluate docs, generate summaries. */
+  canVerify: boolean;
+  /** Always true for the authenticated officer. */
   isOfficer: boolean;
-  isVerifier: boolean;
-  isAuditor: boolean; // read-only
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
@@ -61,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await authApi.demo();
       applyAuth(res.user, res.access_token);
-      toast('success', 'Signed in with demo account', `${res.user.name} · ${res.user.role}`);
+      toast('success', 'Signed in with demo account', res.user.name);
     } catch (err) {
       toast('error', 'Demo login failed', getErrorMessage(err));
       throw err;
@@ -74,9 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.clear();
   };
 
-  const role = user?.role;
-  const hasRole = (...roles: Role[]) => !!role && roles.includes(role);
-
   const value: AuthContextValue = {
     user: user ?? null,
     isLoading,
@@ -84,13 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     demoLogin,
     logout,
-    hasRole,
-    canDecide: hasRole('PROCUREMENT_OFFICER'),
-    canVerify: hasRole('PROCUREMENT_OFFICER', 'VERIFIER'),
-    canReport: hasRole('VERIFIER'),
-    isOfficer: role === 'PROCUREMENT_OFFICER',
-    isVerifier: role === 'VERIFIER',
-    isAuditor: role === 'AUDITOR',
+    canDecide: true,
+    canVerify: true,
+    isOfficer: true,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,23 +2,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, require_roles
+from app.core.deps import get_db, require_officer
 from app.models.models import BidSubmission, User
 from app.schemas.schemas import RecommendationOut
 from app.services import recommendation_service
 
 router = APIRouter(prefix="/api/recommendation", tags=["recommendation"])
 
-# Generating a recommendation is an internal evaluation action: procurement
-# staff only. Read-only roles (auditor) must not trigger it.
-_RECOMMENDER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
+# Generating a recommendation is an internal evaluation action performed
+# by the Procurement Officer.
+_OFFICER = require_officer()
 
 
 @router.post("/{bid_id}", response_model=RecommendationOut)
 def recommend(
     bid_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_RECOMMENDER),
+    user: User = Depends(_OFFICER),
 ):
     """Generate the AI-assisted recommendation from stored compliance + risk.
 

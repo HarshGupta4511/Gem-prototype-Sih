@@ -28,15 +28,14 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { useToast } from '../components/ui/toaster';
-import { useAuth } from '../context/AuthContext';
 import { EmptyState, LoadingBlock } from '../components/common/ui-helpers';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
 import type { AuditVerifyResult, AuditLog } from '../types';
 
 export default function Audit() {
   const { toast } = useToast();
-  const { hasRole } = useAuth();
-  const canVerifyChain = hasRole('AUDITOR', 'ADMIN', 'PROCUREMENT_OFFICER');
+  // Single-role app: the Procurement Officer verifies the audit chain.
+  const canVerifyChain = true;
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState('');
   const [actionFilter, setActionFilter] = React.useState('');

@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import BidSubmission, User, VerificationCheck, VerificationStatus
 from app.schemas.schemas import (
     VerificationCheckOut,
@@ -13,7 +13,7 @@ from app.services import verification_service
 
 router = APIRouter(prefix="/api/verification", tags=["verification"])
 
-_RUNNER = require_roles("VERIFIER", "PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 
 def _validate_check_status(value: str) -> str:
@@ -48,7 +48,7 @@ def list_checks(
 def run_verification(
     payload: VerificationRunRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(_RUNNER),
+    user: User = Depends(_OFFICER),
 ):
     """Run every applicable mock government adapter for a bid and store checks."""
     if db.get(BidSubmission, payload.bid_id) is None:

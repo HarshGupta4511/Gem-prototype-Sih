@@ -109,6 +109,7 @@ import { SystemLayerTag } from '../components/common/SystemLayerTag';
 import { ReportTab } from '../components/reports/ReportTab';
 import { ConsistencyPanel } from '../components/common/ConsistencyPanel';
 import { IntegrityWidget } from '../components/common/IntegrityWidget';
+import { BidIntegrityTab } from '../components/common/BidIntegrityTab';
 import { LoadingBlock } from '../components/common/ui-helpers';
 
 export default function BidDetailPage() {
@@ -118,7 +119,7 @@ export default function BidDetailPage() {
   const bidId = Number(id);
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { canDecide, canVerify, isAuditor } = useAuth();
+  const { canDecide, canVerify } = useAuth();
 
   const { data, isLoading, error, refetch } = useQuery<BidDetailData>({
     queryKey: ['bid', bidId],
@@ -626,9 +627,8 @@ export default function BidDetailPage() {
               </p>
             </div>
 
-            {/* Buttons for Officer Decision */}
-            {canDecide ? (
-              <div className="flex flex-wrap items-center gap-2">
+            {/* Buttons for Officer Decision — single-role app: always the officer */}
+            <div className="flex flex-wrap items-center gap-2">
                 {!isDecided ? (
                   <>
                     <Button
@@ -699,12 +699,7 @@ export default function BidDetailPage() {
                     </Button>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="text-xs text-blue-200 font-medium bg-blue-900/60 px-3 py-1.5 rounded border border-blue-800">
-                Viewing in Auditor / Read-Only Mode (Officer signing privileges required)
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
@@ -746,22 +741,28 @@ export default function BidDetailPage() {
                 5. Risk Analysis
               </TabsTrigger>
               <TabsTrigger
+                value="integrity"
+                className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
+              >
+                6. Integrity Findings
+              </TabsTrigger>
+              <TabsTrigger
                 value="ai"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                6. AI Explanation
+                7. AI Explanation &amp; Advisory
               </TabsTrigger>
               <TabsTrigger
                 value="report"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                7. Verification Report
+                8. Verification Summary
               </TabsTrigger>
               <TabsTrigger
                 value="audit"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                8. Audit Trail
+                9. Audit Trail
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1272,7 +1273,12 @@ export default function BidDetailPage() {
             </div>
           </TabsContent>
 
-          {/* SECTION 6: AI EXPLANATION & RECOMMENDATION */}
+          {/* SECTION 6: INTEGRITY FINDINGS */}
+          <TabsContent value="integrity" className="p-6 space-y-5">
+            <BidIntegrityTab bidId={bidId} />
+          </TabsContent>
+
+          {/* SECTION 7: AI EXPLANATION & RECOMMENDATION */}
           <TabsContent value="ai" className="p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
               <div>
@@ -1444,7 +1450,7 @@ export default function BidDetailPage() {
             })()}
           </TabsContent>
 
-          {/* SECTION 8: AUDIT TRAIL */}
+          {/* SECTION 9: AUDIT TRAIL */}
           <TabsContent value="audit" className="p-6 space-y-5">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
@@ -1492,7 +1498,7 @@ export default function BidDetailPage() {
               </div>
             )}
           </TabsContent>
-          {/* SECTION 8: VERIFICATION REPORT HANDOFF */}
+          {/* SECTION 8: VERIFICATION SUMMARY */}
           <TabsContent value="report" className="p-6 space-y-5">
             <ReportTab bidId={bidId} />
           </TabsContent>

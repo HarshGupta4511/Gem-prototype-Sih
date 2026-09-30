@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     BidSubmission,
     Bidder,
@@ -29,7 +29,7 @@ from app.services import compliance_service
 
 router = APIRouter(prefix="/api", tags=["compliance"])
 
-_EVALUATOR = require_roles("VERIFIER", "PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 
 class ComplianceOverviewItem(BaseModel):
@@ -96,7 +96,7 @@ def compliance_overview(
 def evaluate(
     payload: ComplianceEvaluateRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(_EVALUATOR),
+    user: User = Depends(_OFFICER),
 ):
     """Run the rules engine, then the risk engine; persist results and scores."""
     if db.get(BidSubmission, payload.bid_id) is None:

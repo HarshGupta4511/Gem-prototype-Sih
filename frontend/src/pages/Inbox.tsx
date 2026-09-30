@@ -1,159 +1,112 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Inbox as InboxIcon, RefreshCw, ChevronRight, FileCheck2 } from 'lucide-react';
-import { reportsApi, getErrorMessage } from '../lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { Inbox as InboxIcon, RefreshCw, ArrowRight } from 'lucide-react';
+import { dashboardApi } from '../lib/api';
 import { useToast } from '../components/ui/toaster';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { PageHeader, BackLink, LoadingBlock } from '../components/common/ui-helpers';
-import { labelize } from '../lib/utils';
-import type { ReportStatus } from '../types';
+import { PageHeader, LoadingBlock } from '../components/common/ui-helpers';
+import { cn, labelize } from '../lib/utils';
 
-const STATUS_STYLES: Record<ReportStatus, string> = {
-  DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
-  GENERATED: 'bg-blue-50 text-blue-800 border-blue-200',
-  SENT: 'bg-amber-50 text-amber-800 border-amber-200',
-  RECEIVED: 'bg-teal-50 text-teal-800 border-teal-200',
-  UNDER_REVIEW: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-  DECISION: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+// Single-role model: Notifications is the Procurement Officer's attention
+// queue — the backend-driven work queue. No report-inbox receive/acknowledge.
+const KIND_META: Record<string, { classes: string }> = {
+  HIGH_RISK_BIDDER: { classes: 'bg-red-50 text-red-800 border-red-200' },
+  STATUTORY_MISMATCH: { classes: 'bg-red-50 text-red-800 border-red-200' },
+  MISSING_MANDATORY_REQUIREMENT: { classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  INTEGRITY_SIGNAL: { classes: 'bg-violet-50 text-violet-800 border-violet-200' },
+  PENDING_SUMMARY: { classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  PENDING_OFFICER_DECISION: { classes: 'bg-blue-50 text-blue-800 border-blue-200' },
+  DOCUMENT: { classes: 'bg-slate-100 text-slate-700 border-slate-300' },
 };
 
-function formatDateTime(iso: string | null) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export default function Inbox() {
-  const navigate = useNavigate();
+  const qc = useQueryClient();
   const { toast } = useToast();
-  const { data, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ['reports-inbox'],
-    queryFn: reportsApi.inbox,
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const { data: dashboard, isLoading, refetch } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: dashboardApi.get,
     staleTime: 30_000,
-    refetchInterval: 60_000,
   });
 
-  React.useEffect(() => {
-    if (error) toast('error', 'Could not load inbox', getErrorMessage(error));
-  }, [error, toast]);
+  const items = dashboard?.work_queue ?? [];
 
-  const [receivingId, setReceivingId] = React.useState<number | null>(null);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <LoadingBlock rows={6} />
-      </div>
-    );
-  }
-
-  const items = data ?? [];
-  const newCount = items.filter((i) => i.is_new).length;
-
-  async function acknowledgeReceipt(bidId: number) {
-    setReceivingId(bidId);
+  const handleRefresh = async () => {
+    setRefreshing(true);
     try {
-      await reportsApi.markReceived(bidId);
-      toast('success', 'Receipt acknowledged', 'The report is now marked as received.');
-      refetch();
-    } catch (e) {
-      toast('error', 'Could not acknowledge receipt', getErrorMessage(e));
+      await qc.invalidateQueries({ queryKey: ['dashboard'] });
+      await refetch();
+    } catch {
+      toast('error', 'Refresh failed');
     } finally {
-      setReceivingId(null);
+      setRefreshing(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Verification Reports"
-        description="Review reports submitted by verifiers and record the final procurement decision."
-        back={<BackLink to="/app/dashboard" label="Back to Dashboard" />}
+        title="Notifications"
+        description="Items that need the Procurement Officer's attention — high-risk bids, statutory mismatches, missing mandatory evidence, integrity signals, and pending decisions."
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
-          >
-            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefetching ? 'animate-spin' : ''}`} />
+          <Button size="sm" variant="outline" onClick={handleRefresh} disabled={refreshing} className="border-slate-300 text-slate-700">
+            <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', refreshing && 'animate-spin')} />
             Refresh
           </Button>
         }
       />
 
-      {newCount > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span className="font-semibold">{newCount} new report{newCount === 1 ? '' : 's'}</span>
-          {' '}awaiting your review.
-        </div>
-      )}
-
-      {items.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-10 text-center">
-          <FileCheck2 className="mx-auto h-10 w-10 text-slate-300" />
-          <p className="mt-3 text-sm font-semibold text-slate-900">No verification reports yet</p>
-          <p className="mt-1 text-sm text-slate-500">
-            When a verifier sends a completed report, it will appear here for your review and decision.
+      {isLoading ? (
+        <LoadingBlock rows={6} />
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white py-16 text-center">
+          <InboxIcon className="h-10 w-10 text-slate-300" />
+          <p className="mt-3 text-sm font-semibold text-slate-700">No pending items</p>
+          <p className="mt-1 max-w-sm text-xs text-slate-500">
+            Everything is clear. New items appear here as soon as the work queue flags
+            something that needs your attention.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs">
-          <ul className="divide-y divide-slate-100">
-            {items.map((item) => (
-              <li key={item.bid_id} className="flex items-center gap-3 px-4 py-4">
-                <button
-                  onClick={() => navigate(`/app/bids/${item.bid_id}/report`)}
-                  className="flex min-w-0 flex-1 items-center gap-4 text-left transition-colors hover:bg-slate-50 rounded-md px-2 py-1 -mx-2"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                    <FileCheck2 className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-slate-900">
-                        {item.bidder_name ?? `Bid #${item.bid_id}`}
-                      </p>
-                      {item.is_new && (
-                        <Badge className="bg-amber-500 text-white border-amber-500 text-[10px]">
-                          NEW
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className={STATUS_STYLES[item.status]}>
-                        {labelize(item.status)}
-                      </Badge>
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-slate-500">
-                      {item.tender_number} · {item.tender_title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Submitted by {item.sent_by ?? 'Verifier'} · {formatDateTime(item.sent_at)}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-                </button>
-                {item.is_new && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 border-teal-300 text-teal-800 hover:bg-teal-50 text-xs"
-                    disabled={receivingId === item.bid_id}
-                    onClick={() => acknowledgeReceipt(item.bid_id)}
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {items.length} item{items.length === 1 ? '' : 's'} needing attention
+          </p>
+          <ul className="space-y-2.5">
+            {items.map((item, i) => {
+              const meta = KIND_META[item.category] ?? KIND_META.DOCUMENT;
+              return (
+                <li key={`${item.category}-${item.bid_id ?? item.tender_id ?? i}`}>
+                  <Link
+                    to={item.link ?? '/app/dashboard'}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-xs transition-colors hover:border-brand-300 hover:bg-brand-50/40"
                   >
-                    {receivingId === item.bid_id ? 'Acknowledging…' : 'Acknowledge receipt'}
-                  </Button>
-                )}
-              </li>
-            ))}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-500 line-clamp-2">{item.description}</p>
+                    </div>
+                    <Badge variant="outline" className={cn('text-[11px]', meta.classes)}>
+                      {item.category_label ?? labelize(item.category)}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-[11px]',
+                        item.severity === 'HIGH' || item.severity === 'CRITICAL'
+                          ? 'bg-red-50 text-red-800 border-red-200'
+                          : 'bg-slate-100 text-slate-700 border-slate-300'
+                      )}
+                    >
+                      {labelize(item.severity)}
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

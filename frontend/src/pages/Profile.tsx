@@ -1,68 +1,21 @@
-import { Building2, Check, KeyRound, LogOut, ShieldCheck, UserCheck, X } from 'lucide-react';
+import { Check, LogOut, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { formatDate, labelize } from '../lib/utils';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
-import type { Role } from '../types';
 
-interface Capability {
-  label: string;
-  desc: string;
-  allowed: boolean;
-}
-
-function capabilitiesFor(role: Role | undefined): Capability[] {
-  const r = role;
-  const isOfficer = r === 'PROCUREMENT_OFFICER';
-  const isAdmin = r === 'ADMIN';
-  const isVerifier = r === 'VERIFIER';
-  const isAuditor = r === 'AUDITOR';
-
-  return [
-    {
-      label: 'View Tenders, Bids & Evidence',
-      desc: 'Access public and restricted procurement packages across all stages',
-      allowed: true,
-    },
-    {
-      label: 'Ingest & Process Bid Documents',
-      desc: 'Trigger OCR extraction, classification, and entity parsing pipelines',
-      allowed: isOfficer || isAdmin || isVerifier,
-    },
-    {
-      label: 'Execute Statutory Verification Adapters',
-      desc: 'Cross-reference taxpayer GSTN, PAN, MCA21, EPFO, and Debarment APIs',
-      allowed: isOfficer || isAdmin || isVerifier,
-    },
-    {
-      label: 'Evaluate Deterministic Compliance Rules',
-      desc: 'Compute requirement thresholds and weighted compliance percentages',
-      allowed: isOfficer || isAdmin || isVerifier,
-    },
-    {
-      label: 'Record Formal Officer Verdicts',
-      desc: 'Sign off on Approve, Reject, or Escalate determinations with audit hashing',
-      allowed: isOfficer || isAdmin,
-    },
-    {
-      label: 'Record Administrative Overrides',
-      desc: 'Record officer justification to override automated rule findings',
-      allowed: isOfficer || isAdmin,
-    },
-    {
-      label: 'Cryptographic Audit Trail Verification',
-      desc: 'Verify SHA-256 hash continuity and inspect tamper-evident logs',
-      allowed: true,
-    },
-    {
-      label: 'Administrative Configuration & Seeding',
-      desc: 'Configure platform parameters, user roles, and benchmark data',
-      allowed: isAdmin,
-    },
-  ];
-}
+// Single-role application: the only human user is the Procurement Officer.
+// Every capability below is officer-owned and always available.
+const CAPABILITIES = [
+  { label: 'View Tenders, Bids & Evidence', desc: 'Access procurement packages across all stages' },
+  { label: 'Ingest & Process Bid Documents', desc: 'Trigger OCR extraction, classification, and entity parsing pipelines' },
+  { label: 'Execute Statutory Verification Adapters', desc: 'Cross-reference taxpayer GSTN, PAN, MCA21, EPFO, and Debarment APIs' },
+  { label: 'Evaluate Deterministic Compliance Rules', desc: 'Compute requirement thresholds and weighted compliance percentages' },
+  { label: 'Generate Verification Summary', desc: 'Generate and regenerate the evidence-backed verification summary' },
+  { label: 'Record Formal Officer Verdicts', desc: 'Sign off on Approve, Reject, or Escalate determinations with audit hashing' },
+  { label: 'Record Administrative Overrides', desc: 'Record officer justification to override automated rule findings' },
+  { label: 'Cryptographic Audit Trail Verification', desc: 'Verify SHA-256 hash continuity and inspect tamper-evident logs' },
+];
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -72,8 +25,6 @@ export default function Profile() {
     logout();
     navigate('/login');
   };
-
-  const capabilities = capabilitiesFor(user?.role);
 
   return (
     <div className="space-y-6">
@@ -91,7 +42,7 @@ export default function Profile() {
               Officer Profile &amp; Delegations
             </h1>
             <p className="mt-0.5 text-xs text-slate-600">
-              Account credentials, statutory delegations, and role access permissions on GEVRA portal.
+              Account credentials and statutory delegations of the Procurement Officer.
             </p>
           </div>
 
@@ -122,9 +73,9 @@ export default function Profile() {
 
           <div className="space-y-3 text-xs">
             <div>
-              <span className="text-slate-500 block">Assigned Role &amp; Privilege:</span>
+              <span className="text-slate-500 block">Role:</span>
               <span className="inline-block mt-1 rounded bg-blue-50 px-2 py-0.5 font-bold text-blue-900 border border-blue-200 text-xs">
-                {labelize(user?.role)}
+                Procurement Officer
               </span>
             </div>
 
@@ -170,39 +121,28 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Role Permissions Matrix */}
+        {/* Capabilities Matrix */}
         <div className="lg:col-span-2 rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                Statutory Delegations &amp; Capabilities Matrix
-              </h3>
-              <p className="mt-0.5 text-xs text-slate-500">
-                System permissions enforced based on your assigned enterprise role.
-              </p>
-            </div>
-            <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-700 border border-slate-200">
-              Role: {user?.role || 'PROCUREMENT_OFFICER'}
-            </span>
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              Statutory Delegations &amp; Capabilities
+            </h3>
+            <p className="mt-0.5 text-xs text-slate-500">
+              As the single human user of this platform, the Procurement Officer holds the full procurement workflow end to end.
+            </p>
           </div>
 
           <div className="divide-y divide-slate-100">
-            {capabilities.map((cap) => (
+            {CAPABILITIES.map((cap) => (
               <div key={cap.label} className="py-3 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-900">{cap.label}</p>
                   <p className="text-[11px] text-slate-500 leading-snug mt-0.5">{cap.desc}</p>
                 </div>
                 <div className="shrink-0">
-                  {cap.allowed ? (
-                    <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
-                      <Check className="h-3 w-3 text-emerald-600" /> Allowed
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 border border-slate-200">
-                      <X className="h-3 w-3 text-slate-400" /> Restricted
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
+                    <Check className="h-3 w-3 text-emerald-600" /> Allowed
+                  </span>
                 </div>
               </div>
             ))}

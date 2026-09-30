@@ -122,7 +122,7 @@ def test_blacklist_custom_rule():
 
 def _seed_t4(db):
     users = _seed_users(db)
-    result = seed_gem_demo_tender(db, users["admin@demo.cpcl.in"].id)
+    result = seed_gem_demo_tender(db, users["officer@demo.cpcl.in"].id)
     assert result["skipped"] is False
     tender = db.query(Tender).filter(
         Tender.tender_number == T4_NUMBER).one()
@@ -190,7 +190,7 @@ def test_t4_bidder_c_blacklist_fail(db):
 
 def test_t4_seed_idempotent(db):
     users = _seed_users(db)
-    admin_id = users["admin@demo.cpcl.in"].id
+    admin_id = users["officer@demo.cpcl.in"].id
     first = seed_gem_demo_tender(db, admin_id)
     assert first["skipped"] is False
     second = seed_gem_demo_tender(db, admin_id)

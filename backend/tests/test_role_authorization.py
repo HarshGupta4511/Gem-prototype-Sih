@@ -1,13 +1,11 @@
-"""Role authorization matrix test.
+"""Single-role authorization test.
 
-Validates that every backend write-gate allows exactly the intended roles:
-- PROCUREMENT_OFFICER: full procurement workflow + final decisions
-- VERIFIER: procurement staff actions (upload/process/verify/evaluate/recommend)
-- AUDITOR: read-only (audit integrity check only, no procurement writes)
-- ADMIN: system administration only (seed); no procurement writes/decisions
+The application has exactly one user role: PROCUREMENT_OFFICER.
 
-Each gate is the ``require_roles(...)`` dependency used by the endpoints;
-invoking it directly exercises the exact allow/deny logic FastAPI applies.
+- Every backend gate is ``require_officer()``: the officer passes, every
+  legacy role (VERIFIER / AUDITOR / ADMIN) is rejected with 403.
+- ``get_current_user`` rejects legacy-role rows even with a valid token (403)
+  and bad tokens with 401 — authentication stays mandatory, nothing is public.
 """
 import pytest
 from fastapi import HTTPException
@@ -15,101 +13,98 @@ from fastapi import HTTPException
 import app.api.audit as audit_mod
 import app.api.bids as bids_mod
 import app.api.compliance as compliance_mod
+import app.api.consistency as consistency_mod
 import app.api.documents as documents_mod
+import app.api.integrity as integrity_mod
 import app.api.officer as officer_mod
 import app.api.recommendation as recommendation_mod
 import app.api.seed as seed_mod
 import app.api.tenders as tenders_mod
 import app.api.verification as verification_mod
-import app.api.verifier_reports as verifier_reports_mod
+import app.api.verification_summaries as summaries_mod
+from app.core.deps import get_current_user, require_officer
+from app.core.security import create_access_token
 from app.models.models import User
 
 OFFICER = "PROCUREMENT_OFFICER"
-VERIFIER = "VERIFIER"
-AUDITOR = "AUDITOR"
-ADMIN = "ADMIN"
+LEGACY_ROLES = ["VERIFIER", "AUDITOR", "ADMIN"]
 
-# gate name -> (module, attribute, allowed roles)
-GATES = {
-    "officer decision/override/clarification": (officer_mod, "_OFFICER", {OFFICER}),
-    "tender create/requirements/analyze": (tenders_mod, "_OFFICER", {OFFICER}),
-    "tender deletion": (tenders_mod, "_OFFICER", {OFFICER}),
-    "bid registration": (bids_mod, "_SUBMITTER", {OFFICER, VERIFIER}),
-    "bid deletion": (bids_mod, "_OFFICER", {OFFICER}),
-    "demo evidence seeding (bid)": (bids_mod, "_SUBMITTER", {OFFICER, VERIFIER}),
-    "document upload": (documents_mod, "_UPLOADER", {OFFICER, VERIFIER}),
-    "document classification fix": (documents_mod, "_CORRECTOR", {OFFICER, VERIFIER}),
-    "document processing": (documents_mod, "_PROCESSOR", {OFFICER, VERIFIER}),
-    "run verification": (verification_mod, "_RUNNER", {OFFICER, VERIFIER}),
-    "compliance evaluation": (compliance_mod, "_EVALUATOR", {OFFICER, VERIFIER}),
-    "recommendation generation": (recommendation_mod, "_RECOMMENDER", {OFFICER, VERIFIER}),
-    "report generate/send/observations": (verifier_reports_mod, "_VERIFIER", {VERIFIER}),
-    "report mark opened + inbox": (verifier_reports_mod, "_OFFICER", {OFFICER}),
-    "report view": (verifier_reports_mod, "_VIEWER", {OFFICER, VERIFIER, AUDITOR, ADMIN}),
-    "audit integrity verify": (audit_mod, "_VERIFIER", {AUDITOR, ADMIN, OFFICER}),
-    "demo seed": (seed_mod, "_ADMIN", {ADMIN}),
-}
+# Every module exposes a single _OFFICER gate.
+GATED_MODULES = [
+    audit_mod,
+    bids_mod,
+    compliance_mod,
+    consistency_mod,
+    documents_mod,
+    integrity_mod,
+    officer_mod,
+    recommendation_mod,
+    seed_mod,
+    tenders_mod,
+    verification_mod,
+    summaries_mod,
+]
 
 
 def _user(role: str) -> User:
     return User(name="t", email=f"{role}@test.local", password_hash="x", role=role)
 
 
-@pytest.mark.parametrize("gate_name", sorted(GATES))
-@pytest.mark.parametrize("role", [OFFICER, VERIFIER, AUDITOR, ADMIN])
-def test_role_authorization_matrix(gate_name, role):
-    module, attr, allowed = GATES[gate_name]
-    gate = getattr(module, attr)
-    user = _user(role)
-    if role in allowed:
-        assert gate(user=user) is user
-    else:
+def test_require_officer_allows_procurement_officer():
+    gate = require_officer()
+    user = _user(OFFICER)
+    assert gate(user=user) is user
+
+
+@pytest.mark.parametrize("role", LEGACY_ROLES)
+def test_require_officer_rejects_legacy_roles(role):
+    gate = require_officer()
+    with pytest.raises(HTTPException) as exc_info:
+        gate(user=_user(role))
+    assert exc_info.value.status_code == 403
+
+
+@pytest.mark.parametrize("module", GATED_MODULES)
+def test_every_module_gate_allows_officer_only(module):
+    gate = module._OFFICER
+    assert gate(user=_user(OFFICER)).role == OFFICER
+    for role in LEGACY_ROLES:
         with pytest.raises(HTTPException) as exc_info:
-            gate(user=user)
-        assert exc_info.value.status_code == 403
+            gate(user=_user(role))
+        assert exc_info.value.status_code == 403, f"{module.__name__} allowed {role}"
 
 
-def test_auditor_is_read_only_for_procurement_writes():
-    """Auditor must be denied by every procurement write gate."""
-    write_gates = [
-        (officer_mod, "_OFFICER"),
-        (tenders_mod, "_OFFICER"),
-        (bids_mod, "_SUBMITTER"),  # also gates POST /bids/{id}/seed-demo-evidence
-        (bids_mod, "_OFFICER"),  # gates DELETE /bids/{id}
-        (documents_mod, "_UPLOADER"),
-        (documents_mod, "_CORRECTOR"),
-        (documents_mod, "_PROCESSOR"),
-        (verification_mod, "_RUNNER"),
-        (compliance_mod, "_EVALUATOR"),
-        (recommendation_mod, "_RECOMMENDER"),
-        (verifier_reports_mod, "_VERIFIER"),
-        (verifier_reports_mod, "_OFFICER"),
-        (seed_mod, "_ADMIN"),
-    ]
-    user = _user(AUDITOR)
-    for module, attr in write_gates:
-        with pytest.raises(HTTPException) as exc_info:
-            getattr(module, attr)(user=user)
-        assert exc_info.value.status_code == 403, f"{module.__name__}.{attr}"
+def test_get_current_user_accepts_officer(db):
+    user = User(name="Officer", email="officer-t@example.com", password_hash="x",
+                role=OFFICER)
+    db.add(user)
+    db.commit()
+    token = create_access_token(str(user.id))
+    assert get_current_user(db=db, token=token).id == user.id
 
 
-def test_admin_has_no_procurement_write_access():
-    """Admin is system-admin only: no tender/bid/decision/verification writes."""
-    user = _user(ADMIN)
-    staff_gates = [
-        (officer_mod, "_OFFICER"),
-        (tenders_mod, "_OFFICER"),
-        (bids_mod, "_SUBMITTER"),
-        (documents_mod, "_UPLOADER"),
-        (verification_mod, "_RUNNER"),
-        (compliance_mod, "_EVALUATOR"),
-        (recommendation_mod, "_RECOMMENDER"),
-        (verifier_reports_mod, "_VERIFIER"),
-        (verifier_reports_mod, "_OFFICER"),
-    ]
-    for module, attr in staff_gates:
-        with pytest.raises(HTTPException) as exc_info:
-            getattr(module, attr)(user=user)
-        assert exc_info.value.status_code == 403, f"{module.__name__}.{attr}"
-    # ...but keeps system administration (seed)
-    assert seed_mod._ADMIN(user=user) is user
+@pytest.mark.parametrize("role", LEGACY_ROLES)
+def test_get_current_user_rejects_legacy_role_token(db, role):
+    """A valid token for a legacy-role row must not authenticate."""
+    user = User(name="Legacy", email=f"{role}-t@example.com", password_hash="x",
+                role=role)
+    db.add(user)
+    db.commit()
+    token = create_access_token(str(user.id))
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(db=db, token=token)
+    assert exc_info.value.status_code == 403
+
+
+def test_get_current_user_rejects_bad_token(db):
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(db=db, token="not-a-token")
+    assert exc_info.value.status_code == 401
+
+
+def test_no_multi_role_gate_factory_remains():
+    """The old require_roles(*roles) factory must be gone."""
+    import app.core.deps as deps_mod
+
+    assert not hasattr(deps_mod, "require_roles")
+    assert hasattr(deps_mod, "require_officer")

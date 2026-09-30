@@ -28,7 +28,6 @@ import {
   tendersApi,
   verificationApi,
 } from '../lib/api';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ui/toaster';
 import { Button } from '../components/ui/button';
 import {
@@ -136,7 +135,6 @@ const PIPELINE_STAGES = [
 ];
 
 export default function Documents() {
-  const { isAuditor } = useAuth();
   const { toast } = useToast();
 
   const [tenderId, setTenderId] = React.useState<number | null>(null);
@@ -431,7 +429,7 @@ export default function Documents() {
               </span>
               <Button
                 onClick={handleAnalyze}
-                disabled={!file || analyzing || isAuditor}
+                disabled={!file || analyzing}
                 loading={analyzing}
                 className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium py-2.5 px-5 shadow-xs"
               >

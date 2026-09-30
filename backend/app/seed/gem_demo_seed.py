@@ -229,7 +229,7 @@ def _t4_dossier(spec: dict) -> tuple:
             spec["legal_name"], sections, BANNER)
 
 
-def seed_gem_demo_tender(db, admin_id: int) -> dict:
+def seed_gem_demo_tender(db, officer_id: int) -> dict:
     """Create tender GEM-DEMO-2026-101 + 3 bidders through the full pipeline."""
     from app.models.models import Tender
     from app.seed.seed_data import _create_tender, _seed_bidder
@@ -245,13 +245,13 @@ def seed_gem_demo_tender(db, admin_id: int) -> dict:
         department="Demo Medical Services Department",
         issue=date(2026, 9, 1), closing=date(2026, 10, 31),
         value=12500000, requirements=_tender4_requirements(),
-        created_by=admin_id)
+        created_by=officer_id)
     log.info("GeM demo seed: tender %s created", T4_NUMBER)
 
     bids = []
     for spec in _BIDDERS_T4:
         bid, _processed, _rows = _seed_bidder(
-            db, tender, spec, admin_id, dossier=_t4_dossier(spec))
+            db, tender, spec, officer_id, dossier=_t4_dossier(spec))
         bids.append(bid)
     log.info("GeM demo seed: %d bidders seeded", len(bids))
     return {"tender": T4_NUMBER, "bidders": len(bids), "skipped": False}

@@ -89,7 +89,8 @@ export type Recommendation =
   | 'REVIEW_REQUIRED'
   | 'NOT_RECOMMENDED';
 
-export type Role = 'PROCUREMENT_OFFICER' | 'VERIFIER' | 'AUDITOR' | 'ADMIN';
+/** The single application role. The Procurement Officer is the only human user. */
+export type Role = 'PROCUREMENT_OFFICER';
 
 export type RequirementCategory =
   | 'STATUTORY'
@@ -563,13 +564,9 @@ export interface OverrideRequest {
   supporting_document_id?: number;
 }
 
-export type ReportStatus =
-  | 'DRAFT'
-  | 'GENERATED'
-  | 'SENT'
-  | 'RECEIVED'
-  | 'UNDER_REVIEW'
-  | 'DECISION';
+/** Verification summary lifecycle. The officer generates (and regenerates)
+ *  the summary directly — the officer generates and regenerates it. */
+export type ReportStatus = 'DRAFT' | 'GENERATED' | 'UPDATED';
 
 export interface ReportObservation {
   text: string;
@@ -682,17 +679,6 @@ export interface VerificationReportData {
       is_demo_history: boolean;
     }[];
   } | null;
-}
-
-export interface ReportInboxItem {
-  bid_id: number;
-  bidder_name: string | null;
-  tender_number: string | null;
-  tender_title: string | null;
-  sent_by: string | null;
-  sent_at: string | null;
-  is_new: boolean;
-  status: ReportStatus;
 }
 
 // ---------------------------------------------------- integrity / consistency

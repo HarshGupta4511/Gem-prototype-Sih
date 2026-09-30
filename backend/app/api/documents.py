@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     BidSubmission,
     Bidder,
@@ -29,9 +29,7 @@ from app.services import audit_service, document_service, pipeline_service
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
-_UPLOADER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
-_CORRECTOR = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
-_PROCESSOR = require_roles("VERIFIER", "PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +86,7 @@ async def upload_document(
     document_type: str | None = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    user: User = Depends(_UPLOADER),
+    user: User = Depends(_OFFICER),
 ):
     """Upload a bid document (pdf/jpg/jpeg/png, ≤ 25 MB, magic-byte checked).
 
@@ -188,7 +186,7 @@ def get_document(
 def process_document(
     document_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_PROCESSOR),
+    user: User = Depends(_OFFICER),
 ):
     """Run the full extraction/classification pipeline (§9) for a document."""
     if db.get(Document, document_id) is None:
@@ -217,7 +215,7 @@ def correct_classification(
     document_id: int,
     payload: DocumentTypeUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(_CORRECTOR),
+    user: User = Depends(_OFFICER),
 ):
     """Officer correction of a document's classification.
 

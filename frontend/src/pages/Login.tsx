@@ -61,7 +61,6 @@ export default function Login() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<FormValues>();
 
@@ -95,11 +94,6 @@ export default function Login() {
     } finally {
       setDemoBusy(false);
     }
-  };
-
-  const fillQuick = (email: string) => {
-    setValue('email', email);
-    setValue('password', 'Demo@123');
   };
 
   return (
@@ -213,7 +207,7 @@ export default function Login() {
                 <span className="text-[11px] font-mono text-slate-400">SIH-26100</span>
               </div>
               <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-900 font-serif">
-                Sign In to Portal
+                Officer Sign In
               </h2>
               <p className="mt-1 text-xs text-slate-600">
                 Authenticate with your official CPSE credentials to access the bid evaluation workspace.
@@ -297,27 +291,9 @@ export default function Login() {
                 <Building2 className="mr-2 h-4 w-4 text-blue-700" />
                 Quick Launch: Demo Procurement Officer
               </Button>
-            </div>
-
-            {/* Fast role picker chips */}
-            <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-3">
-              <p className="text-[11px] font-semibold text-slate-700">Quick Test Credentials (pw: Demo@123):</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {[
-                  { role: 'Procurement Officer', email: 'officer@demo.cpcl.in' },
-                  { role: 'Document Verifier', email: 'verifier@demo.cpcl.in' },
-                  { role: 'Auditor', email: 'auditor@demo.cpcl.in' },
-                ].map((account) => (
-                  <button
-                    key={account.email}
-                    type="button"
-                    onClick={() => fillQuick(account.email)}
-                    className="inline-flex items-center rounded border border-slate-300 bg-white px-2 py-1 text-[10.5px] font-medium text-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                  >
-                    <span>{account.role}</span>
-                  </button>
-                ))}
-              </div>
+              <p className="mt-2 text-center text-[11px] text-slate-500">
+                Demo account: officer@demo.cpcl.in
+              </p>
             </div>
           </div>
 

@@ -1,11 +1,8 @@
 """Procurement-integrity endpoints.
 
-Role rules (existing auth mechanism, no duplicate permission system):
-- Run analysis: PROCUREMENT_OFFICER, VERIFIER.
-- View findings / overview / bid signals: PROCUREMENT_OFFICER, VERIFIER, AUDITOR.
-- Officer actions (acknowledge / review / investigate / close / note):
-  PROCUREMENT_OFFICER only.
-- ADMIN has no procurement role here (system administration only).
+Single-role model: the Procurement Officer runs the analysis, views the
+findings and performs the officer actions (acknowledge / review / investigate
+/ close / note).
 
 Every signal is evidence-backed and deterministic; the officer reviews and
 decides. Nothing here makes qualification decisions.
@@ -14,15 +11,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, require_roles
+from app.core.deps import get_db, require_officer
 from app.models.models import IntegrityFinding, IntegrityStatus, User
 from app.services import integrity_service
 
 router = APIRouter(prefix="/api/integrity", tags=["integrity"])
 
-_RUNNER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
-_VIEWER = require_roles("PROCUREMENT_OFFICER", "VERIFIER", "AUDITOR")
-_OFFICER = require_roles("PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 
 class AnalyzeRequest(BaseModel):
@@ -64,7 +59,7 @@ def _finding_out(f: IntegrityFinding) -> dict:
 def analyze(
     payload: AnalyzeRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(_RUNNER),
+    user: User = Depends(_OFFICER),
 ):
     """Run deterministic integrity analysis over tender/bid/audit data."""
     return integrity_service.run_integrity_analysis(db, user_id=user.id)
@@ -73,7 +68,7 @@ def analyze(
 @router.get("/overview")
 def overview(
     db: Session = Depends(get_db),
-    user: User = Depends(_VIEWER),
+    user: User = Depends(_OFFICER),
 ):
     """Integrity overview counts for the dashboard screen."""
     return integrity_service.overview(db)
@@ -88,7 +83,7 @@ def list_findings(
     bid_id: int | None = Query(default=None),
     include_closed: bool = Query(default=False),
     db: Session = Depends(get_db),
-    user: User = Depends(_VIEWER),
+    user: User = Depends(_OFFICER),
 ):
     """List integrity findings with optional filters."""
     q = db.query(IntegrityFinding)
@@ -115,7 +110,7 @@ def list_findings(
 def get_finding(
     finding_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_VIEWER),
+    user: User = Depends(_OFFICER),
 ):
     finding = db.get(IntegrityFinding, finding_id)
     if finding is None:
@@ -147,7 +142,7 @@ def officer_action(
 def bid_signals(
     bid_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_VIEWER),
+    user: User = Depends(_OFFICER),
 ):
     """Active (non-closed) integrity signals touching a bid."""
     findings = integrity_service.active_signals_for_bid(db, bid_id)

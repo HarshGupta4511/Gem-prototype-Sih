@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     AuditLog,
     Bidder,
@@ -18,7 +18,7 @@ from app.services import audit_service
 
 router = APIRouter(prefix="/api/audit", tags=["audit"])
 
-_VERIFIER = require_roles("AUDITOR", "ADMIN", "PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 # Generic/housekeeping actions that would clutter a tender-level activity
 # history. Kept out of the consolidated tender audit view.
@@ -157,7 +157,7 @@ def audit_by_tender(
 @router.post("/verify", response_model=AuditVerifyResponse)
 def verify_audit(
     db: Session = Depends(get_db),
-    user: User = Depends(_VERIFIER),
+    user: User = Depends(_OFFICER),
 ):
     """Recompute the whole audit hash chain and report validity."""
     result = audit_service.verify_chain(db)

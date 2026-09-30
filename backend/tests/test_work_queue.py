@@ -1,7 +1,7 @@
 """Backend-driven officer work queue: six priorities from stored tables only.
 
 Covers: high-risk bidder, statutory mismatch, missing mandatory
-requirement, integrity signal, pending verifier report, pending officer
+requirement, integrity signal, pending verification summary, pending officer
 decision. Asserts the category set, priority ordering and that every item
 is derived from real stored rows (no fabricated entries).
 """
@@ -20,14 +20,14 @@ from app.models.models import (
     TenderRequirement,
     User,
 )
-from app.services import audit_service, verifier_report_service
+from app.services import audit_service, verification_summary_service
 
 _CATS = [
     "HIGH_RISK_BIDDER",
     "STATUTORY_MISMATCH",
     "MISSING_MANDATORY_REQUIREMENT",
     "INTEGRITY_SIGNAL",
-    "PENDING_VERIFIER_REPORT",
+    "PENDING_SUMMARY",
     "PENDING_OFFICER_DECISION",
 ]
 
@@ -81,17 +81,26 @@ def test_work_queue_six_priorities_from_stored_data(db):
         affected_bids=[], affected_tenders=[], evidence=[], rule_logic="r",
         recommended_action="review", status=IntegrityStatus.OPEN.value))
 
-    # 5. pending verifier report: sent, no decision
-    verifier = User(name="Verifier", email="v-q@example.com", password_hash="x",
-                    role="VERIFIER")
-    db.add(verifier)
+    # 5. pending verification summary: evaluated, no summary, no decision
+    officer = User(name="Officer", email="o-q@example.com", password_hash="x",
+                   role="PROCUREMENT_OFFICER")
+    db.add(officer)
     db.flush()
-    b5 = _make_bid(db, tender, "ReportWait Ltd", risk_level=RiskLevel.LOW.value,
+    b5 = _make_bid(db, tender, "SummaryWait Ltd", risk_level=RiskLevel.LOW.value,
                    compliance_score=75.0)
-    verifier_report_service.generate_report(db, b5.id, verifier)
-    verifier_report_service.send_report(db, b5.id, verifier)
+    db.add(ComplianceResult(bid_id=b5.id, requirement_id=req.id, status="PASS",
+                            weight=10.0, weighted_contribution=10.0,
+                            explanation="ok", rule_applied="r", source="test"))
 
-    # 6. pending officer decision: evaluated, no decision, no report
+    # 5b. evaluated AND summarized: must not appear under PENDING_SUMMARY
+    b5b = _make_bid(db, tender, "Summarized Ltd", risk_level=RiskLevel.LOW.value,
+                    compliance_score=76.0)
+    db.add(ComplianceResult(bid_id=b5b.id, requirement_id=req.id, status="PASS",
+                            weight=10.0, weighted_contribution=10.0,
+                            explanation="ok", rule_applied="r", source="test"))
+    verification_summary_service.generate_summary(db, b5b.id, officer)
+
+    # 6. pending officer decision: not evaluated, no decision
     b6 = _make_bid(db, tender, "DecideMe Ltd", risk_level=RiskLevel.LOW.value,
                    compliance_score=88.0)
 
@@ -123,9 +132,12 @@ def test_work_queue_six_priorities_from_stored_data(db):
     assert sig["link"] == "/app/integrity"
     assert sig["bid_id"] is None
 
-    # Pending report links to the report page.
-    rep = next(i for i in queue if i["category"] == "PENDING_VERIFIER_REPORT")
-    assert rep["link"] == f"/app/bids/{b5.id}/report"
+    # Pending summary links to the summary page.
+    pend = [i for i in queue if i["category"] == "PENDING_SUMMARY"]
+    rep = next(i for i in pend if i["link"] == f"/app/bids/{b5.id}/summary")
+    assert rep["bid_id"] == b5.id
+    assert "Summarized Ltd" not in " ".join(
+        i["title"] for i in queue if i["category"] == "PENDING_SUMMARY")
 
 
 def test_work_queue_empty_db_has_no_categories(db):

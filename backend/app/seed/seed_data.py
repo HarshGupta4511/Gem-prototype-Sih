@@ -436,24 +436,33 @@ def _seed_users(db) -> dict:
     from app.core.security import get_password_hash
     from app.models.models import User
 
-    specs = [
-        ("Demo Officer", "officer@demo.cpcl.in", "PROCUREMENT_OFFICER", "Procurement"),
-        ("Demo Verifier", "verifier@demo.cpcl.in", "VERIFIER", "Verification"),
-        ("Demo Auditor", "auditor@demo.cpcl.in", "AUDITOR", "Audit"),
-        ("Demo Admin", "admin@demo.cpcl.in", "ADMIN", "IT"),
-    ]
-    users = {}
-    for name, email, role, dept in specs:
-        user = db.query(User).filter(User.email == email).one_or_none()
-        if user is None:
-            user = User(name=name, email=email,
-                        password_hash=get_password_hash(DEMO_PASSWORD),
-                        role=role, department=dept)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        users[email] = user
-    return users
+    # Single-role model: the Demo Officer is the only demo account. Any legacy
+    # demo users (verifier/auditor/admin) left over from earlier versions are
+    # removed so they can never authenticate.
+    for legacy_email in (
+        "verifier@demo.cpcl.in",
+        "auditor@demo.cpcl.in",
+        "admin@demo.cpcl.in",
+    ):
+        legacy = db.query(User).filter(User.email == legacy_email).one_or_none()
+        if legacy is not None:
+            db.delete(legacy)
+    db.commit()
+
+    email = "officer@demo.cpcl.in"
+    user = db.query(User).filter(User.email == email).one_or_none()
+    if user is None:
+        user = User(name="Demo Officer", email=email,
+                    password_hash=get_password_hash(DEMO_PASSWORD),
+                    role="PROCUREMENT_OFFICER", department="Procurement")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    elif user.role != "PROCUREMENT_OFFICER":
+        user.role = "PROCUREMENT_OFFICER"
+        db.commit()
+        db.refresh(user)
+    return {email: user}
 
 
 def _seed_knowledge(db) -> int:
@@ -589,7 +598,7 @@ def _create_tender(db, *, number, title, department, issue, closing,
     return tender
 
 
-def _process_bidder_documents(db, bid, specs, admin_id, dossier=None) -> tuple[int, list]:
+def _process_bidder_documents(db, bid, specs, officer_id, dossier=None) -> tuple[int, list]:
     """Generate PDFs, insert Document rows and run the real pipeline.
 
     ``dossier`` optionally overrides the dossier tuple built from ``specs``
@@ -624,14 +633,14 @@ def _process_bidder_documents(db, bid, specs, admin_id, dossier=None) -> tuple[i
         bid_id=bid.id, document_type="UNCLASSIFIED", filename=filename,
         file_path=str(path), file_hash=hashlib.sha256(pdf).hexdigest(),
         file_size=len(pdf), mime_type="application/pdf",
-        uploaded_by=admin_id, processing_status="UPLOADED",
+        uploaded_by=officer_id, processing_status="UPLOADED",
     )
     db.add(row)
     db.commit()
     db.refresh(row)
     rows.append(row)
     try:
-        result = process_document(db, row.id, user_id=admin_id)
+        result = process_document(db, row.id, user_id=officer_id)
         if result.get("status") == "PROCESSED":
             processed += 1
     except Exception as exc:  # noqa: BLE001 - one bad doc must not kill the seed
@@ -643,7 +652,7 @@ def _process_bidder_documents(db, bid, specs, admin_id, dossier=None) -> tuple[i
     return processed, rows
 
 
-def _seed_bidder(db, tender, specs, admin_id, dossier=None) -> tuple:
+def _seed_bidder(db, tender, specs, officer_id, dossier=None) -> tuple:
     """Create bidder + bid, generate docs, run the full pipeline per bid."""
     from app.models.models import Bidder, BidSubmission
     from app.services.compliance_service import evaluate_bid
@@ -667,12 +676,12 @@ def _seed_bidder(db, tender, specs, admin_id, dossier=None) -> tuple:
     db.commit()
     db.refresh(bid)
 
-    processed, rows = _process_bidder_documents(db, bid, specs, admin_id,
+    processed, rows = _process_bidder_documents(db, bid, specs, officer_id,
                                                     dossier=dossier)
 
-    run_verification(db, bid.id, user_id=admin_id)
-    evaluate_bid(db, bid.id, user_id=admin_id)
-    generate_recommendation(db, bid.id, user_id=admin_id)
+    run_verification(db, bid.id, user_id=officer_id)
+    evaluate_bid(db, bid.id, user_id=officer_id)
+    generate_recommendation(db, bid.id, user_id=officer_id)
     log.info("Seed: bid %s pipeline complete", bid.id)
     return bid, processed, rows
 
@@ -734,7 +743,7 @@ def run_seed(db=None) -> dict:
         db = SessionLocal()
     try:
         users = _seed_users(db)
-        admin_id = users["admin@demo.cpcl.in"].id
+        officer_id = users["officer@demo.cpcl.in"].id
 
         result: dict = {"skipped": False}
         if db.query(Tender).filter(
@@ -746,13 +755,13 @@ def run_seed(db=None) -> dict:
                 db, number=TENDER1, title="Procurement of Industrial Pump Systems",
                 department="Materials Department", issue=date(2026, 8, 1),
                 closing=date(2026, 9, 30), value=45000000,
-                requirements=_tender1_requirements(), created_by=admin_id)
+                requirements=_tender1_requirements(), created_by=officer_id)
 
             total_docs = 0
             bid_count = 0
             fusion_bid = None
             for spec in _BIDDERS_T1:
-                bid, processed, _rows = _seed_bidder(db, tender1, spec, admin_id)
+                bid, processed, _rows = _seed_bidder(db, tender1, spec, officer_id)
                 total_docs += processed
                 bid_count += 1
                 if spec["slug"] == "fusion":
@@ -763,16 +772,16 @@ def run_seed(db=None) -> dict:
                 # stored compliance/risk results reflect the downgrade.
                 from app.services.compliance_service import evaluate_bid
                 from app.services.recommendation_service import generate_recommendation
-                evaluate_bid(db, fusion_bid.id, user_id=admin_id)
-                generate_recommendation(db, fusion_bid.id, user_id=admin_id)
+                evaluate_bid(db, fusion_bid.id, user_id=officer_id)
+                generate_recommendation(db, fusion_bid.id, user_id=officer_id)
 
             tender2 = _create_tender(
                 db, number="CPCL-DEMO-2026-002",
                 title="AMC for Refinery Instrumentation",
                 department="Maintenance Department", issue=date(2026, 8, 15),
                 closing=date(2026, 10, 15), value=8000000,
-                requirements=_tender2_requirements(), created_by=admin_id)
-            _bid, processed, _rows = _seed_bidder(db, tender2, _BIDDER_T2, admin_id)
+                requirements=_tender2_requirements(), created_by=officer_id)
+            _bid, processed, _rows = _seed_bidder(db, tender2, _BIDDER_T2, officer_id)
             total_docs += processed
             bid_count += 1
 
@@ -781,8 +790,8 @@ def run_seed(db=None) -> dict:
                 title="Supply of Safety Helmets (MSE)",
                 department="Safety Department", issue=date(2026, 9, 1),
                 closing=date(2026, 10, 31), value=2500000,
-                requirements=_tender3_requirements(), created_by=admin_id)
-            _bid, processed, _rows = _seed_bidder(db, tender3, _BIDDER_T3, admin_id)
+                requirements=_tender3_requirements(), created_by=officer_id)
+            _bid, processed, _rows = _seed_bidder(db, tender3, _BIDDER_T3, officer_id)
             total_docs += processed
             bid_count += 1
 
@@ -793,10 +802,10 @@ def run_seed(db=None) -> dict:
             result["skipped"] = True
 
         # GeM-style synthetic demo dataset — seeds independently of T1..T3.
-        result["gem_demo"] = seed_gem_demo_tender(db, admin_id)
+        result["gem_demo"] = seed_gem_demo_tender(db, officer_id)
         # Clearly-labelled synthetic history for the integrity demo.
         from app.seed.demo_history_seed import seed_demo_history
-        result["demo_history"] = seed_demo_history(db, admin_id)
+        result["demo_history"] = seed_demo_history(db, officer_id)
         log.info("Seed complete: %s", result)
         return result
     finally:

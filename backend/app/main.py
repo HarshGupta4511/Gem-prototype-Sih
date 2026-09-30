@@ -19,7 +19,7 @@ from app.api import (
     seed,
     tenders,
     verification,
-    verifier_reports,
+    verification_summaries,
 )
 from app.core.config import is_dev_secret, settings
 from app.database.base import Base
@@ -212,7 +212,7 @@ for router in (
     audit.router,
     dashboard.router,
     seed.router,
-    verifier_reports.router,
+    verification_summaries.router,
     integrity.router,
     consistency.router,
 ):

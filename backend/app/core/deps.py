@@ -1,4 +1,4 @@
-"""Shared FastAPI dependencies: DB session, current user, role gating."""
+"""Shared FastAPI dependencies: DB session, current user, officer gating."""
 from collections.abc import Generator
 from typing import Callable
 
@@ -45,17 +45,29 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None:
         raise credentials_exc
+    # Single-role model: only PROCUREMENT_OFFICER is a valid application role.
+    # A valid token for a legacy-role row (VERIFIER/AUDITOR/ADMIN) is rejected
+    # here so it can never reach any endpoint.
+    if user.role != "PROCUREMENT_OFFICER":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account's role is no longer supported",
+        )
     return user
 
 
-def require_roles(*roles: str) -> Callable[[User], User]:
-    """Dependency factory: 403 unless the current user's role is allowed."""
-    def _role_dependency(user: User = Depends(get_current_user)) -> User:
-        if user.role not in roles:
+def require_officer() -> Callable[[User], User]:
+    """Dependency: 403 unless the current user is the Procurement Officer.
+
+    Authentication stays mandatory (via ``get_current_user``); authorization
+    is the single valid role. There are no other application roles.
+    """
+    def _officer_dependency(user: User = Depends(get_current_user)) -> User:
+        if user.role != "PROCUREMENT_OFFICER":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions for this action",
             )
         return user
 
-    return _role_dependency
+    return _officer_dependency

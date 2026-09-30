@@ -33,10 +33,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { dashboardApi, tendersApi, auditApi, reportsApi } from '../lib/api';
+import { dashboardApi, tendersApi, auditApi } from '../lib/api';
 import { Button } from '../components/ui/button';
-import { useToast } from '../components/ui/toaster';
-import { useAuth } from '../context/AuthContext';
+import { useMemo } from 'react';
 import { formatDateTime, labelize } from '../lib/utils';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
 
@@ -59,44 +58,15 @@ const VERIF_SOURCES = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { isOfficer } = useAuth();
-  const notifiedRef = React.useRef(false);
 
   // Filter states
   const [selectedTenderForBids, setSelectedTenderForBids] = React.useState<string>('ALL');
   const [attentionFilter, setAttentionFilter] = React.useState<string>('ALL');
   const [attentionModalOpen, setAttentionModalOpen] = React.useState(false);
 
-  // Officer inbox notifications
-  const { data: inboxItems } = useQuery({
-    queryKey: ['reports-inbox'],
-    queryFn: reportsApi.inbox,
-    enabled: isOfficer,
-    staleTime: 30_000,
-    refetchInterval: 60_000,
-  });
-
-  React.useEffect(() => {
-    if (!isOfficer || notifiedRef.current || !inboxItems) return;
-    const fresh = inboxItems.filter((i) => i.is_new);
-    if (fresh.length === 0) return;
-    notifiedRef.current = true;
-    const first = fresh[0];
-    toast({
-      title: 'New Verification Report Received',
-      description:
-        fresh.length === 1
-          ? `A verification report for ${first.bidder_name ?? 'a bidder'} has been submitted for your review.`
-          : `${fresh.length} verification reports have been submitted for your review.`,
-      variant: 'default',
-      durationMs: 15000,
-      actions: [
-        { label: 'View Report', onClick: () => navigate('/app/inbox') },
-        { label: 'Later', onClick: () => {} },
-      ],
-    });
-  }, [isOfficer, inboxItems, toast, navigate]);
+  // Officer notifications are derived from the backend work queue
+  // (rendered in the "Needs attention" section below). There is no
+  // report-inbox notification flow anymore.
 
   // Queries
   const { data, isLoading, isError, isFetching: metricsFetching, refetch: refetchMetrics } = useQuery({
@@ -134,7 +104,7 @@ export default function Dashboard() {
     STATUTORY_MISMATCH: 'HIGH_RISK',
     MISSING_MANDATORY_REQUIREMENT: 'PENDING',
     INTEGRITY_SIGNAL: 'INTEGRITY',
-    PENDING_VERIFIER_REPORT: 'PENDING',
+    PENDING_SUMMARY: 'PENDING',
     PENDING_OFFICER_DECISION: 'PENDING',
   };
   const QUEUE_LINK_TEXT: Record<string, string> = {
@@ -142,7 +112,7 @@ export default function Dashboard() {
     STATUTORY_MISMATCH: 'Review Mismatches',
     MISSING_MANDATORY_REQUIREMENT: 'Review Compliance',
     INTEGRITY_SIGNAL: 'Review Integrity Signals',
-    PENDING_VERIFIER_REPORT: 'Open Report',
+    PENDING_SUMMARY: 'Open Summary',
     PENDING_OFFICER_DECISION: 'Record Decision',
   };
   const QUEUE_CATEGORIES = [
@@ -150,7 +120,7 @@ export default function Dashboard() {
     { value: 'STATUTORY_MISMATCH', label: 'Statutory mismatch' },
     { value: 'MISSING_MANDATORY_REQUIREMENT', label: 'Missing mandatory requirement' },
     { value: 'INTEGRITY_SIGNAL', label: 'Integrity signal' },
-    { value: 'PENDING_VERIFIER_REPORT', label: 'Pending verifier report' },
+    { value: 'PENDING_SUMMARY', label: 'Verification summary not generated' },
     { value: 'PENDING_OFFICER_DECISION', label: 'Pending officer decision' },
   ];
   const queueSeverity = (s: string) =>
@@ -366,9 +336,8 @@ export default function Dashboard() {
               <FileCheck2 className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
               Test Document
             </Button>
-            {/* Create Tender option: Visible ONLY to Procurement Officer */}
-            {isOfficer && (
-              <Button
+            {/* Create Tender — officer action (single-role app: always available) */}
+            <Button
                 size="sm"
                 onClick={() => navigate('/app/tenders/create')}
                 className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium shadow-xs"
@@ -376,7 +345,6 @@ export default function Dashboard() {
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 Create Tender
               </Button>
-            )}
           </div>
         </div>
       </div>
@@ -857,7 +825,7 @@ export default function Dashboard() {
               <SystemLayerTag layer="HUMAN_DECISION" size="sm" />
             </div>
             <p className="mt-0.5 text-[11px] text-slate-500">
-              Tamper-evident SHA-256 hash-chain recorded actions by Procurement Officers &amp; Verifiers
+              Tamper-evident SHA-256 hash-chain recorded by the Procurement Officer
             </p>
           </div>
           <Link

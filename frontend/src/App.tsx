@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/ui/toaster';
 import { AppLayout, ProtectedRoute } from './components/layout/AppLayout';
-import type { Role } from './types';
 import Login from './pages/Login';
 
 // Lazily-loaded feature pages (built by page tracks)
@@ -41,18 +40,8 @@ function PageFallback() {
   );
 }
 
-// Role sets for route guards (mirrors the navigation in AppLayout).
-// STAFF_ROLES: procurement workflow pages. ADMIN is intentionally excluded —
-// system administration stays separate from procurement decision authority.
-const STAFF_ROLES: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR'];
-const AUDIT_ROLES: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR', 'ADMIN'];
-const OFFICER_ROLES: Role[] = ['PROCUREMENT_OFFICER'];
-const ALL_ROLES: Role[] = ['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR', 'ADMIN'];
-
-function Guard({ roles, children }: { roles: Role[]; children: React.ReactElement }) {
-  return <ProtectedRoute roles={roles}>{children}</ProtectedRoute>;
-}
-
+// Single-role application: the only human user is the Procurement Officer.
+// The /app ProtectedRoute enforces authentication; no per-role route guards.
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -72,20 +61,20 @@ export default function App() {
                   }
                 >
                   <Route index element={<Navigate to="/app/dashboard" replace />} />
-                  <Route path="dashboard" element={<Guard roles={ALL_ROLES}><Dashboard /></Guard>} />
-                  <Route path="tenders" element={<Guard roles={STAFF_ROLES}><Tenders /></Guard>} />
-                  <Route path="tenders/create" element={<Guard roles={OFFICER_ROLES}><CreateTender /></Guard>} />
-                  <Route path="tenders/new" element={<Guard roles={OFFICER_ROLES}><CreateTender /></Guard>} />
-                  <Route path="tenders/:id" element={<Guard roles={STAFF_ROLES}><TenderDetail /></Guard>} />
-                  <Route path="bids/:id" element={<Guard roles={STAFF_ROLES}><BidDetail /></Guard>} />
-                  <Route path="bids/:bidId/report" element={<Guard roles={['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR']}><VerificationReport /></Guard>} />
-                  <Route path="inbox" element={<Guard roles={OFFICER_ROLES}><Inbox /></Guard>} />
-                  <Route path="integrity" element={<Guard roles={STAFF_ROLES}><Integrity /></Guard>} />
-                  <Route path="documents" element={<Guard roles={STAFF_ROLES}><Documents /></Guard>} />
-                  <Route path="documents/:id" element={<Guard roles={STAFF_ROLES}><DocumentViewer /></Guard>} />
-                  <Route path="audit" element={<Guard roles={AUDIT_ROLES}><Audit /></Guard>} />
-                  <Route path="settings" element={<Guard roles={['ADMIN']}><Settings /></Guard>} />
-                  <Route path="profile" element={<Guard roles={ALL_ROLES}><Profile /></Guard>} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="tenders" element={<Tenders />} />
+                  <Route path="tenders/create" element={<CreateTender />} />
+                  <Route path="tenders/new" element={<CreateTender />} />
+                  <Route path="tenders/:id" element={<TenderDetail />} />
+                  <Route path="bids/:id" element={<BidDetail />} />
+                  <Route path="bids/:bidId/report" element={<VerificationReport />} />
+                  <Route path="inbox" element={<Inbox />} />
+                  <Route path="integrity" element={<Integrity />} />
+                  <Route path="documents" element={<Documents />} />
+                  <Route path="documents/:id" element={<DocumentViewer />} />
+                  <Route path="audit" element={<Audit />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="profile" element={<Profile />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

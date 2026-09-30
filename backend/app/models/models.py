@@ -26,10 +26,15 @@ def _utcnow() -> datetime:
 
 
 class UserRole(str, enum.Enum):
+    """Single-role model: the Procurement Officer is the only human user.
+
+    Legacy roles (VERIFIER / AUDITOR / ADMIN) were removed in the single-role
+    conversion. ``User.role`` is a plain String column, so no schema migration
+    was required; any row still carrying a legacy role is rejected at
+    authentication time by ``get_current_user``.
+    """
+
     PROCUREMENT_OFFICER = "PROCUREMENT_OFFICER"
-    VERIFIER = "VERIFIER"
-    AUDITOR = "AUDITOR"
-    ADMIN = "ADMIN"
 
 
 class TenderStatus(str, enum.Enum):

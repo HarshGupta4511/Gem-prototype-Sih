@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     BidStatus,
     BidSubmission,
@@ -37,7 +37,7 @@ from app.services import audit_service, tender_intel_service
 
 router = APIRouter(prefix="/api/tenders", tags=["tenders"])
 
-_OFFICER = require_roles("PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 
 def _apply_requirement_inference(req) -> dict:

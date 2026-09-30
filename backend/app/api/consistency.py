@@ -1,27 +1,25 @@
 """Cross-document consistency endpoints.
 
-- Run checks: PROCUREMENT_OFFICER, VERIFIER.
-- View results: PROCUREMENT_OFFICER, VERIFIER, AUDITOR.
-- ADMIN has no procurement role here.
+Single-role model: the Procurement Officer runs the checks and reviews the
+results directly.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, require_roles
+from app.core.deps import get_db, require_officer
 from app.models.models import User
 from app.services import consistency_service
 
 router = APIRouter(prefix="/api/consistency", tags=["consistency"])
 
-_RUNNER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
-_VIEWER = require_roles("PROCUREMENT_OFFICER", "VERIFIER", "AUDITOR")
+_OFFICER = require_officer()
 
 
 @router.post("/bids/{bid_id}/run")
 def run_checks(
     bid_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_RUNNER),
+    user: User = Depends(_OFFICER),
 ):
     """Run cross-document consistency checks for a bid (replaces prior runs)."""
     try:
@@ -34,7 +32,7 @@ def run_checks(
 def get_checks(
     bid_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(_VIEWER),
+    user: User = Depends(_OFFICER),
 ):
     """Stored cross-document consistency checks for a bid."""
     try:

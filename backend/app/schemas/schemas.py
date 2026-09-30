@@ -625,7 +625,7 @@ class DashboardOut(BaseModel):
     integrity_notices: list[dict] = Field(default_factory=list)
     # Six-priority backend-driven officer work queue (high-risk bidder,
     # statutory mismatch, missing mandatory requirement, integrity signal,
-    # pending verifier report, pending officer decision). Derived from
+    # pending verification summary, pending officer decision). Derived from
     # stored tables only.
     work_queue: list[dict] = Field(default_factory=list)
 

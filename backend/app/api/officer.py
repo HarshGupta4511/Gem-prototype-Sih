@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_db, require_roles
+from app.core.deps import get_current_user, get_db, require_officer
 from app.models.models import (
     BidSubmission,
     Clarification,
@@ -28,7 +28,7 @@ from app.services import audit_service
 
 router = APIRouter(prefix="/api/officer", tags=["officer"])
 
-_OFFICER = require_roles("PROCUREMENT_OFFICER")
+_OFFICER = require_officer()
 
 DECISION_TO_STATUS = {
     "APPROVE": "APPROVED",
