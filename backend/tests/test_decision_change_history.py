@@ -61,6 +61,7 @@ def test_decision_change_preserves_audit_history(db):
             bid_id=bid.id,
             decision=OfficerDecision.REJECT,
             reason="Required clarification was not provided",
+            confirm_change=True,
         ),
         db=db,
         user=user,
@@ -69,7 +70,7 @@ def test_decision_change_preserves_audit_history(db):
     events = (
         db.query(AuditLog)
         .filter(
-            AuditLog.action == "OFFICER_DECISION",
+            AuditLog.action.in_(("OFFICER_DECISION", "OFFICER_DECISION_CHANGED")),
             AuditLog.entity_type == "bid_submission",
             AuditLog.entity_id == str(bid.id),
         )
@@ -77,6 +78,8 @@ def test_decision_change_preserves_audit_history(db):
         .all()
     )
     assert len(events) == 2, f"expected 2 decision events, got {len(events)}"
+    assert events[0].action == "OFFICER_DECISION"
+    assert events[1].action == "OFFICER_DECISION_CHANGED"
     first, second = (e.meta or {} for e in events)
     assert first["decision"] == "APPROVE"
     assert first["previous_decision"] is None

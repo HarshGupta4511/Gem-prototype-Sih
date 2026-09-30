@@ -75,6 +75,7 @@ ALLOWED_KEYS = {
     "pan",
     "gstin",
     "startup_certificate_number",
+    "debarment_declaration",
     "confidence",
     "provider",
 }
@@ -137,6 +138,7 @@ class MockLLMProvider(LLMProvider):
         ("PAN", "pan", "str"),
         ("GSTIN", "gstin", "str"),
         ("Certificate Number", "startup_certificate_number", "str"),
+        ("Debarment Declaration", "debarment_declaration", "str"),
     )
 
     def extract_fields(self, document_type: str, text: str, filename: str) -> dict:

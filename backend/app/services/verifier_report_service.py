@@ -6,10 +6,12 @@ database schema changes:
 - The report CONTENT is derived live from existing tables (documents,
   extracted fields, verification checks, compliance results, risk assessment,
   the stored AI recommendation). Nothing is duplicated or invented.
-- The report LIFECYCLE (DRAFT -> GENERATED -> SENT_TO_OFFICER -> UNDER_REVIEW
-  -> DECISION_MADE) is derived from the existing hash-chained audit log using
-  VERIFIER_OBSERVATION_ADDED / VERIFICATION_REPORT_* events. The audit system
-  itself is untouched.
+- The report LIFECYCLE (DRAFT -> GENERATED -> SENT -> RECEIVED -> UNDER_REVIEW
+  -> DECISION) is derived from the existing hash-chained audit log using
+  VERIFIER_OBSERVATION_ADDED / VERIFICATION_REPORT_* / OFFICER_DECISION*
+  events. The audit system itself is untouched. RECEIVED is the officer's
+  explicit acknowledgement of receipt; histories that predate it jump
+  SENT -> UNDER_REVIEW directly (backward compatible).
 
 Product principle: the Verifier reviews evidence and reports; the System
 calculates compliance/risk; AI explains/summarizes; the Procurement Officer
@@ -43,25 +45,33 @@ REPORT_ENTITY = "bid_submission"
 OBSERVATION_ADDED = "VERIFIER_OBSERVATION_ADDED"
 REPORT_GENERATED = "VERIFICATION_REPORT_GENERATED"
 REPORT_SENT = "VERIFICATION_REPORT_SENT"
+REPORT_RECEIVED = "VERIFICATION_REPORT_RECEIVED"
 REPORT_OPENED = "VERIFICATION_REPORT_OPENED"
 OFFICER_DECISION = "OFFICER_DECISION"
+OFFICER_DECISION_CHANGED = "OFFICER_DECISION_CHANGED"
 
 # Stage rank for status derivation: the furthest stage ever reached wins, so a
 # later observation never regresses a GENERATED/SENT report back to DRAFT.
+# OFFICER_DECISION_CHANGED shares the DECISION rank (a changed decision is
+# still a decision).
 _STAGE_RANK = {
     OBSERVATION_ADDED: 0,
     REPORT_GENERATED: 1,
     REPORT_SENT: 2,
-    REPORT_OPENED: 3,
-    OFFICER_DECISION: 4,
+    REPORT_RECEIVED: 3,
+    REPORT_OPENED: 4,
+    OFFICER_DECISION: 5,
+    OFFICER_DECISION_CHANGED: 5,
 }
 
 _LIFECYCLE_STATUS = {
     OBSERVATION_ADDED: "DRAFT",
     REPORT_GENERATED: "GENERATED",
-    REPORT_SENT: "SENT_TO_OFFICER",
+    REPORT_SENT: "SENT",
+    REPORT_RECEIVED: "RECEIVED",
     REPORT_OPENED: "UNDER_REVIEW",
-    OFFICER_DECISION: "DECISION_MADE",
+    OFFICER_DECISION: "DECISION",
+    OFFICER_DECISION_CHANGED: "DECISION",
 }
 
 # Cap the extracted-field list so one report stays readable; the total is shown.
@@ -108,6 +118,61 @@ def _actor_name(db: Session, user_id: int | None) -> str | None:
         return None
     user = db.get(User, user_id)
     return user.name if user is not None else None
+
+
+def _consistency_section(db: Session, bid_id: int) -> dict | None:
+    """Mismatch-only cross-document consistency summary (read-only)."""
+    from app.services import consistency_service
+
+    try:
+        data = consistency_service.get_consistency(db, bid_id)
+    except ValueError:
+        return None
+    if not data["checks"]:
+        return None
+    return {
+        "checks_run": len(data["checks"]),
+        "mismatches": data["mismatches"],
+        "evaluated_at": data["evaluated_at"],
+        "items": [
+            {
+                "check": c["check_label"],
+                "field": c["field_name"],
+                "document_1": (c["doc1"] or {}).get("name"),
+                "value_1": c["value1"],
+                "document_2": (c["doc2"] or {}).get("name"),
+                "value_2": c["value2"],
+                "result": c["result"],
+                "reason": c["reason"],
+                "severity": c["severity"],
+            }
+            for c in data["checks"]
+            if c["result"] == "MISMATCH"
+        ],
+    }
+
+
+def _integrity_section(db: Session, bid_id: int) -> dict | None:
+    """Active integrity signals touching this bid (read-only)."""
+    from app.services import integrity_service
+
+    findings = integrity_service.active_signals_for_bid(db, bid_id)
+    if not findings:
+        return None
+    return {
+        "active_signals": len(findings),
+        "items": [
+            {
+                "id": f.id,
+                "signal_type": f.signal_type,
+                "severity": f.severity,
+                "title": f.title,
+                "status": f.status,
+                "is_demo_history": bool(f.is_demo_history),
+            }
+            for f in findings
+        ],
+    }
 
 
 def report_lifecycle(db: Session, bid_id: int) -> dict:
@@ -299,6 +364,10 @@ def build_report(db: Session, bid_id: int) -> dict:
             if bid.officer_decision
             else None
         ),
+        # Cross-document consistency + integrity: read-only summaries of the
+        # deterministic engines. Never generated here.
+        "consistency": _consistency_section(db, bid_id),
+        "integrity": _integrity_section(db, bid_id),
     }
     return report
 
@@ -376,7 +445,7 @@ def send_report(db: Session, bid_id: int, user: User) -> dict:
     """Verifier hands the report to the Procurement Officer for decision."""
     bid = _get_bid(db, bid_id)
     current = report_lifecycle(db, bid_id)["status"]
-    if current == "SENT_TO_OFFICER":
+    if current == "SENT":
         return build_report(db, bid_id)
     if current != "GENERATED":
         from fastapi import HTTPException, status
@@ -402,12 +471,43 @@ def send_report(db: Session, bid_id: int, user: User) -> dict:
     return build_report(db, bid_id)
 
 
-def mark_opened(db: Session, bid_id: int, user: User) -> dict:
-    """Record that the Procurement Officer opened the report (RECEIVED ->
-    UNDER_REVIEW). Idempotent."""
+def receive_report(db: Session, bid_id: int, user: User) -> dict:
+    """Procurement Officer acknowledges receipt of the report (SENT -> RECEIVED).
+
+    Idempotent. Histories that predate RECEIVED skip the stage: opening the
+    report from SENT still moves it straight to UNDER_REVIEW.
+    """
+    from fastapi import HTTPException, status
+
     bid = _get_bid(db, bid_id)
     current = report_lifecycle(db, bid_id)["status"]
-    if current == "SENT_TO_OFFICER":
+    if current == "RECEIVED":
+        return report_lifecycle(db, bid_id)
+    if current != "SENT":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Report is {current}; only a SENT report can be marked received.",
+        )
+    audit_service.append_audit(
+        db,
+        user_id=user.id,
+        action=REPORT_RECEIVED,
+        entity_type=REPORT_ENTITY,
+        entity_id=str(bid.id),
+        metadata={"received_by": user.id, "received_by_name": user.name},
+    )
+    return report_lifecycle(db, bid_id)
+
+
+def mark_opened(db: Session, bid_id: int, user: User) -> dict:
+    """Record that the Procurement Officer opened the report for review.
+
+    Moves RECEIVED -> UNDER_REVIEW; also accepts SENT directly so histories
+    that predate the RECEIVED stage keep working. Idempotent.
+    """
+    bid = _get_bid(db, bid_id)
+    current = report_lifecycle(db, bid_id)["status"]
+    if current in ("SENT", "RECEIVED"):
         audit_service.append_audit(
             db,
             user_id=user.id,
@@ -457,13 +557,24 @@ def inbox(db: Session) -> list[dict]:
             )
             .first()
         )
+        # Acknowledging receipt also clears the "new" flag.
+        received = (
+            db.query(AuditLog)
+            .filter(
+                AuditLog.entity_type == REPORT_ENTITY,
+                AuditLog.entity_id == str(bid_id),
+                AuditLog.action == REPORT_RECEIVED,
+                AuditLog.id > e.id,
+            )
+            .first()
+        )
         # A later decision also clears the "new" flag.
         decided = (
             db.query(AuditLog)
             .filter(
                 AuditLog.entity_type == REPORT_ENTITY,
                 AuditLog.entity_id == str(bid_id),
-                AuditLog.action == OFFICER_DECISION,
+                AuditLog.action.in_((OFFICER_DECISION, OFFICER_DECISION_CHANGED)),
                 AuditLog.id > e.id,
             )
             .first()
@@ -477,7 +588,7 @@ def inbox(db: Session) -> list[dict]:
                 "tender_title": tender.title if tender else None,
                 "sent_by": meta.get("sender_name") or _actor_name(db, e.user_id),
                 "sent_at": _iso(e.timestamp),
-                "is_new": opened is None and decided is None,
+                "is_new": opened is None and received is None and decided is None,
                 "status": report_lifecycle(db, bid_id)["status"],
             }
         )
