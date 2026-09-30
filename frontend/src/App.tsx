@@ -17,6 +17,7 @@ const TenderDetail = React.lazy(() => import('./pages/TenderDetail'));
 const BidDetail = React.lazy(() => import('./pages/BidDetail'));
 const Documents = React.lazy(() => import('./pages/Documents'));
 const DocumentViewer = React.lazy(() => import('./pages/DocumentViewer'));
+const Integrity = React.lazy(() => import('./pages/Integrity'));
 const Audit = React.lazy(() => import('./pages/Audit'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const Profile = React.lazy(() => import('./pages/Profile'));
@@ -79,6 +80,7 @@ export default function App() {
                   <Route path="bids/:id" element={<Guard roles={STAFF_ROLES}><BidDetail /></Guard>} />
                   <Route path="bids/:bidId/report" element={<Guard roles={['PROCUREMENT_OFFICER', 'VERIFIER', 'AUDITOR']}><VerificationReport /></Guard>} />
                   <Route path="inbox" element={<Guard roles={OFFICER_ROLES}><Inbox /></Guard>} />
+                  <Route path="integrity" element={<Guard roles={STAFF_ROLES}><Integrity /></Guard>} />
                   <Route path="documents" element={<Guard roles={STAFF_ROLES}><Documents /></Guard>} />
                   <Route path="documents/:id" element={<Guard roles={STAFF_ROLES}><DocumentViewer /></Guard>} />
                   <Route path="audit" element={<Guard roles={AUDIT_ROLES}><Audit /></Guard>} />
