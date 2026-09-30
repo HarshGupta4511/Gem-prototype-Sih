@@ -107,6 +107,8 @@ import {
 import { EvidenceDrawer } from '../components/common/EvidenceDrawer';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
 import { ReportTab } from '../components/reports/ReportTab';
+import { ConsistencyPanel } from '../components/common/ConsistencyPanel';
+import { IntegrityWidget } from '../components/common/IntegrityWidget';
 import { LoadingBlock } from '../components/common/ui-helpers';
 
 export default function BidDetailPage() {
@@ -311,7 +313,7 @@ export default function BidDetailPage() {
       toast({
         title: res.seeded ? 'Demo Evidence Attached' : 'Demo Evidence Already Present',
         description: res.seeded
-          ? `Dossier document stored and extracted (${res.fields_extracted ?? 0} fields). Run Verification and Evaluate next.`
+          ? `Demo evidence stored and extracted (${(res.documents ?? []).length || 1} document(s), ${res.fields_extracted ?? 0} fields). Run Verification and Evaluate next.`
           : 'This bidder already has its demo dossier attached.',
       });
     });
@@ -409,6 +411,7 @@ export default function BidDetailPage() {
         bid_id: bidId,
         decision: newDecision,
         reason: changeReason.trim(),
+        confirm_change: true,
       });
       setChangeOpen(false);
       setChangeReason('');
@@ -707,6 +710,7 @@ export default function BidDetailPage() {
       </div>
 
       {/* 4. DOSSIER TABS & SECTIONS */}
+      <IntegrityWidget bidId={bidId} />
       <div className="rounded-lg border border-slate-200 bg-white shadow-xs overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="border-b border-slate-200 bg-slate-50/80 px-4 pt-2">
@@ -1112,6 +1116,9 @@ export default function BidDetailPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Cross-document consistency checks for this bid */}
+            <ConsistencyPanel bidId={bidId} />
           </TabsContent>
 
           {/* SECTION 4: EXTRACTED INFORMATION REGISTRY */}
