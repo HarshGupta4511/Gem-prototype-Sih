@@ -13,9 +13,10 @@ import type { ReportStatus } from '../../types';
 const STATUS_META: Record<ReportStatus, { label: string; classes: string }> = {
   DRAFT: { label: 'Draft', classes: 'bg-slate-100 text-slate-700 border-slate-300' },
   GENERATED: { label: 'Generated', classes: 'bg-blue-50 text-blue-800 border-blue-200' },
-  SENT_TO_OFFICER: { label: 'Sent to Procurement Officer', classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  SENT: { label: 'Sent to Procurement Officer', classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  RECEIVED: { label: 'Received by Officer', classes: 'bg-teal-50 text-teal-800 border-teal-200' },
   UNDER_REVIEW: { label: 'Under Officer Review', classes: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
-  DECISION_MADE: { label: 'Decision Made', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  DECISION: { label: 'Decision Made', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
 };
 
 export function ReportTab({ bidId }: { bidId: number }) {
@@ -82,7 +83,7 @@ export function ReportTab({ bidId }: { bidId: number }) {
 
       {/* Lifecycle timeline */}
       <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-        {(['DRAFT', 'GENERATED', 'SENT_TO_OFFICER', 'UNDER_REVIEW', 'DECISION_MADE'] as ReportStatus[]).map(
+        {(['DRAFT', 'GENERATED', 'SENT', 'RECEIVED', 'UNDER_REVIEW', 'DECISION'] as ReportStatus[]).map(
           (s, i, arr) => {
             const reached = arr.indexOf(status) >= i;
             return (
@@ -182,9 +183,9 @@ export function ReportTab({ bidId }: { bidId: number }) {
               Send to Procurement Officer
             </Button>
           )}
-          {(status === 'SENT_TO_OFFICER' || status === 'UNDER_REVIEW' || status === 'DECISION_MADE') && (
+          {(status === 'SENT' || status === 'RECEIVED' || status === 'UNDER_REVIEW' || status === 'DECISION') && (
             <p className="w-full text-xs text-slate-500">
-              {status === 'DECISION_MADE'
+              {status === 'DECISION'
                 ? 'The Procurement Officer has recorded a final decision.'
                 : 'Report sent — it is now with the Procurement Officer for review and decision.'}
             </p>

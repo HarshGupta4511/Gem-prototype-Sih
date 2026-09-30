@@ -15,6 +15,7 @@ import {
   Settings,
   Scale,
   Inbox,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -44,6 +45,7 @@ const PRIMARY_NAV: NavItem[] = [
   { to: '/app/tenders', label: 'Tenders', icon: FileText, roles: STAFF_NAV },
   { to: '/app/inbox', label: 'Verification Reports', icon: Inbox, roles: [OFFICER], badge: true },
   { to: '/app/documents', label: 'Test Your Document', icon: FileCheck, roles: [OFFICER, 'VERIFIER'] },
+  { to: '/app/integrity', label: 'Integrity', icon: ShieldAlert, roles: STAFF_NAV },
   { to: '/app/audit', label: 'Audit Trail', icon: ScrollText, roles: ALL_ROLES },
 ];
 

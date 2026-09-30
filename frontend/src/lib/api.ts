@@ -9,11 +9,16 @@ import type {
   Clarification,
   ComparisonData,
   ComplianceResult,
+  ConsistencyResult,
+  ConsistencyRunResult,
   CreateBidRequest,
   CreateTenderRequest,
   DashboardData,
   Document,
   ExtractedField,
+  IntegrityAnalysisResult,
+  IntegrityFinding,
+  IntegrityOverview,
   LoginRequest,
   OfficerDecisionRequest,
   OverrideRecord,
@@ -231,6 +236,8 @@ export const reportsApi = {
     api.post<VerificationReportData>(`/verifier-reports/bids/${bidId}/send`).then((r) => r.data),
   markOpened: (bidId: number) =>
     api.post(`/verifier-reports/bids/${bidId}/opened`).then((r) => r.data),
+  markReceived: (bidId: number) =>
+    api.post(`/verifier-reports/bids/${bidId}/received`).then((r) => r.data),
 };
 
 // ------------------------------------------------------------------- seed
@@ -239,3 +246,31 @@ export const seedApi = {
 };
 
 export const API_BASE_URL = API_URL;
+
+// --------------------------------------------------------------- integrity
+export const integrityApi = {
+  analyze: () => api.post('/integrity/analyze', {}).then((r) => r.data as IntegrityAnalysisResult),
+  overview: () => api.get('/integrity/overview').then((r) => r.data as IntegrityOverview),
+  findings: (params?: {
+    status?: string;
+    severity?: string;
+    signal_type?: string;
+    tender_id?: number;
+    bid_id?: number;
+    include_closed?: boolean;
+  }) => api.get('/integrity/findings', { params }).then((r) => r.data as IntegrityFinding[]),
+  get: (id: number) => api.get(`/integrity/findings/${id}`).then((r) => r.data as IntegrityFinding),
+  officerAction: (id: number, action: string, note?: string) =>
+    api
+      .post(`/integrity/findings/${id}/actions`, { action, note })
+      .then((r) => r.data as IntegrityFinding),
+  bidSignals: (bidId: number) =>
+    api.get(`/integrity/bid/${bidId}/signals`).then((r) => r.data as IntegrityFinding[]),
+};
+
+// -------------------------------------------------------------- consistency
+export const consistencyApi = {
+  run: (bidId: number) =>
+    api.post(`/consistency/bids/${bidId}/run`).then((r) => r.data as ConsistencyRunResult),
+  get: (bidId: number) => api.get(`/consistency/bids/${bidId}`).then((r) => r.data as ConsistencyResult),
+};
