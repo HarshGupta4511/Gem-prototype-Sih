@@ -886,8 +886,8 @@ def seed_bulk_demo(db, *, decisions: bool = True, reports: bool = True) -> dict:
         "new_bid_ids": [],
         "decisions": {"APPROVE": 0, "REJECT": 0, "ESCALATE": 0,
                       "REQUEST_CLARIFICATION": 0, "PENDING": 0},
-        "reports": {"DRAFT": 0, "GENERATED": 0, "SENT_TO_OFFICER": 0,
-                    "UNDER_REVIEW": 0},
+        "reports": {"DRAFT": 0, "GENERATED": 0, "SENT": 0, "RECEIVED": 0,
+                    "UNDER_REVIEW": 0, "DECISION": 0},
         "mock_added": _merge_mock_data(roster),
     }
     for ti, spec in enumerate(_TENDERS):

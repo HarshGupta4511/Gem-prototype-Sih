@@ -42,6 +42,7 @@ _TITLES = {
     "STARTUP_INDIA_CERTIFICATE": "Startup India Recognition Certificate",
     "EMD_PAYMENT": "Earnest Money Deposit (EMD) \u2014 Payment Proof",
     "PAST_PERFORMANCE_CERTIFICATE": "Past Performance Certificate",
+    "NON_DEBARMENT_DECLARATION": "Non-Debarment Declaration",
 }
 
 
@@ -238,6 +239,19 @@ def _paragraphs(document_type: str, data: dict) -> tuple[str, list[tuple[str, st
                 "a percentage of the bid quantity."
             ],
         )
+    if document_type == "NON_DEBARMENT_DECLARATION":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("Debarment Declaration", d.get("debarment_declaration", "")),
+            ],
+            [
+                "The bidder declares the debarment status stated above as on the "
+                "date of this bid. Any debarment or blacklisting by a government "
+                "authority would render this declaration false."
+            ],
+        )
     raise ValueError(f"Unsupported document_type: {document_type}")
 
 
@@ -295,8 +309,20 @@ SUPPORTED_TYPES = tuple(_TITLES)
 DOSSIER_TITLE = "Consolidated Bid Dossier"
 
 
+def dossier_section_title(template_type: str, data: dict) -> str:
+    """Rendered heading of one dossier section.
+
+    Used as the document title when a section is seeded as its own
+    standalone evidence document (e.g. the Nova cross-document identity
+    scenario) instead of inside the consolidated dossier.
+    """
+    return _paragraphs(template_type, data)[0]
+
+
 def generate_dossier_pdf(legal_name: str, sections: list[tuple[str, dict]],
-                         banner: str | None = None) -> bytes:
+                         banner: str | None = None,
+                         title: str | None = None,
+                         subtitle: str | None = None) -> bytes:
     """Generate ONE multi-section PDF: the bidder's single consolidated upload.
 
     ``sections`` is a list of ``(template_type, section_data)`` pairs — the
@@ -305,6 +331,11 @@ def generate_dossier_pdf(legal_name: str, sections: list[tuple[str, dict]],
 
     ``banner`` (optional) renders a centered notice under the title, e.g. to
     mark synthetic demo data.
+
+    ``title`` / ``subtitle`` optionally replace the dossier heading and the
+    "Single consolidated submission ..." line — used when one section is
+    rendered as its own standalone evidence document (e.g. the Nova
+    cross-document identity scenario).
     """
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
@@ -338,11 +369,11 @@ def generate_dossier_pdf(legal_name: str, sections: list[tuple[str, dict]],
         buf, pagesize=A4,
         leftMargin=20 * mm, rightMargin=20 * mm,
         topMargin=20 * mm, bottomMargin=20 * mm,
-        title=DOSSIER_TITLE, author="BidVerify Demo",
+        title=title or DOSSIER_TITLE, author="BidVerify Demo",
     )
     name = legal_name or ""
     story = [
-        Paragraph(DOSSIER_TITLE, title_style),
+        Paragraph(title or DOSSIER_TITLE, title_style),
     ]
     if banner:
         banner_style = ParagraphStyle(
@@ -354,6 +385,7 @@ def generate_dossier_pdf(legal_name: str, sections: list[tuple[str, dict]],
         story.append(Paragraph(f"<b>{banner}</b>", banner_style))
     story += [
         Paragraph(
+            subtitle if subtitle is not None else
             f"Single consolidated submission by <b>{name}</b> — all bidder "
             "information is extracted from this one document.",
             subtitle_style,

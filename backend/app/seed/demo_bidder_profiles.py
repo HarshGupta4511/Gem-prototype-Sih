@@ -64,6 +64,18 @@ PROFILES: dict[str, dict] = {
             "udyam": "UDYAM-MH-27-0099887",
             "cin": "U28999MH2021PTC445566",
         },
+        # Cross-document identity scenario: the PAN dossier section carries a
+        # different legal name than the GST/UDYAM sections -> a real
+        # ENTITY_NAME MISMATCH emerges from extraction, on top of the portal
+        # verification mismatch. The sections are seeded as SEPARATE evidence
+        # documents (one per certificate, like a real multi-upload bid) so the
+        # cross-document consistency engine has genuinely distinct documents
+        # to compare — a single consolidated PDF would collapse the names into
+        # one extracted value and the mismatch could never emerge honestly.
+        "document_name_overrides": {
+            "PAN_CERTIFICATE": "Nova Industrial Enterprises",
+        },
+        "split_dossier_sections": True,
         "address": "Gat 154, Chakan Industrial Area Phase II, Pune - 410501",
         "contact_name": "N. Kulkarni, Proprietor",
         "contact_email": "bids@nova-demo.in",
@@ -85,6 +97,12 @@ PROFILES: dict[str, dict] = {
         "contact_name": "P. Deshmukh, Director",
         "contact_email": "contact@primetech-demo.in",
         "contact_phone": "+91 98400 40004",
+        # Scenario: submits a false non-debarment declaration while the mock
+        # blacklist carries this exact legal name — the debarment-declaration
+        # consistency check is built to catch exactly this contradiction.
+        "debarment_declaration": (
+            "Not debarred or blacklisted by any government authority."
+        ),
     },
 }
 
@@ -236,6 +254,11 @@ def build_dossier_sections(requirements, profile_key: str,
             return  # scenario: this evidence section is deliberately missing
         if template_type not in sections:  # first wins; dedupes EXPERIENCE etc.
             sections[template_type] = {**base, **kw}
+            override = (profile.get("document_name_overrides") or {}).get(
+                template_type
+            )
+            if override:
+                sections[template_type]["legal_name"] = override
 
     # Scenario: missing-evidence profiles (e.g. "vertex") deliberately omit
     # everything except turnover + experience. Flag-based so generated
@@ -282,6 +305,20 @@ def build_dossier_sections(requirements, profile_key: str,
                 # document types are left MISSING honestly.
         # CUSTOM_RULE / IDENTITY_MATCH / verification-backed EXISTENCE need no
         # dossier section (portal data / cross-checks).
+
+    # Non-debarment undertaking: a standard bid declaration, emitted for every
+    # profile except missing-evidence scenarios. The declaration text is the
+    # bidder's own claim; the consistency engine compares it against the
+    # BLACKLIST verification source (a false declaration is the scenario the
+    # check is built to catch).
+    if not omit_evidence:
+        add(
+            "NON_DEBARMENT_DECLARATION",
+            debarment_declaration=profile.get(
+                "debarment_declaration",
+                "Not debarred or blacklisted by any government authority.",
+            ),
+        )
 
     return list(sections.items())
 
