@@ -143,7 +143,7 @@ export default function Login() {
           <img
             src="/bidwise-logo.jpg"
             alt="BIDWISE — Smart & Evidence-Based Bid Verification"
-            className="w-full max-w-xs rounded-lg shadow-md"
+            className="w-full max-w-xs mix-blend-screen"
             draggable={false}
           />
           <div className="mt-3 inline-flex items-center rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
