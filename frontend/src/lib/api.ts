@@ -67,6 +67,11 @@ api.interceptors.response.use(
   },
 );
 
+export function getErrorStatus(err: unknown): number | null {
+  if (axios.isAxiosError(err)) return err.response?.status ?? null;
+  return null;
+}
+
 export function getErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const d = (err as AxiosError<{ detail?: unknown }>).response?.data?.detail;

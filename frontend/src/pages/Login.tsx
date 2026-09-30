@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useAuth } from '../context/AuthContext';
-import { authApi } from '../lib/api';
+import { authApi, getErrorStatus } from '../lib/api';
 
 const schema = z.object({
   email: z.string().email('Please enter a valid official email address'),
@@ -98,8 +98,14 @@ export default function Login() {
       await login(parsed.data.email, parsed.data.password, captcha.id, parsed.data.captchaText);
       navigate('/app/dashboard');
     } catch (err: unknown) {
-      setAuthError('Authentication failed. Please verify your credentials and security code, or try Demo sign-in.');
-      // Challenges are single-use — always issue a fresh one after an attempt.
+      // Backend rejects a bad/expired code with 400 and bad credentials with
+      // 401 — surface which one failed so the officer knows what to retype.
+      // Challenges are single-use, so a fresh code is loaded either way.
+      if (getErrorStatus(err) === 400) {
+        setAuthError('Security code was incorrect or expired. A fresh code has been loaded — please try again.');
+      } else {
+        setAuthError('Email or password is incorrect. A fresh security code has been loaded — please try again.');
+      }
       loadCaptcha();
     } finally {
       setBusy(false);
