@@ -128,8 +128,54 @@ export default function Dashboard() {
     refetchAudits();
   };
 
+  // Officer work queue — backend-driven (six priorities). The backend derives
+  // every item from stored tables; the frontend only renders and filters.
+  const QUEUE_TYPE: Record<string, string> = {    HIGH_RISK_BIDDER: 'HIGH_RISK',
+    STATUTORY_MISMATCH: 'HIGH_RISK',
+    MISSING_MANDATORY_REQUIREMENT: 'PENDING',
+    INTEGRITY_SIGNAL: 'INTEGRITY',
+    PENDING_VERIFIER_REPORT: 'PENDING',
+    PENDING_OFFICER_DECISION: 'PENDING',
+  };
+  const QUEUE_LINK_TEXT: Record<string, string> = {
+    HIGH_RISK_BIDDER: 'Review Bid',
+    STATUTORY_MISMATCH: 'Review Mismatches',
+    MISSING_MANDATORY_REQUIREMENT: 'Review Compliance',
+    INTEGRITY_SIGNAL: 'Review Integrity Signals',
+    PENDING_VERIFIER_REPORT: 'Open Report',
+    PENDING_OFFICER_DECISION: 'Record Decision',
+  };
+  const QUEUE_CATEGORIES = [
+    { value: 'HIGH_RISK_BIDDER', label: 'High-risk bidder' },
+    { value: 'STATUTORY_MISMATCH', label: 'Statutory mismatch' },
+    { value: 'MISSING_MANDATORY_REQUIREMENT', label: 'Missing mandatory requirement' },
+    { value: 'INTEGRITY_SIGNAL', label: 'Integrity signal' },
+    { value: 'PENDING_VERIFIER_REPORT', label: 'Pending verifier report' },
+    { value: 'PENDING_OFFICER_DECISION', label: 'Pending officer decision' },
+  ];
+  const queueSeverity = (s: string) =>
+    s === 'REVIEW_REQUIRED' ? 'CRITICAL' : s === 'ELEVATED' ? 'HIGH' : 'LOW';
+
   // Build items requiring officer attention
   const attentionItems = React.useMemo(() => {
+    const backendQueue = data?.work_queue;
+    if (backendQueue && backendQueue.length > 0) {
+      return backendQueue.map((q) => ({
+        id: `queue-${q.category}-${q.finding_id ?? q.bid_id ?? q.title}`,
+        severity: queueSeverity(q.severity),
+        type: QUEUE_TYPE[q.category] ?? 'PENDING',
+        category: q.category_label ?? q.category,
+        rawCategory: q.category,
+        title: q.title,
+        description: q.description,
+        tenderId: q.tender_id ?? null,
+        tenderNumber: q.tender_number ?? null,
+        linkText: QUEUE_LINK_TEXT[q.category] ?? 'Review',
+        to: q.link,
+      }));
+    }
+
+    // Legacy fallback (older backend): tender-level derived items.
     const items = [];
 
     for (const tender of tenders) {
@@ -163,6 +209,23 @@ export default function Dashboard() {
       }
     }
 
+    // Integrity signals (from the backend — real findings, never frontend-only).
+    const notices = data?.integrity_notices ?? [];
+    for (const n of notices) {
+      items.push({
+        id: `integrity-${n.id}`,
+        severity: n.severity === 'REVIEW_REQUIRED' ? 'CRITICAL' : 'HIGH',
+        type: 'INTEGRITY',
+        category: 'Integrity Signal',
+        title: n.title,
+        description: `Deterministic integrity signal requires officer review.${n.is_demo_history ? ' Sourced from clearly-labelled DEMO procurement history.' : ''}`,
+        tenderId: null,
+        tenderNumber: null,
+        linkText: 'Review Integrity Signals',
+        to: '/app/integrity',
+      });
+    }
+
     if (items.length === 0) {
       items.push({
         id: 'no-critical',
@@ -179,7 +242,7 @@ export default function Dashboard() {
     }
 
     return items;
-  }, [tenders]);
+  }, [tenders, data]);
 
   // Unique tenders with attention items for the attention dropdown
   const tendersWithAlerts = React.useMemo(() => {
@@ -199,6 +262,11 @@ export default function Dashboard() {
     if (attentionFilter === 'ALL') return attentionItems;
     if (attentionFilter === 'HIGH_RISK') return attentionItems.filter((i) => i.type === 'HIGH_RISK');
     if (attentionFilter === 'PENDING') return attentionItems.filter((i) => i.type === 'PENDING');
+    if (attentionFilter === 'INTEGRITY') return attentionItems.filter((i) => i.type === 'INTEGRITY');
+    if (attentionFilter.startsWith('cat-')) {
+      const cat = attentionFilter.replace('cat-', '');
+      return attentionItems.filter((i) => (i as { rawCategory?: string }).rawCategory === cat);
+    }
     if (attentionFilter.startsWith('tender-')) {
       const tId = Number(attentionFilter.replace('tender-', ''));
       return attentionItems.filter((i) => i.tenderId === tId);
@@ -888,7 +956,17 @@ export default function Dashboard() {
                 >
                   <option value="ALL">All Notices ({attentionItems.length})</option>
                   <option value="HIGH_RISK">Statutory &amp; High Risk Flags</option>
+                  <option value="INTEGRITY">Integrity Signals</option>
                   <option value="PENDING">Pending Decisions Awaiting Review</option>
+                  <optgroup label="By Work-Queue Priority">
+                    {QUEUE_CATEGORIES.filter((c) =>
+                      attentionItems.some((i) => (i as { rawCategory?: string }).rawCategory === c.value),
+                    ).map((c) => (
+                      <option key={c.value} value={`cat-${c.value}`}>
+                        {c.label} ({attentionItems.filter((i) => (i as { rawCategory?: string }).rawCategory === c.value).length})
+                      </option>
+                    ))}
+                  </optgroup>
                   {tendersWithAlerts.length > 0 && (
                     <optgroup label="By Specific Tender">
                       {tendersWithAlerts.map((t) => (
