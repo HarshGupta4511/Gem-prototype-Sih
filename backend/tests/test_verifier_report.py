@@ -1,7 +1,8 @@
 """Verifier -> Procurement Officer report workflow.
 
 Flow: verifier adds observation -> generates report -> sends to officer ->
-officer opens (UNDER_REVIEW) -> officer decides (DECISION_MADE).
+officer acknowledges receipt (RECEIVED) -> officer opens (UNDER_REVIEW) ->
+officer decides (DECISION).
 Asserts:
 - lifecycle derives from audit events only (no schema changes),
 - guards enforce the order (409 on out-of-order transitions),
@@ -141,9 +142,9 @@ def test_full_report_lifecycle(db):
     assert report["ai_summary"]["recommendation"] == "PROCEED"
     assert len(report["observations"]) == 1
 
-    # Send -> SENT_TO_OFFICER.
+    # Send -> SENT.
     report = verifier_report_service.send_report(db, bid.id, verifier)
-    assert report["status"] == "SENT_TO_OFFICER"
+    assert report["status"] == "SENT"
 
     # Inbox shows it as NEW.
     items = verifier_report_service.inbox(db)
@@ -153,12 +154,16 @@ def test_full_report_lifecycle(db):
     assert items[0]["sent_by"] == "Verifier"
     assert items[0]["is_new"] is True
 
-    # Officer opens -> UNDER_REVIEW, no longer NEW.
-    lc = verifier_report_service.mark_opened(db, bid.id, officer)
-    assert lc["status"] == "UNDER_REVIEW"
+    # Officer acknowledges receipt -> RECEIVED, no longer NEW.
+    lc = verifier_report_service.receive_report(db, bid.id, officer)
+    assert lc["status"] == "RECEIVED"
     assert verifier_report_service.inbox(db)[0]["is_new"] is False
 
-    # Officer decides -> DECISION_MADE with the outcome.
+    # Officer opens -> UNDER_REVIEW.
+    lc = verifier_report_service.mark_opened(db, bid.id, officer)
+    assert lc["status"] == "UNDER_REVIEW"
+
+    # Officer decides -> DECISION with the outcome.
     import app.api.officer as officer_mod
     from app.schemas.schemas import DecisionRequest
     from app.models.models import OfficerDecision
@@ -169,7 +174,7 @@ def test_full_report_lifecycle(db):
         db=db, user=officer,
     )
     report = verifier_report_service.build_report(db, bid.id)
-    assert report["status"] == "DECISION_MADE"
+    assert report["status"] == "DECISION"
     assert report["decision"]["decision"] == "APPROVE"
 
     # Every transition is in the hash-chained audit log.
@@ -261,3 +266,36 @@ def test_report_endpoint_role_gates():
     # Viewers: officer, verifier, auditor, admin.
     for role in ("PROCUREMENT_OFFICER", "VERIFIER", "AUDITOR", "ADMIN"):
         assert viewer_gate(user=_user(role))
+
+
+def test_lifecycle_backward_compat_skips_received(db):
+    """Histories that predate the RECEIVED stage (SENT, no RECEIVED event)
+    still work: opening jumps SENT -> UNDER_REVIEW directly."""
+    from app.services import verifier_report_service
+
+    user = User(name="Verifier", email="v-bc@example.com", password_hash="x",
+                role="VERIFIER")
+    officer = User(name="Officer", email="o-bc@example.com", password_hash="x",
+                   role="PROCUREMENT_OFFICER")
+    db.add_all([user, officer])
+    db.flush()
+    tender = Tender(tender_number="T-BC-1", title="BC", organization="CPCL",
+                    department="Purchase")
+    db.add(tender)
+    db.flush()
+    bidder = Bidder(tender_id=tender.id, legal_name="Compat Ltd")
+    db.add(bidder)
+    db.flush()
+    bid = BidSubmission(tender_id=tender.id, bidder_id=bidder.id,
+                        status=BidStatus.SUBMITTED.value)
+    db.add(bid)
+    db.commit()
+
+    verifier_report_service.generate_report(db, bid.id, user)
+    verifier_report_service.send_report(db, bid.id, user)
+    # Officer opens without ever acknowledging receipt.
+    lc = verifier_report_service.mark_opened(db, bid.id, officer)
+    assert lc["status"] == "UNDER_REVIEW"
+    # Out-of-order receive is rejected once under review.
+    with pytest.raises(HTTPException):
+        verifier_report_service.receive_report(db, bid.id, officer)
