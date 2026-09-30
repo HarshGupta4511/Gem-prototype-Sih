@@ -97,7 +97,7 @@ export default function Audit() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `GEVRA-Audit-Trail-Report-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `BIDWISE-Audit-Trail-Report-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast({ title: 'Report Generated', description: 'Statutory audit record exported as JSON.' });

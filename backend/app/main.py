@@ -180,7 +180,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="BidVerify — AI-Powered Bid Compliance Verification Platform",
+    title="BIDWISE — Smart & Evidence-Based Bid Verification",
     lifespan=lifespan,
 )
 

@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   X,
-  ShieldCheck,
   Bell,
   ChevronRight,
   Settings,
@@ -82,20 +81,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {/* Brand identity header */}
         <div className="border-b border-slate-800/80 px-5 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 border border-blue-500/30 text-white shadow-sm">
-              <ShieldCheck className="h-6 w-6 text-blue-200" />
-            </div>
+            <img
+              src="/bidwise-mark.png"
+              alt="BIDWISE logo"
+              className="h-11 w-11 shrink-0 rounded-md shadow-sm"
+              draggable={false}
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold tracking-tight text-white font-serif">
-                  GEVRA
+                  BIDWISE
                 </span>
                 <span className="rounded bg-blue-500/20 px-1.5 py-0.2 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
                   CPSE
                 </span>
               </div>
               <p className="truncate text-[11px] font-medium text-slate-300">
-                GeM Verification &amp; Risk Assessment
+                Smart &amp; Evidence-Based Bid Verification
               </p>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20" />
@@ -213,7 +215,7 @@ export function AppLayout() {
   // Compute breadcrumbs
   const path = location.pathname;
   const breadcrumbItems = React.useMemo(() => {
-    const crumbs: { label: string; to?: string }[] = [{ label: 'GEVRA', to: '/app/dashboard' }];
+    const crumbs: { label: string; to?: string }[] = [{ label: 'BIDWISE', to: '/app/dashboard' }];
 
     if (path.startsWith('/app/dashboard')) {
       crumbs.push({ label: 'Executive Dashboard' });
@@ -264,7 +266,7 @@ export function AppLayout() {
           <aside className="absolute inset-y-0 left-0 w-72 bg-slate-900 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 p-3">
               <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                GEVRA Navigation
+                BIDWISE Navigation
               </span>
               <button
                 className="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
@@ -362,8 +364,8 @@ export function AppLayout() {
         <footer className="border-t border-slate-200 bg-white py-3 px-4 sm:px-6">
           <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700">GEVRA</span>
-              <span>— GeM Verification &amp; Risk Assessment Platform</span>
+              <span className="font-semibold text-slate-700">BIDWISE</span>
+              <span>— Smart &amp; Evidence-Based Bid Verification</span>
               <span className="hidden md:inline text-slate-300">|</span>
               <span className="hidden md:inline text-slate-500">Procurement Decision Support System</span>
             </div>

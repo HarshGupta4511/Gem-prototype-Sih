@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  ShieldCheck,
   FileText,
   CheckCircle,
   Scale,
@@ -141,23 +140,14 @@ export default function Login() {
 
         {/* Top Product Identity */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 border border-blue-400/40 text-white shadow-md">
-              <ShieldCheck className="h-7 w-7 text-blue-100" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold tracking-tight text-white font-serif">
-                  GEVRA
-                </span>
-                <span className="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
-                  CPSE PROCUREMENT
-                </span>
-              </div>
-              <p className="text-xs font-medium text-slate-300">
-                GeM Verification &amp; Risk Assessment Platform
-              </p>
-            </div>
+          <img
+            src="/bidwise-logo.jpg"
+            alt="BIDWISE — Smart & Evidence-Based Bid Verification"
+            className="w-full max-w-xs rounded-lg shadow-md"
+            draggable={false}
+          />
+          <div className="mt-3 inline-flex items-center rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
+            CPSE PROCUREMENT
           </div>
 
           <div className="mt-8 max-w-lg">
@@ -218,12 +208,15 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile identity banner */}
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-900 text-white">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
+            <img
+              src="/bidwise-mark.png"
+              alt="BIDWISE logo"
+              className="h-10 w-10 rounded-md"
+              draggable={false}
+            />
             <div>
-              <p className="text-lg font-bold text-slate-900">GEVRA</p>
-              <p className="text-xs text-slate-500">GeM Verification &amp; Risk Assessment</p>
+              <p className="text-lg font-bold text-slate-900">BIDWISE</p>
+              <p className="text-xs text-slate-500">Smart &amp; Evidence-Based Bid Verification</p>
             </div>
           </div>
 
@@ -335,7 +328,7 @@ export default function Login() {
                   loading={busy}
                 >
                   <KeyRound className="mr-2 h-4 w-4" />
-                  Sign In to GEVRA
+                  Sign In to BIDWISE
                 </Button>
               </div>
             </form>
