@@ -479,6 +479,10 @@ class DecisionRequest(BaseModel):
     bid_id: int
     decision: OfficerDecision
     reason: str | None = None
+    # Required (True) when replacing a previously recorded decision —
+    # the UI's change-confirmation modal sets this after the officer
+    # explicitly confirms the change.
+    confirm_change: bool = False
 
 
 class OverrideCreate(BaseModel):
@@ -616,6 +620,14 @@ class DashboardCharts(BaseModel):
 class DashboardOut(BaseModel):
     metrics: DashboardMetrics
     charts: DashboardCharts
+    # Open integrity signals requiring officer review (from the backend —
+    # never frontend-only mock data). Drives the dashboard work queue.
+    integrity_notices: list[dict] = Field(default_factory=list)
+    # Six-priority backend-driven officer work queue (high-risk bidder,
+    # statutory mismatch, missing mandatory requirement, integrity signal,
+    # pending verifier report, pending officer decision). Derived from
+    # stored tables only.
+    work_queue: list[dict] = Field(default_factory=list)
 
 
 # --- Seed ---

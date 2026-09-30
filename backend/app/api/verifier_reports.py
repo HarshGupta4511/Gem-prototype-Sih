@@ -2,7 +2,7 @@
 
 Role rules (existing auth mechanism, no duplicate permission system):
 - Generate / send report, add observations: VERIFIER only.
-- Mark report opened: PROCUREMENT_OFFICER only.
+- Mark report received / opened: PROCUREMENT_OFFICER only.
 - View report: PROCUREMENT_OFFICER, VERIFIER, AUDITOR (read-only), ADMIN.
 - Officer inbox: PROCUREMENT_OFFICER only.
 
@@ -97,3 +97,13 @@ def mark_opened(
 ):
     """Record that the Procurement Officer opened the report."""
     return verifier_report_service.mark_opened(db, bid_id, user)
+
+
+@router.post("/bids/{bid_id}/received")
+def mark_received(
+    bid_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Procurement Officer acknowledges receipt of the report (SENT -> RECEIVED)."""
+    return verifier_report_service.receive_report(db, bid_id, user)

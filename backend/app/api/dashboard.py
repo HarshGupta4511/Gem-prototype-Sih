@@ -7,11 +7,19 @@ from app.core.config import settings
 from app.core.deps import get_current_user, get_db
 from app.database.session import engine
 from app.models.models import (
+    AuditLog,
+    Bidder,
     BidSubmission,
+    ComplianceResult,
+    ConsistencyCheck,
     DocProcessingStatus,
     Document,
+    IntegrityFinding,
+    IntegritySeverity,
+    IntegrityStatus,
     RiskLevel,
     Tender,
+    TenderRequirement,
     TenderStatus,
     User,
     VerificationCheck,
@@ -129,7 +137,261 @@ def dashboard(
         tender_bidder_comparison=tender_bidder_comparison,
         document_processing=document_processing,
     )
-    return DashboardOut(metrics=metrics, charts=charts)
+    # Integrity notices for the officer work queue: open (non-closed) signals
+    # sourced from the real integrity_findings table — never frontend-only.
+    open_signals = (
+        db.query(IntegrityFinding)
+        .filter(IntegrityFinding.status != IntegrityStatus.CLOSED.value)
+        .order_by(
+            IntegrityFinding.severity
+            != IntegritySeverity.REVIEW_REQUIRED.value,
+            IntegrityFinding.id.desc(),
+        )
+        .limit(10)
+        .all()
+    )
+    integrity_notices = [
+        {
+            "id": f.id,
+            "title": f.title,
+            "signal_type": f.signal_type,
+            "severity": f.severity,
+            "status": f.status,
+            "is_demo_history": bool(f.is_demo_history),
+        }
+        for f in open_signals
+    ]
+    return DashboardOut(
+        metrics=metrics,
+        charts=charts,
+        integrity_notices=integrity_notices,
+        work_queue=_build_work_queue(db),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Officer work queue (backend-driven, six priorities)
+# ---------------------------------------------------------------------------
+
+# (priority, category key, human label) in display order.
+_WORK_QUEUE_ORDER = (
+    (1, "HIGH_RISK_BIDDER", "High-risk bidder"),
+    (2, "STATUTORY_MISMATCH", "Statutory mismatch"),
+    (3, "MISSING_MANDATORY_REQUIREMENT", "Missing mandatory requirement"),
+    (4, "INTEGRITY_SIGNAL", "Integrity signal"),
+    (5, "PENDING_VERIFIER_REPORT", "Pending verifier report"),
+    (6, "PENDING_OFFICER_DECISION", "Pending officer decision"),
+)
+
+_QUEUE_LIMIT_PER_CATEGORY = 10
+_QUEUE_LIMIT_TOTAL = 30
+
+# Consistency checks that compare statutory identity/registration values.
+_STATUTORY_CHECKS = {
+    "ENTITY_NAME_CONSISTENCY",
+    "GSTIN_PAN_CONSISTENCY",
+    "IDENTIFIER_CONSISTENCY",
+    "RETRIEVED_STATUTORY_COMPARISON",
+    "DEBARMENT_DECLARATION_CONSISTENCY",
+    "OEM_AUTHORIZATION_IDENTITY",
+}
+
+# Bidder-declared identity for queue display; raw ids never leak to the UI.
+def _queue_bid_ref(bid, bidder_names, tender_numbers) -> dict:
+    return {
+        "bid_id": bid.id,
+        "bidder_name": bidder_names.get(bid.bidder_id),
+        "tender_number": tender_numbers.get(bid.tender_id),
+        "tender_id": bid.tender_id,
+        "link": f"/app/bids/{bid.id}",
+    }
+
+
+def _build_work_queue(db: Session) -> list[dict]:
+    """Six-priority officer work queue, derived from stored tables only.
+
+    Every item names the bid, the evidence behind it and where to act. The
+    frontend renders this list directly — no frontend-only queue logic.
+    """
+    bids = {b.id: b for b in db.query(BidSubmission).all()}
+    bidder_names = {b.id: b.legal_name for b in db.query(Bidder).all()}
+    tender_numbers = {t.id: t.tender_number for t in db.query(Tender).all()}
+    queue: list[dict] = []
+
+    def add(priority: int, category: str, label: str, title: str,
+            description: str, severity: str, ref: dict,
+            finding_id: int | None = None) -> None:
+        queue.append({
+            "priority": priority,
+            "category": category,
+            "category_label": label,
+            "title": title,
+            "description": description,
+            "severity": severity,
+            "finding_id": finding_id,
+            **ref,
+        })
+
+    # -- 1. High-risk bidder -------------------------------------------------
+    n = 0
+    for b in bids.values():
+        if n >= _QUEUE_LIMIT_PER_CATEGORY:
+            break
+        if b.risk_level in _HIGH_RISK and b.officer_decision is None:
+            add(1, "HIGH_RISK_BIDDER", "High-risk bidder",
+                f"{bidder_names.get(b.bidder_id) or f'Bid #{b.id}'} — risk {b.risk_level}",
+                "Risk engine rated this bid HIGH/CRITICAL. Review the risk "
+                "signals and evidence before deciding.",
+                "REVIEW_REQUIRED" if b.risk_level == RiskLevel.CRITICAL.value else "ELEVATED",
+                _queue_bid_ref(b, bidder_names, tender_numbers))
+            n += 1
+
+    # -- 2. Statutory mismatch ----------------------------------------------
+    mismatch_by_bid: dict[int, list] = {}
+    for m in db.query(ConsistencyCheck).filter(
+        ConsistencyCheck.result == "MISMATCH",
+        ConsistencyCheck.check_name.in_(_STATUTORY_CHECKS),
+    ).all():
+        mismatch_by_bid.setdefault(m.bid_id, []).append(m)
+    ver_issue_by_bid: dict[int, list] = {}
+    for c in db.query(VerificationCheck).filter(
+        VerificationCheck.verification_status.in_(_ISSUE_STATUSES)
+    ).all():
+        ver_issue_by_bid.setdefault(c.bid_id, []).append(c)
+    n = 0
+    for bid_id in sorted(set(mismatch_by_bid) | set(ver_issue_by_bid)):
+        if n >= _QUEUE_LIMIT_PER_CATEGORY:
+            break
+        b = bids.get(bid_id)
+        if b is None or b.officer_decision is not None:
+            continue
+        parts = []
+        ms = mismatch_by_bid.get(bid_id, [])
+        if ms:
+            checks = sorted({m.check_name for m in ms})
+            parts.append(f"{len(ms)} cross-document mismatch(es): "
+                         + ", ".join(checks))
+        vs = ver_issue_by_bid.get(bid_id, [])
+        if vs:
+            parts.append(f"{len(vs)} statutory verification issue(s): "
+                         + ", ".join(sorted({c.source for c in vs})))
+        add(2, "STATUTORY_MISMATCH", "Statutory mismatch",
+            f"{bidder_names.get(b.bidder_id) or f'Bid #{bid_id}'} — statutory mismatch",
+            "; ".join(parts) + ". Requires Procurement Officer review.",
+            "REVIEW_REQUIRED",
+            _queue_bid_ref(b, bidder_names, tender_numbers))
+        n += 1
+
+    # -- 3. Missing mandatory requirement ------------------------------------
+    fail_rows = (
+        db.query(ComplianceResult, TenderRequirement)
+        .join(TenderRequirement,
+              ComplianceResult.requirement_id == TenderRequirement.id)
+        .filter(ComplianceResult.status == "FAIL",
+                TenderRequirement.mandatory.is_(True))
+        .all()
+    )
+    fail_by_bid: dict[int, list] = {}
+    for res, req in fail_rows:
+        fail_by_bid.setdefault(res.bid_id, []).append(req)
+    n = 0
+    for bid_id, reqs in sorted(fail_by_bid.items()):
+        if n >= _QUEUE_LIMIT_PER_CATEGORY:
+            break
+        b = bids.get(bid_id)
+        if b is None or b.officer_decision is not None:
+            continue
+        names = ", ".join(sorted({r.requirement_name for r in reqs if r.requirement_name})[:3])
+        more = f" (+{len(reqs) - 3} more)" if len(reqs) > 3 else ""
+        add(3, "MISSING_MANDATORY_REQUIREMENT", "Missing mandatory requirement",
+            f"{bidder_names.get(b.bidder_id) or f'Bid #{bid_id}'} — "
+            f"{len(reqs)} mandatory requirement(s) failing",
+            f"Failing mandatory requirements: {names}{more}.",
+            "REVIEW_REQUIRED",
+            _queue_bid_ref(b, bidder_names, tender_numbers))
+        n += 1
+
+    # -- 4. Integrity signal --------------------------------------------------
+    n = 0
+    for f in (
+        db.query(IntegrityFinding)
+        .filter(IntegrityFinding.status != IntegrityStatus.CLOSED.value)
+        .order_by(
+            IntegrityFinding.severity
+            != IntegritySeverity.REVIEW_REQUIRED.value,
+            IntegrityFinding.id.desc(),
+        )
+        .limit(_QUEUE_LIMIT_PER_CATEGORY)
+        .all()
+    ):
+        demo = " Sourced from clearly-labelled DEMO procurement history." \
+            if f.is_demo_history else ""
+        add(4, "INTEGRITY_SIGNAL", "Integrity signal", f.title,
+            (f.description or "") + demo, f.severity,
+            {
+                # Signals are cross-bid by design; the queue links to the
+                # integrity workbench, not to a single bid.
+                "bid_id": None,
+                "bidder_name": bidder_names.get(f.bidder_id),
+                "tender_number": tender_numbers.get(f.tender_id),
+                "tender_id": f.tender_id,
+                "link": "/app/integrity",
+            },
+            finding_id=f.id)
+        n += 1
+
+    # -- 5. Pending verifier report -------------------------------------------
+    def _audit_bid_ids(action) -> set[int]:
+        out = set()
+        for (entity_id,) in db.query(AuditLog.entity_id).filter(
+            AuditLog.entity_type == "bid_submission",
+            AuditLog.action == action,
+        ).all():
+            try:
+                out.add(int(entity_id))
+            except (TypeError, ValueError):
+                continue
+        return out
+
+    sent = _audit_bid_ids("VERIFICATION_REPORT_SENT")
+    decided = _audit_bid_ids("OFFICER_DECISION") | _audit_bid_ids("OFFICER_DECISION_CHANGED")
+    n = 0
+    for bid_id in sorted(sent - decided):
+        if n >= _QUEUE_LIMIT_PER_CATEGORY:
+            break
+        b = bids.get(bid_id)
+        if b is None:
+            continue
+        add(5, "PENDING_VERIFIER_REPORT", "Pending verifier report",
+            f"{bidder_names.get(b.bidder_id) or f'Bid #{bid_id}'} — report sent, awaiting officer",
+            "The verifier sent the verification report. Acknowledge receipt, "
+            "review the evidence and record the decision.",
+            "ELEVATED",
+            {**_queue_bid_ref(b, bidder_names, tender_numbers),
+             "link": f"/app/bids/{bid_id}/report"})
+        n += 1
+
+    # -- 6. Pending officer decision -------------------------------------------
+    covered = sent - decided  # already surfaced under priority 5
+    n = 0
+    for b in sorted(bids.values(), key=lambda x: x.id):
+        if n >= _QUEUE_LIMIT_PER_CATEGORY:
+            break
+        if (b.id in covered or b.officer_decision is not None
+                or b.compliance_score is None
+                or b.status not in ("SUBMITTED", "UNDER_REVIEW", "ESCALATED",
+                                    "CLARIFICATION_REQUESTED")):
+            continue
+        add(6, "PENDING_OFFICER_DECISION", "Pending officer decision",
+            f"{bidder_names.get(b.bidder_id) or f'Bid #{b.id}'} — evaluation complete, decision pending",
+            "Compliance evaluation is complete and no officer decision is "
+            "recorded. The Procurement Officer is the final decision maker.",
+            "ELEVATED",
+            _queue_bid_ref(b, bidder_names, tender_numbers))
+        n += 1
+
+    queue.sort(key=lambda i: (i["priority"], i["title"]))
+    return queue[:_QUEUE_LIMIT_TOTAL]
 
 
 @router.get("/providers", response_model=ProvidersOut)

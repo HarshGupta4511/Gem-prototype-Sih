@@ -10,8 +10,10 @@ from app.api import (
     auth,
     bids,
     compliance,
+    consistency,
     dashboard,
     documents,
+    integrity,
     officer,
     recommendation,
     seed,
@@ -81,7 +83,36 @@ def _ensure_policy_context_column() -> None:
             conn.execute(text("ALTER TABLE bid_submissions ADD COLUMN policy_context JSON"))
         logger.info("Added policy_context column to bid_submissions")
     except Exception:
-        logger.exception("Failed to add policy_context column")
+        logger.exception("Could not add policy_context column; continuing")
+
+
+def _ensure_demo_history_column() -> None:
+    """Additive, idempotent migration for tenders.is_demo_history.
+
+    Flags the clearly-labelled synthetic DEMO procurement history used by the
+    integrity engine. Hidden from the normal tender list; included in analysis.
+    """
+    from sqlalchemy import inspect, text
+
+    try:
+        existing = {c["name"] for c in inspect(engine).get_columns("tenders")}
+    except Exception:
+        logger.exception("Could not inspect tenders table; skipping column migration")
+        return
+    if "is_demo_history" in existing:
+        return
+    try:
+        dialect = engine.dialect.name
+        coldef = (
+            "is_demo_history BOOLEAN DEFAULT 0"
+            if dialect == "sqlite"
+            else "is_demo_history BOOLEAN DEFAULT FALSE"
+        )
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE tenders ADD COLUMN {coldef}"))
+        logger.info("Added is_demo_history column to tenders")
+    except Exception:
+        logger.exception("Could not add is_demo_history column; continuing")
 
 
 def _backfill_tender_wizard_fields(db=None) -> None:
@@ -126,6 +157,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     _ensure_tender_wizard_columns()
     _ensure_policy_context_column()
+    _ensure_demo_history_column()
     _backfill_tender_wizard_fields()
     if is_dev_secret():
         logger.warning("JWT_SECRET is the dev default — set JWT_SECRET env var")
@@ -181,6 +213,8 @@ for router in (
     dashboard.router,
     seed.router,
     verifier_reports.router,
+    integrity.router,
+    consistency.router,
 ):
     app.include_router(router)
 

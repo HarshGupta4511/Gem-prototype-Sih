@@ -55,15 +55,31 @@ def officer_decision(
     db: Session = Depends(get_db),
     user: User = Depends(_OFFICER),
 ):
-    """Record the officer's decision on a bid and move its status accordingly."""
+    """Record the officer's decision on a bid and move its status accordingly.
+
+    The original decision always remains in the audit history. Replacing a
+    recorded decision requires an explicit confirmation flag, a new decision
+    and a written reason — and is logged as OFFICER_DECISION_CHANGED.
+    """
     decision = payload.decision.value
+    bid = _get_bid(db, payload.bid_id)
+    previous_decision = bid.officer_decision
+    is_change = previous_decision is not None
+    if is_change and not payload.confirm_change:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Changing a recorded decision requires explicit confirmation (confirm_change=True)",
+        )
+    if is_change and not (payload.reason or "").strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A reason is required when changing a recorded decision",
+        )
     if decision in ("REJECT", "ESCALATE", "REQUEST_CLARIFICATION") and not (payload.reason or "").strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A reason is required for REJECT, ESCALATE and REQUEST_CLARIFICATION",
         )
-    bid = _get_bid(db, payload.bid_id)
-    previous_decision = bid.officer_decision
     bid.officer_decision = decision
     bid.officer_decision_reason = payload.reason
     bid.decided_by = user.id
@@ -74,7 +90,9 @@ def officer_decision(
     audit_service.append_audit(
         db,
         user_id=user.id,
-        action="OFFICER_DECISION",
+        action=(
+            "OFFICER_DECISION_CHANGED" if is_change else "OFFICER_DECISION"
+        ),
         entity_type="bid_submission",
         entity_id=str(bid.id),
         metadata={"decision": decision, "reason": payload.reason, "previous_decision": previous_decision},

@@ -180,11 +180,22 @@ class AuditAction(str, enum.Enum):
     RISK_ASSESSED = "RISK_ASSESSED"
     RECOMMENDATION_GENERATED = "RECOMMENDATION_GENERATED"
     OFFICER_DECISION = "OFFICER_DECISION"
+    OFFICER_DECISION_CHANGED = "OFFICER_DECISION_CHANGED"
     OVERRIDE_RECORDED = "OVERRIDE_RECORDED"
     CLARIFICATION_SENT = "CLARIFICATION_SENT"
     REPORT_GENERATED = "REPORT_GENERATED"
     AUDIT_VERIFIED = "AUDIT_VERIFIED"
     KNOWLEDGE_UPDATED = "KNOWLEDGE_UPDATED"
+    INTEGRITY_ANALYSIS_RUN = "INTEGRITY_ANALYSIS_RUN"
+    INTEGRITY_SIGNAL_DETECTED = "INTEGRITY_SIGNAL_DETECTED"
+    INTEGRITY_SIGNAL_ACKNOWLEDGED = "INTEGRITY_SIGNAL_ACKNOWLEDGED"
+    INTEGRITY_SIGNAL_REVIEWED = "INTEGRITY_SIGNAL_REVIEWED"
+    INTEGRITY_SIGNAL_INVESTIGATED = "INTEGRITY_SIGNAL_INVESTIGATED"
+    INTEGRITY_SIGNAL_CLOSED = "INTEGRITY_SIGNAL_CLOSED"
+    INTEGRITY_NOTE_ADDED = "INTEGRITY_NOTE_ADDED"
+    CONSISTENCY_CHECK_RUN = "CONSISTENCY_CHECK_RUN"
+    CROSS_DOCUMENT_MISMATCH_DETECTED = "CROSS_DOCUMENT_MISMATCH_DETECTED"
+    DEMO_HISTORY_SEEDED = "DEMO_HISTORY_SEEDED"
 
 
 class ClarificationStatus(str, enum.Enum):
@@ -241,6 +252,9 @@ class Tender(Base):
     status: Mapped[str] = mapped_column(String(20), default=TenderStatus.DRAFT.value)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    # Clearly-labelled synthetic procurement history for the integrity demo.
+    # Hidden from the normal tender list; included in integrity analysis.
+    is_demo_history: Mapped[bool | None] = mapped_column(Boolean, default=False, nullable=True)
 
     requirements: Mapped[list["TenderRequirement"]] = relationship("TenderRequirement")
     bidders: Mapped[list["Bidder"]] = relationship("Bidder")
@@ -503,3 +517,109 @@ class AuditLog(Base):
     meta: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
 
     user: Mapped["User | None"] = relationship("User")
+
+
+# ---------------------------------------------------------------------------
+# Procurement integrity (deterministic, evidence-backed signals — never
+# findings of misconduct; the Procurement Officer reviews and decides)
+# ---------------------------------------------------------------------------
+
+
+class IntegritySeverity(str, enum.Enum):
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    ELEVATED = "ELEVATED"
+    INFORMATIONAL = "INFORMATIONAL"
+
+
+class IntegritySignalType(str, enum.Enum):
+    RECURRING_BIDDER_COHORT = "RECURRING_BIDDER_COHORT"
+    REPEATED_PARTICIPATION = "REPEATED_PARTICIPATION"
+    BID_ROTATION_PATTERN = "BID_ROTATION_PATTERN"
+    BIDDER_RELATIONSHIP = "BIDDER_RELATIONSHIP"
+    OFFICER_BIDDER_ASSOCIATION = "OFFICER_BIDDER_ASSOCIATION"
+    CROSS_TENDER_CONCENTRATION = "CROSS_TENDER_CONCENTRATION"
+    DOCUMENT_IDENTITY_RELATIONSHIP = "DOCUMENT_IDENTITY_RELATIONSHIP"
+
+
+class IntegrityStatus(str, enum.Enum):
+    OPEN = "OPEN"
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    INVESTIGATING = "INVESTIGATING"
+    CLOSED = "CLOSED"
+
+
+class IntegrityFinding(Base):
+    """A deterministic integrity *signal* (not a finding of misconduct).
+
+    Detected from existing tender/bid/audit data by the integrity engine;
+    every signal carries its supporting evidence and the rule logic that
+    produced it. Officer actions transition ``status`` and are audited.
+    """
+
+    __tablename__ = "integrity_findings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tender_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tenders.id"), nullable=True, index=True
+    )
+    bidder_id: Mapped[int | None] = mapped_column(
+        ForeignKey("bidders.id"), nullable=True, index=True
+    )
+    signal_type: Mapped[str] = mapped_column(String(60), index=True)
+    severity: Mapped[str] = mapped_column(String(30))
+    title: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str] = mapped_column(Text)
+    affected_bids: Mapped[list] = mapped_column(JSON, default=list)
+    affected_tenders: Mapped[list] = mapped_column(JSON, default=list)
+    evidence: Mapped[list] = mapped_column(JSON, default=list)
+    rule_logic: Mapped[str] = mapped_column(Text)
+    recommended_action: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default=IntegrityStatus.OPEN.value)
+    # True when the signal is (partly) sourced from the clearly-labelled
+    # synthetic DEMO procurement history — shown with a DEMO DATA banner.
+    # Nullable for migration safety (pre-existing rows read as False); the
+    # service always writes an explicit boolean for new findings.
+    is_demo_history: Mapped[bool | None] = mapped_column(Boolean, default=False, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    evaluated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    reviewed_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    officer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    tender: Mapped["Tender | None"] = relationship("Tender")
+    bidder: Mapped["Bidder | None"] = relationship("Bidder")
+
+
+class ConsistencyCheck(Base):
+    """One cross-document consistency check for a bid.
+
+    Compares extracted fields across the bid's documents using normalized
+    comparison (entity_resolution). Re-running replaces the bid's checks.
+    """
+
+    __tablename__ = "consistency_checks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    bid_id: Mapped[int] = mapped_column(ForeignKey("bid_submissions.id"), index=True)
+    check_name: Mapped[str] = mapped_column(String(100))
+    field_name: Mapped[str] = mapped_column(String(100))
+    doc1_id: Mapped[int | None] = mapped_column(
+        ForeignKey("documents.id"), nullable=True
+    )
+    doc2_id: Mapped[int | None] = mapped_column(
+        ForeignKey("documents.id"), nullable=True
+    )
+    value1: Mapped[str | None] = mapped_column(Text, nullable=True)
+    value2: Mapped[str | None] = mapped_column(Text, nullable=True)
+    result: Mapped[str] = mapped_column(String(30))  # MATCH / MISMATCH / REVIEW_REQUIRED
+    reason: Mapped[str] = mapped_column(Text)
+    severity: Mapped[str] = mapped_column(String(30))  # REVIEW_REQUIRED / INFORMATIONAL
+    evidence: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    bid: Mapped["BidSubmission"] = relationship("BidSubmission")

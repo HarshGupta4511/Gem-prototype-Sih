@@ -171,8 +171,20 @@ def list_tenders(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """List tenders with per-tender bid aggregates."""
-    tenders = db.query(Tender).order_by(Tender.id.desc()).all()
+    """List tenders with per-tender bid aggregates.
+
+    Clearly-labelled synthetic DEMO history tenders (is_demo_history) are
+    excluded — they exist only as integrity-analysis input.
+    """
+    tenders = (
+        db.query(Tender)
+        .filter(
+            (Tender.is_demo_history.is_(False))
+            | (Tender.is_demo_history.is_(None))
+        )
+        .order_by(Tender.id.desc())
+        .all()
+    )
     bids = db.query(BidSubmission).all()
     by_tender: dict[int, list[BidSubmission]] = {}
     for bid in bids:
