@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   Calendar,
-  ChevronRight,
   Eye,
   Filter,
   Layers,
@@ -13,13 +12,22 @@ import {
   Search,
   ShieldAlert,
   ShieldCheck,
-  TrendingUp,
+  Trash2,
 } from 'lucide-react';
-import { tendersApi } from '../lib/api';
+import { tendersApi, getErrorMessage } from '../lib/api';
 import { formatDate } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/toaster';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -47,11 +55,17 @@ export default function Tenders() {
   const { isOfficer } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [dialogOpen, setDialogOpen] = useState(false);
+  // Bulk manage mode (Procurement Officer only): row selection + Delete Selected
+  const [manageMode, setManageMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const { data = [], isLoading, isError, refetch } = useQuery({
+  const { data = [], isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['tenders'],
     queryFn: tendersApi.list,
   });
@@ -75,6 +89,58 @@ export default function Tenders() {
 
   const handleCreated = () => {
     queryClient.invalidateQueries({ queryKey: ['tenders'] });
+  };
+
+  const toggleManageMode = () => {
+    setManageMode((m) => !m);
+    setSelectedIds([]);
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filtered.length) setSelectedIds([]);
+    else setSelectedIds(filtered.map((t) => t.id));
+  };
+
+  const selectedTenders = useMemo(
+    () => data.filter((t) => selectedIds.includes(t.id)),
+    [data, selectedIds]
+  );
+
+  const confirmBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    setDeleting(true);
+    const failed: string[] = [];
+    for (const id of selectedIds) {
+      try {
+        await tendersApi.delete(id);
+      } catch (err) {
+        const t = data.find((x) => x.id === id);
+        failed.push(`${t?.tender_number ?? id}: ${getErrorMessage(err)}`);
+      }
+    }
+    setDeleting(false);
+    setBulkDeleteOpen(false);
+    setSelectedIds([]);
+    setManageMode(false);
+    queryClient.invalidateQueries({ queryKey: ['tenders'] });
+    if (failed.length === 0) {
+      toast({
+        title: 'Tenders Deleted',
+        description:
+          'Selected tenders, their bidders and all derived records were deleted. The audit trail is preserved.',
+      });
+    } else {
+      toast({
+        title: 'Delete Partially Failed',
+        description: failed[0],
+      });
+    }
   };
 
   return (
@@ -102,12 +168,27 @@ export default function Tenders() {
               variant="outline"
               size="sm"
               onClick={() => refetch()}
+              disabled={isFetching}
               className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
             >
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             {isOfficer && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleManageMode}
+                className={`text-xs font-semibold ${
+                  manageMode
+                    ? 'border-blue-800 bg-blue-800 text-white hover:bg-blue-900'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                Manage
+              </Button>
+            )}
+            {isOfficer && !manageMode && (
               <Button
                 size="sm"
                 onClick={() => navigate('/app/tenders/create')}
@@ -154,6 +235,36 @@ export default function Tenders() {
             ))}
           </div>
         </div>
+
+        {/* Bulk actions bar (Manage mode, officer only) */}
+        {isOfficer && manageMode && (
+          <div className="mt-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50/60 px-3 py-2">
+            <span className="text-xs font-medium text-slate-700">
+              {selectedIds.length === 0
+                ? 'Select tenders using the checkboxes.'
+                : `${selectedIds.length} tender${selectedIds.length > 1 ? 's' : ''} selected`}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={toggleManageMode}
+                className="border-slate-300 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={selectedIds.length === 0}
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-rose-700 hover:bg-rose-800 text-white text-xs font-medium disabled:opacity-40"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                Delete Selected{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Official Registry Table */}
@@ -198,11 +309,21 @@ export default function Tenders() {
             <Table>
               <TableHeader>
                 <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                  {isOfficer && manageMode && (
+                    <TableHead className="py-3 px-4 w-10">
+                      <input
+                        type="checkbox"
+                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        onChange={toggleSelectAll}
+                        className="h-4 w-4 rounded border-slate-300 accent-blue-800"
+                        aria-label="Select all tenders"
+                      />
+                    </TableHead>
+                  )}
                   <TableHead className="py-3 px-4 font-bold text-slate-700">Tender Reference</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700">Title &amp; Department</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700 text-right">Estimated Value</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700 text-center">Bidders</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700 text-center">Avg Compliance</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700 text-center">Risk Alerts</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700">Closing Date</TableHead>
                   <TableHead className="py-3 px-4 font-bold text-slate-700">Status</TableHead>
@@ -215,6 +336,17 @@ export default function Tenders() {
                     key={t.id}
                     className="hover:bg-blue-50/40 transition-colors border-b border-slate-100 group"
                   >
+                    {isOfficer && manageMode && (
+                      <TableCell className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(t.id)}
+                          onChange={() => toggleSelect(t.id)}
+                          className="h-4 w-4 rounded border-slate-300 accent-blue-800"
+                          aria-label={`Select tender ${t.tender_number}`}
+                        />
+                      </TableCell>
+                    )}
                     {/* Tender Number */}
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -227,7 +359,7 @@ export default function Tenders() {
                             {t.tender_number}
                           </span>
                           <span className="block text-[10px] text-slate-500 font-mono">
-                            {t.tender_type || 'OPEN'} • {t.bid_type || 'TWO_PACKET'}
+                            {t.tender_type || 'OPEN'}
                           </span>
                         </div>
                       </div>
@@ -257,27 +389,6 @@ export default function Tenders() {
                       </span>
                     </TableCell>
 
-                    {/* Avg Compliance */}
-                    <TableCell className="py-3 px-4 text-center">
-                      {t.avg_compliance !== null && t.avg_compliance !== undefined ? (
-                        <div className="inline-flex items-center gap-1">
-                          <span
-                            className={`font-mono text-xs font-bold ${
-                              t.avg_compliance >= 80
-                                ? 'text-emerald-700'
-                                : t.avg_compliance >= 60
-                                ? 'text-amber-700'
-                                : 'text-rose-700'
-                            }`}
-                          >
-                            {Math.round(t.avg_compliance)}%
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-slate-400">—</span>
-                      )}
-                    </TableCell>
-
                     {/* Risk Alerts */}
                     <TableCell className="py-3 px-4 text-center">
                       {t.high_risk_count > 0 ? (
@@ -286,8 +397,9 @@ export default function Tenders() {
                           {t.high_risk_count} High Risk
                         </span>
                       ) : (
-                        <span className="text-[11px] text-emerald-700 font-medium flex items-center justify-center gap-1">
-                          <ShieldCheck className="h-3 w-3 text-emerald-600" /> Clear
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700 border border-emerald-200">
+                          <ShieldCheck className="h-3 w-3" />
+                          No Risk
                         </span>
                       )}
                     </TableCell>
@@ -324,7 +436,7 @@ export default function Tenders() {
                         className="border-slate-300 text-blue-900 hover:bg-blue-50 text-xs font-medium py-1 px-2.5 h-7 shadow-2xs"
                       >
                         <Eye className="mr-1 h-3 w-3 text-blue-700" />
-                        Open Dossier
+                        View
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -337,6 +449,47 @@ export default function Tenders() {
 
       {/* Wizard modal */}
       <TenderWizard open={dialogOpen} onOpenChange={setDialogOpen} onCreated={handleCreated} />
+
+      {/* Bulk delete confirmation (Procurement Officer only) */}
+      <Dialog open={bulkDeleteOpen} onOpenChange={(open) => { if (!open) setBulkDeleteOpen(false); }}>
+        <DialogContent className="max-w-md bg-white border border-slate-300">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+              Delete {selectedTenders.length} Tender{selectedTenders.length > 1 ? 's' : ''}?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              This permanently removes the following tenders, their requirements,
+              all participating bidders, and every derived record (documents,
+              verification checks, compliance results, risk assessments). The
+              audit trail is preserved. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+            <ul className="space-y-1">
+              {selectedTenders.map((t) => (
+                <li key={t.id} className="font-mono text-xs font-semibold text-slate-800">
+                  #{t.tender_number}
+                  <span className="ml-2 font-sans font-normal text-slate-500">{t.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            <Button variant="outline" size="sm" onClick={() => setBulkDeleteOpen(false)} className="border-slate-300">
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmBulkDelete}
+              loading={deleting}
+              className="bg-rose-700 hover:bg-rose-800 text-white font-medium text-xs"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Delete Selected
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

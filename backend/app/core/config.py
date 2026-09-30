@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # extraction provider (LLM_PROVIDER=gemini) and vision OCR
     # (OCR_PROVIDER=gemini). Never commit a real key — use a local .env.
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-flash-latest"  # rolling alias: always points at the current stable Flash model (2.0-flash was retired Jun 2026)
+    GEMINI_MODEL: str = "gemini-2.5-flash-lite"  # Lite models get a separate, larger free-quota bucket (~500/day)
     # OCR engine for scanned PDFs: "paddle" (local PaddleOCR) or "gemini"
     # (Gemini vision API — needs GEMINI_API_KEY).
     OCR_PROVIDER: str = "paddle"

@@ -33,7 +33,10 @@ ADMIN = "ADMIN"
 GATES = {
     "officer decision/override/clarification": (officer_mod, "_OFFICER", {OFFICER}),
     "tender create/requirements/analyze": (tenders_mod, "_OFFICER", {OFFICER}),
+    "tender deletion": (tenders_mod, "_OFFICER", {OFFICER}),
     "bid registration": (bids_mod, "_SUBMITTER", {OFFICER, VERIFIER}),
+    "bid deletion": (bids_mod, "_OFFICER", {OFFICER}),
+    "demo evidence seeding (bid)": (bids_mod, "_SUBMITTER", {OFFICER, VERIFIER}),
     "document upload": (documents_mod, "_UPLOADER", {OFFICER, VERIFIER}),
     "document classification fix": (documents_mod, "_CORRECTOR", {OFFICER, VERIFIER}),
     "document processing": (documents_mod, "_PROCESSOR", {OFFICER, VERIFIER}),
@@ -71,7 +74,8 @@ def test_auditor_is_read_only_for_procurement_writes():
     write_gates = [
         (officer_mod, "_OFFICER"),
         (tenders_mod, "_OFFICER"),
-        (bids_mod, "_SUBMITTER"),
+        (bids_mod, "_SUBMITTER"),  # also gates POST /bids/{id}/seed-demo-evidence
+        (bids_mod, "_OFFICER"),  # gates DELETE /bids/{id}
         (documents_mod, "_UPLOADER"),
         (documents_mod, "_CORRECTOR"),
         (documents_mod, "_PROCESSOR"),

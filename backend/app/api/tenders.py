@@ -285,6 +285,9 @@ def set_requirements(
     tender = db.get(Tender, tender_id)
     if tender is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tender not found")
+    # Same 100%-total rule as the creation wizard: requirement weights must be
+    # non-negative and sum to exactly 100, enforced server-side.
+    _validate_wizard_weights(payload.requirements)
     db.query(TenderRequirement).filter(TenderRequirement.tender_id == tender_id).delete()
     created: list[TenderRequirement] = []
     for req in payload.requirements:
@@ -440,3 +443,24 @@ def comparison(
         ],
         matrix=matrix,
     )
+
+
+@router.delete("/{tender_id}")
+def delete_tender(
+    tender_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Delete a tender and every bid/derived record under it.
+
+    Procurement Officer only. The append-only audit trail is preserved; a
+    ``TENDER_DELETED`` event records the deletion.
+    """
+    from app.services import delete_service
+
+    try:
+        return delete_service.delete_tender(db, tender_id, user_id=user.id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        )

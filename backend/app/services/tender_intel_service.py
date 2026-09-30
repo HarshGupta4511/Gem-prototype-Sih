@@ -349,7 +349,7 @@ def _parse_threshold_number(threshold: str | None):
     m = re.search(r"[\d,]+(?:\.\d+)?", t)
     if m:
         try:
-            return float(m.group(1).replace(",", ""))
+            return float(m.group(0).replace(",", ""))
         except ValueError:
             return None
     return None

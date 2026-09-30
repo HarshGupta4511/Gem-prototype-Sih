@@ -1,1 +1,2018 @@
-{"27AAFCA1234E1Z5": {"gstin": "27AAFCA1234E1Z5", "legal_name": "Apex Flow Systems Private Limited", "registration_date": "2021-06-15", "state": "Maharashtra", "status": "ACTIVE"}, "27BBMWB5678F1Z5": {"gstin": "27BBMWB5678F1Z5", "legal_name": "Bharat Mech Works", "registration_date": "2019-03-10", "state": "Maharashtra", "status": "ACTIVE"}, "27CCPLC9012G1Z5": {"gstin": "27CCPLC9012G1Z5", "legal_name": "Crestline Trading Co", "registration_date": "2020-07-22", "state": "Maharashtra", "status": "ACTIVE"}, "27DDITR3456H1Z5": {"gstin": "27DDITR3456H1Z5", "legal_name": "Deccan Industrial Traders", "registration_date": "2018-11-05", "state": "Maharashtra", "status": "ACTIVE"}, "27EEENG7890J1Z5": {"gstin": "27EEENG7890J1Z5", "legal_name": "Everest Engineering Co", "registration_date": "2017-05-19", "state": "Maharashtra", "status": "ACTIVE"}, "27FFPEQ2345K1Z5": {"gstin": "27FFPEQ2345K1Z5", "legal_name": "Fusion Petro Equipment LLP", "registration_date": "2021-09-30", "state": "Maharashtra", "status": "ACTIVE"}, "27GGCON6789L1Z5": {"gstin": "27GGCON6789L1Z5", "legal_name": "Ganesh Controls", "registration_date": "2020-02-11", "state": "Maharashtra", "status": "ACTIVE"}, "27HHSHG1234M1Z5": {"gstin": "27HHSHG1234M1Z5", "legal_name": "Harsh Safety Gear", "registration_date": "2023-08-01", "state": "Maharashtra", "status": "ACTIVE"}, "27AAHCA2345M1Z5": {"gstin": "27AAHCA2345M1Z5", "legal_name": "Apex MediSupply Private Limited", "registration_date": "2022-04-18", "state": "Maharashtra", "status": "ACTIVE"}, "27BBHCB3456N1Z5": {"gstin": "27BBHCB3456N1Z5", "legal_name": "BrightCare Enterprises", "registration_date": "2021-09-02", "state": "Maharashtra", "status": "ACTIVE"}}
+{
+  "27AAFCA1234E1Z5": {
+    "gstin": "27AAFCA1234E1Z5",
+    "legal_name": "Apex Flow Systems Private Limited",
+    "registration_date": "2021-06-15",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27BBMWB5678F1Z5": {
+    "gstin": "27BBMWB5678F1Z5",
+    "legal_name": "Bharat Mech Works",
+    "registration_date": "2019-03-10",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27CCPLC9012G1Z5": {
+    "gstin": "27CCPLC9012G1Z5",
+    "legal_name": "Crestline Trading Co",
+    "registration_date": "2020-07-22",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27DDITR3456H1Z5": {
+    "gstin": "27DDITR3456H1Z5",
+    "legal_name": "Deccan Industrial Traders",
+    "registration_date": "2018-11-05",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27EEENG7890J1Z5": {
+    "gstin": "27EEENG7890J1Z5",
+    "legal_name": "Everest Engineering Co",
+    "registration_date": "2017-05-19",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27FFPEQ2345K1Z5": {
+    "gstin": "27FFPEQ2345K1Z5",
+    "legal_name": "Fusion Petro Equipment LLP",
+    "registration_date": "2021-09-30",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27GGCON6789L1Z5": {
+    "gstin": "27GGCON6789L1Z5",
+    "legal_name": "Ganesh Controls",
+    "registration_date": "2020-02-11",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27HHSHG1234M1Z5": {
+    "gstin": "27HHSHG1234M1Z5",
+    "legal_name": "Harsh Safety Gear",
+    "registration_date": "2023-08-01",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27AAHCA2345M1Z5": {
+    "gstin": "27AAHCA2345M1Z5",
+    "legal_name": "Apex MediSupply Private Limited",
+    "registration_date": "2022-04-18",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27BBHCB3456N1Z5": {
+    "gstin": "27BBHCB3456N1Z5",
+    "legal_name": "BrightCare Enterprises",
+    "registration_date": "2021-09-02",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27AANNE5678P1Z5": {
+    "legal_name": "Nova Infra Projects Private Limited",
+    "status": "ACTIVE",
+    "registration_date": "2021-06-15",
+    "state": "Maharashtra",
+    "is_mock": true
+  },
+  "29AAPCP9876Q1Z5": {
+    "legal_name": "PrimeTech Industrial Systems Private Limited",
+    "status": "ACTIVE",
+    "registration_date": "2018-03-20",
+    "state": "Karnataka",
+    "is_mock": true
+  },
+  "19SWYCI8650Y7ZB": {
+    "gstin": "19SWYCI8650Y7ZB",
+    "legal_name": "Godavari Control Services LLP",
+    "registration_date": "2021-05-17",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "24QZRCD4319X9ZL": {
+    "gstin": "24QZRCD4319X9ZL",
+    "legal_name": "Nellore Engineering Works Pvt. Ltd.",
+    "registration_date": "2023-11-10",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "19IKPCU1754R5ZS": {
+    "gstin": "19IKPCU1754R5ZS",
+    "legal_name": "Bharuch Polymer Enterprises LLP",
+    "registration_date": "2016-07-07",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "27QBVCC7340M7Z4": {
+    "gstin": "27QBVCC7340M7Z4",
+    "legal_name": "Sivakasi Infra Projects Private Limited",
+    "registration_date": "2020-04-17",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27PTRCF6998R9ZN": {
+    "gstin": "27PTRCF6998R9ZN",
+    "legal_name": "Tumakuru Industrial Solutions LLP",
+    "registration_date": "2017-03-23",
+    "state": "Maharashtra",
+    "status": "INACTIVE"
+  },
+  "27RBQCK3805N7ZX": {
+    "gstin": "27RBQCK3805N7ZX",
+    "legal_name": "Ankleshwar Infra Projects Private Limited",
+    "registration_date": "2023-10-24",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24VEVCD2089P1Z8": {
+    "gstin": "24VEVCD2089P1Z8",
+    "legal_name": "Erode Industrial Fabricators LLP",
+    "registration_date": "2021-01-17",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24LVMCF4700S3ZD": {
+    "gstin": "24LVMCF4700S3ZD",
+    "legal_name": "Nashik Infra Projects Private Limited",
+    "registration_date": "2017-03-24",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33MNDCJ3956X7ZN": {
+    "gstin": "33MNDCJ3956X7ZN",
+    "legal_name": "Godavari Instrumentation Associates LLP",
+    "registration_date": "2016-09-17",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27KUVCQ8599Y9ZY": {
+    "gstin": "27KUVCQ8599Y9ZY",
+    "legal_name": "Nilgiri Infra Projects Private Limited",
+    "registration_date": "2016-01-22",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27DLYCX6076M5Z3": {
+    "gstin": "27DLYCX6076M5Z3",
+    "legal_name": "Nashik Infra Projects Private Limited",
+    "registration_date": "2018-10-25",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "09LDTCT8272Z4ZA": {
+    "gstin": "09LDTCT8272Z4ZA",
+    "legal_name": "Tapi Precision Fabricators LLP",
+    "registration_date": "2019-10-20",
+    "state": "Uttar Pradesh",
+    "status": "INACTIVE"
+  },
+  "09JEJCA3788V7Z8": {
+    "gstin": "09JEJCA3788V7Z8",
+    "legal_name": "Tumakuru Automation Solutions Pvt. Ltd.",
+    "registration_date": "2016-04-02",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "06CSFCW1751S9Z7": {
+    "gstin": "06CSFCW1751S9Z7",
+    "legal_name": "Nilgiri Control Fabricators LLP",
+    "registration_date": "2023-12-08",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "27BZACW8543W9ZJ": {
+    "gstin": "27BZACW8543W9ZJ",
+    "legal_name": "Tumakuru Instrumentation Services Pvt. Ltd.",
+    "registration_date": "2020-09-15",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "19VWUCC2440V8ZB": {
+    "gstin": "19VWUCC2440V8ZB",
+    "legal_name": "Kollam Polymer Associates LLP",
+    "registration_date": "2021-10-22",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "19SHWCI3214S4ZW": {
+    "gstin": "19SHWCI3214S4ZW",
+    "legal_name": "Hosur Infra Projects Private Limited",
+    "registration_date": "2020-04-25",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "27IXSCI7194U9Z6": {
+    "gstin": "27IXSCI7194U9Z6",
+    "legal_name": "Kongu Control Equipment Pvt. Ltd.",
+    "registration_date": "2019-02-15",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24FJZCV9526K4Z5": {
+    "gstin": "24FJZCV9526K4Z5",
+    "legal_name": "Saurashtra Power Associates LLP",
+    "registration_date": "2016-01-18",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27YTICS5996T3Z6": {
+    "gstin": "27YTICS5996T3Z6",
+    "legal_name": "Kurnool Engineering Equipment Pvt. Ltd.",
+    "registration_date": "2022-12-07",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27NGQCJ1839D4ZM": {
+    "gstin": "27NGQCJ1839D4ZM",
+    "legal_name": "Thrissur Steel Associates LLP",
+    "registration_date": "2017-11-25",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33DFRCU5858M9ZU": {
+    "gstin": "33DFRCU5858M9ZU",
+    "legal_name": "Gulbarga Infra Projects Private Limited",
+    "registration_date": "2016-08-10",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "06HHCCR9094G2ZP": {
+    "gstin": "06HHCCR9094G2ZP",
+    "legal_name": "Vidarbha Automation Associates Pvt. Ltd.",
+    "registration_date": "2015-02-13",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24XSHCW9028S9ZT": {
+    "gstin": "24XSHCW9028S9ZT",
+    "legal_name": "Namakkal Infra Projects Private Limited",
+    "registration_date": "2020-09-23",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06MPNCE4308U3ZV": {
+    "gstin": "06MPNCE4308U3ZV",
+    "legal_name": "Marathwada Infra Projects Private Limited",
+    "registration_date": "2017-07-14",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24ZHLCP9129Q1Z3": {
+    "gstin": "24ZHLCP9129Q1Z3",
+    "legal_name": "Kurnool Valve Services LLP",
+    "registration_date": "2016-04-19",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06ZILCC6315G3ZD": {
+    "gstin": "06ZILCC6315G3ZD",
+    "legal_name": "Jalgaon Engineering Associates Pvt. Ltd.",
+    "registration_date": "2023-11-19",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24FQOCQ5560J8ZU": {
+    "gstin": "24FQOCQ5560J8ZU",
+    "legal_name": "Thoothukudi Precision Equipment Pvt. Ltd.",
+    "registration_date": "2020-11-17",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24CZICZ8008S3Z5": {
+    "gstin": "24CZICZ8008S3Z5",
+    "legal_name": "Tumakuru Automation Industries Pvt. Ltd.",
+    "registration_date": "2020-10-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33UXDCX1130D7ZF": {
+    "gstin": "33UXDCX1130D7ZF",
+    "legal_name": "Godavari Infra Projects Private Limited",
+    "registration_date": "2019-08-19",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33MPUCD3937V3Z9": {
+    "gstin": "33MPUCD3937V3Z9",
+    "legal_name": "Sahyadri Electrical Solutions Pvt. Ltd.",
+    "registration_date": "2019-01-25",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27BNTCB7771P5ZK": {
+    "gstin": "27BNTCB7771P5ZK",
+    "legal_name": "Davangere Power Fabricators LLP",
+    "registration_date": "2015-02-02",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33PJPCK7143L6Z8": {
+    "gstin": "33PJPCK7143L6Z8",
+    "legal_name": "Guntur Power Associates LLP",
+    "registration_date": "2023-01-21",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24TEQCT5844U6ZH": {
+    "gstin": "24TEQCT5844U6ZH",
+    "legal_name": "Tirupati Fabrication Technocrats Pvt. Ltd.",
+    "registration_date": "2019-05-26",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24JJQCR8818Z4ZF": {
+    "gstin": "24JJQCR8818Z4ZF",
+    "legal_name": "Davangere Flow Technocrats Pvt. Ltd.",
+    "registration_date": "2023-12-14",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24RSECB4644J9ZQ": {
+    "gstin": "24RSECB4644J9ZQ",
+    "legal_name": "Tirupati Infra Projects Private Limited",
+    "registration_date": "2020-01-19",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24EARCO6012K4ZM": {
+    "gstin": "24EARCO6012K4ZM",
+    "legal_name": "Satpura Engineering Associates Pvt. Ltd.",
+    "registration_date": "2017-03-07",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06MIPCJ8458R3ZB": {
+    "gstin": "06MIPCJ8458R3ZB",
+    "legal_name": "Thoothukudi Electrical Fabricators Pvt. Ltd.",
+    "registration_date": "2023-06-12",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "29YDRCU5094G3ZE": {
+    "gstin": "29YDRCU5094G3ZE",
+    "legal_name": "Salem Valve Technocrats Pvt. Ltd.",
+    "registration_date": "2016-04-07",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "33YEUCB4553C2ZJ": {
+    "gstin": "33YEUCB4553C2ZJ",
+    "legal_name": "Deccan Control Equipment LLP",
+    "registration_date": "2021-01-15",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33KEDCS9134U9ZP": {
+    "gstin": "33KEDCS9134U9ZP",
+    "legal_name": "Thoothukudi Engineering Solutions Pvt. Ltd.",
+    "registration_date": "2022-04-10",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33QCKCB7902Y8ZF": {
+    "gstin": "33QCKCB7902Y8ZF",
+    "legal_name": "Davangere Infra Projects Private Limited",
+    "registration_date": "2016-10-25",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "36GRCCX6395K9ZJ": {
+    "gstin": "36GRCCX6395K9ZJ",
+    "legal_name": "Thrissur Industrial Solutions Pvt. Ltd.",
+    "registration_date": "2019-10-26",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "06BZECO3609D2ZB": {
+    "gstin": "06BZECO3609D2ZB",
+    "legal_name": "Chambal Electrical Fabricators LLP",
+    "registration_date": "2017-01-17",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "09UXECD2381Q1ZW": {
+    "gstin": "09UXECD2381Q1ZW",
+    "legal_name": "Bhavnagar Infra Projects Private Limited",
+    "registration_date": "2019-12-25",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "19ONYCP3559V3ZQ": {
+    "gstin": "19ONYCP3559V3ZQ",
+    "legal_name": "Dindigul Industrial Fabricators Pvt. Ltd.",
+    "registration_date": "2022-01-16",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33TPVCR1614T4ZF": {
+    "gstin": "33TPVCR1614T4ZF",
+    "legal_name": "Davangere Flow Systems Pvt. Ltd.",
+    "registration_date": "2020-03-01",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24BZVCF5603U4Z6": {
+    "gstin": "24BZVCF5603U4Z6",
+    "legal_name": "Vijayapura Polymer Services LLP",
+    "registration_date": "2023-04-26",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "19LVZCZ7627A1ZM": {
+    "gstin": "19LVZCZ7627A1ZM",
+    "legal_name": "Jalgaon Infra Projects Private Limited",
+    "registration_date": "2019-07-05",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33IBYCP8058Y2Z5": {
+    "gstin": "33IBYCP8058Y2Z5",
+    "legal_name": "Namakkal Industrial Technocrats LLP",
+    "registration_date": "2021-04-11",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24BWGCX9662A9ZV": {
+    "gstin": "24BWGCX9662A9ZV",
+    "legal_name": "Ballari Precision Industries Pvt. Ltd.",
+    "registration_date": "2019-10-23",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "09PBECE6534W2ZF": {
+    "gstin": "09PBECE6534W2ZF",
+    "legal_name": "Sangli Electrical Systems LLP",
+    "registration_date": "2021-11-20",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "29TFYCE1256M8Z4": {
+    "gstin": "29TFYCE1256M8Z4",
+    "legal_name": "Salem Instrumentation Enterprises LLP",
+    "registration_date": "2016-09-15",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27JNZCE4695V2ZP": {
+    "gstin": "27JNZCE4695V2ZP",
+    "legal_name": "Namakkal Steel Fabricators LLP",
+    "registration_date": "2017-09-07",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24BHICH8239Y9ZK": {
+    "gstin": "24BHICH8239Y9ZK",
+    "legal_name": "Shakti Power Systems Pvt. Ltd.",
+    "registration_date": "2022-10-19",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "09IVKCQ1343J4Z5": {
+    "gstin": "09IVKCQ1343J4Z5",
+    "legal_name": "Guntur Valve Technocrats LLP",
+    "registration_date": "2015-03-06",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "27OKZCZ7653R5ZN": {
+    "gstin": "27OKZCZ7653R5ZN",
+    "legal_name": "Solapur Hydraulic Works Pvt. Ltd.",
+    "registration_date": "2015-04-09",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27WKLCM9196U3ZL": {
+    "gstin": "27WKLCM9196U3ZL",
+    "legal_name": "Gulbarga Hydraulic Works Pvt. Ltd.",
+    "registration_date": "2021-06-26",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33QOSCM8264F8Z8": {
+    "gstin": "33QOSCM8264F8Z8",
+    "legal_name": "Kurnool Automation Industries LLP",
+    "registration_date": "2019-05-26",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33APDCW1885V4ZM": {
+    "gstin": "33APDCW1885V4ZM",
+    "legal_name": "Kongu Infra Projects Private Limited",
+    "registration_date": "2018-05-07",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "06HQLCW9632A7ZM": {
+    "gstin": "06HQLCW9632A7ZM",
+    "legal_name": "Nilgiri Heavy Solutions Pvt. Ltd.",
+    "registration_date": "2023-05-03",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33XRICK9614Q7ZL": {
+    "gstin": "33XRICK9614Q7ZL",
+    "legal_name": "Vishal Polymer Associates LLP",
+    "registration_date": "2021-12-13",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33SNRCN6741M3ZZ": {
+    "gstin": "33SNRCN6741M3ZZ",
+    "legal_name": "Deccan Automation Solutions LLP",
+    "registration_date": "2021-10-01",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "06BUXCK5029L9ZM": {
+    "gstin": "06BUXCK5029L9ZM",
+    "legal_name": "Thrissur Polymer Technocrats Pvt. Ltd.",
+    "registration_date": "2017-03-17",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "19SRFCV5314I1ZW": {
+    "gstin": "19SRFCV5314I1ZW",
+    "legal_name": "Tirupati Infra Projects Private Limited",
+    "registration_date": "2021-08-18",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33AYOCP8270P3Z6": {
+    "gstin": "33AYOCP8270P3Z6",
+    "legal_name": "Dindigul Valve Fabricators Pvt. Ltd.",
+    "registration_date": "2021-05-07",
+    "state": "Tamil Nadu",
+    "status": "INACTIVE"
+  },
+  "27SUCCW3404Z5ZV": {
+    "gstin": "27SUCCW3404Z5ZV",
+    "legal_name": "Satpura Hydraulic Enterprises Pvt. Ltd.",
+    "registration_date": "2017-06-17",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24PUDCE9879K3ZR": {
+    "gstin": "24PUDCE9879K3ZR",
+    "legal_name": "Marathwada Mechanical Technocrats LLP",
+    "registration_date": "2017-03-11",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24FQXCC3936D9Z2": {
+    "gstin": "24FQXCC3936D9Z2",
+    "legal_name": "Satpura Infra Projects Private Limited",
+    "registration_date": "2021-09-18",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33JTGCB7076N3ZR": {
+    "gstin": "33JTGCB7076N3ZR",
+    "legal_name": "Kaveri Valve Works Pvt. Ltd.",
+    "registration_date": "2015-05-16",
+    "state": "Tamil Nadu",
+    "status": "INACTIVE"
+  },
+  "24FAKCV3128H5ZG": {
+    "gstin": "24FAKCV3128H5ZG",
+    "legal_name": "Palakkad Thermal Works Pvt. Ltd.",
+    "registration_date": "2020-01-06",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29FPUCJ8626F4ZY": {
+    "gstin": "29FPUCJ8626F4ZY",
+    "legal_name": "Tumakuru Industrial Enterprises LLP",
+    "registration_date": "2016-07-17",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "24VQXCT8719L6ZS": {
+    "gstin": "24VQXCT8719L6ZS",
+    "legal_name": "Vellore Automation Solutions LLP",
+    "registration_date": "2022-01-01",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06BNRCV5756N8ZY": {
+    "gstin": "06BNRCV5756N8ZY",
+    "legal_name": "Shakti Automation Technocrats LLP",
+    "registration_date": "2019-05-10",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33MGYCN7643E8ZB": {
+    "gstin": "33MGYCN7643E8ZB",
+    "legal_name": "Bhavnagar Pumps Systems LLP",
+    "registration_date": "2020-08-14",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24TEDCO9709S7Z3": {
+    "gstin": "24TEDCO9709S7Z3",
+    "legal_name": "Vellore Valve Technocrats Pvt. Ltd.",
+    "registration_date": "2022-04-15",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06VADCZ2920C9ZL": {
+    "gstin": "06VADCZ2920C9ZL",
+    "legal_name": "Kutch Process Technocrats Pvt. Ltd.",
+    "registration_date": "2018-07-05",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "29UPCCC6813O7ZR": {
+    "gstin": "29UPCCC6813O7ZR",
+    "legal_name": "Vindhya Engineering Industries LLP",
+    "registration_date": "2022-06-15",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "19FUYCA3181S5Z6": {
+    "gstin": "19FUYCA3181S5Z6",
+    "legal_name": "Thoothukudi Pumps Systems Pvt. Ltd.",
+    "registration_date": "2018-06-02",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33JAICU3355A8ZD": {
+    "gstin": "33JAICU3355A8ZD",
+    "legal_name": "Chettinad Precision Technocrats Pvt. Ltd.",
+    "registration_date": "2023-06-28",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27LBECI9176E1ZT": {
+    "gstin": "27LBECI9176E1ZT",
+    "legal_name": "Aravalli Automation Technocrats Pvt. Ltd.",
+    "registration_date": "2015-11-28",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29YEDCI6027U8ZH": {
+    "gstin": "29YEDCI6027U8ZH",
+    "legal_name": "Solapur Electrical Associates Pvt. Ltd.",
+    "registration_date": "2023-11-05",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06ATBCL6448I7ZK": {
+    "gstin": "06ATBCL6448I7ZK",
+    "legal_name": "Guntur Instrumentation Associates LLP",
+    "registration_date": "2017-09-25",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24WZACA6537Q5ZE": {
+    "gstin": "24WZACA6537Q5ZE",
+    "legal_name": "Jalgaon Infra Projects Private Limited",
+    "registration_date": "2019-07-21",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29UHGCD2637M2ZN": {
+    "gstin": "29UHGCD2637M2ZN",
+    "legal_name": "Kurnool Polymer Technocrats Pvt. Ltd.",
+    "registration_date": "2017-10-25",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "29LUUCM7325G2ZG": {
+    "gstin": "29LUUCM7325G2ZG",
+    "legal_name": "Malwa Thermal Fabricators Pvt. Ltd.",
+    "registration_date": "2021-11-07",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27VJJCL2850Q1Z6": {
+    "gstin": "27VJJCL2850Q1Z6",
+    "legal_name": "Davangere Pumps Fabricators LLP",
+    "registration_date": "2023-05-11",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "09TYKCA7440H3ZQ": {
+    "gstin": "09TYKCA7440H3ZQ",
+    "legal_name": "Deccan Engineering Enterprises Pvt. Ltd.",
+    "registration_date": "2020-01-17",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "33SZQCI2530I4ZH": {
+    "gstin": "33SZQCI2530I4ZH",
+    "legal_name": "Hosur Electrical Works Pvt. Ltd.",
+    "registration_date": "2022-01-18",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "09VOOCM8298C5ZS": {
+    "gstin": "09VOOCM8298C5ZS",
+    "legal_name": "Jalgaon Infra Projects Private Limited",
+    "registration_date": "2016-12-20",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "33CUXCN5787U2ZX": {
+    "gstin": "33CUXCN5787U2ZX",
+    "legal_name": "Sivakasi Valve Industries LLP",
+    "registration_date": "2017-11-16",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33KZNCC1264Q5Z7": {
+    "gstin": "33KZNCC1264Q5Z7",
+    "legal_name": "Davangere Heavy Associates Pvt. Ltd.",
+    "registration_date": "2018-02-13",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29SAKCL3115L6Z3": {
+    "gstin": "29SAKCL3115L6Z3",
+    "legal_name": "Belagavi Engineering Industries Pvt. Ltd.",
+    "registration_date": "2016-09-23",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "33VJGCW3939S8Z9": {
+    "gstin": "33VJGCW3939S8Z9",
+    "legal_name": "Bhavnagar Engineering Solutions LLP",
+    "registration_date": "2021-05-22",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33CQQCD7161D5ZV": {
+    "gstin": "33CQQCD7161D5ZV",
+    "legal_name": "Dindigul Infra Projects Private Limited",
+    "registration_date": "2015-07-18",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29YPFCG8275N3Z8": {
+    "gstin": "29YPFCG8275N3Z8",
+    "legal_name": "Chettinad Engineering Fabricators LLP",
+    "registration_date": "2021-07-01",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06SPFCV3720X7ZY": {
+    "gstin": "06SPFCV3720X7ZY",
+    "legal_name": "Sivakasi Valve Equipment Pvt. Ltd.",
+    "registration_date": "2017-02-02",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "19SCFCE4245U6Z8": {
+    "gstin": "19SCFCE4245U6Z8",
+    "legal_name": "Kurnool Infra Projects Private Limited",
+    "registration_date": "2016-11-27",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "24BAICY1848L5Z4": {
+    "gstin": "24BAICY1848L5Z4",
+    "legal_name": "Ballari Heavy Systems LLP",
+    "registration_date": "2018-10-04",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "09ZTCCU7814H4ZS": {
+    "gstin": "09ZTCCU7814H4ZS",
+    "legal_name": "Namakkal Power Associates Pvt. Ltd.",
+    "registration_date": "2023-11-08",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "29LAPCU1150B1Z7": {
+    "gstin": "29LAPCU1150B1Z7",
+    "legal_name": "Shakti Valve Solutions LLP",
+    "registration_date": "2021-05-11",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27XQJCG4931M1ZW": {
+    "gstin": "27XQJCG4931M1ZW",
+    "legal_name": "Vidarbha Electrical Associates LLP",
+    "registration_date": "2016-06-16",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24MIFCU7791P2Z2": {
+    "gstin": "24MIFCU7791P2Z2",
+    "legal_name": "Nellore Fabrication Equipment Pvt. Ltd.",
+    "registration_date": "2015-09-01",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24RQICI5149W8ZY": {
+    "gstin": "24RQICI5149W8ZY",
+    "legal_name": "Tapi Power Fabricators Pvt. Ltd.",
+    "registration_date": "2021-12-18",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24ZYOCF3924T1Z6": {
+    "gstin": "24ZYOCF3924T1Z6",
+    "legal_name": "Nellore Process Fabricators LLP",
+    "registration_date": "2018-06-26",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24RUWCW1506H1ZD": {
+    "gstin": "24RUWCW1506H1ZD",
+    "legal_name": "Amravati Automation Technocrats LLP",
+    "registration_date": "2017-09-10",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27BZOCB9515Y6ZH": {
+    "gstin": "27BZOCB9515Y6ZH",
+    "legal_name": "Palakkad Polymer Technocrats LLP",
+    "registration_date": "2017-12-11",
+    "state": "Maharashtra",
+    "status": "INACTIVE"
+  },
+  "29VNRCS9672Z3ZC": {
+    "gstin": "29VNRCS9672Z3ZC",
+    "legal_name": "Kongu Fabrication Equipment Pvt. Ltd.",
+    "registration_date": "2015-06-25",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "19IXGCL6458H9ZJ": {
+    "gstin": "19IXGCL6458H9ZJ",
+    "legal_name": "Gulbarga Steel Enterprises LLP",
+    "registration_date": "2023-07-13",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "24OJPCA5781K8ZA": {
+    "gstin": "24OJPCA5781K8ZA",
+    "legal_name": "Sahyadri Pumps Fabricators LLP",
+    "registration_date": "2023-07-15",
+    "state": "Gujarat",
+    "status": "INACTIVE"
+  },
+  "24CRRCB2197I6ZN": {
+    "gstin": "24CRRCB2197I6ZN",
+    "legal_name": "Kutch Polymer Associates LLP",
+    "registration_date": "2016-02-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "36OKYCK1426R2ZE": {
+    "gstin": "36OKYCK1426R2ZE",
+    "legal_name": "Saurashtra Process Associates LLP",
+    "registration_date": "2018-12-16",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24NACCC1220D9ZJ": {
+    "gstin": "24NACCC1220D9ZJ",
+    "legal_name": "Karur Electrical Works LLP",
+    "registration_date": "2018-03-12",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27XPACR4497M5ZG": {
+    "gstin": "27XPACR4497M5ZG",
+    "legal_name": "Godavari Alloy Systems LLP",
+    "registration_date": "2022-12-27",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29NNCCA5049K8ZS": {
+    "gstin": "29NNCCA5049K8ZS",
+    "legal_name": "Deccan Valve Works LLP",
+    "registration_date": "2021-05-26",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27UHXCA9123E5Z3": {
+    "gstin": "27UHXCA9123E5Z3",
+    "legal_name": "Karur Infra Projects Private Limited",
+    "registration_date": "2015-07-24",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33RGRCO5862I3ZY": {
+    "gstin": "33RGRCO5862I3ZY",
+    "legal_name": "Nilgiri Alloy Systems LLP",
+    "registration_date": "2019-10-01",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "06BLMCC3033M1ZE": {
+    "gstin": "06BLMCC3033M1ZE",
+    "legal_name": "Vindhya Control Services LLP",
+    "registration_date": "2021-07-14",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33KZDCK6410M1ZQ": {
+    "gstin": "33KZDCK6410M1ZQ",
+    "legal_name": "Hosur Control Systems Pvt. Ltd.",
+    "registration_date": "2020-10-07",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29YCLCY2670S2ZZ": {
+    "gstin": "29YCLCY2670S2ZZ",
+    "legal_name": "Deccan Power Systems LLP",
+    "registration_date": "2021-03-08",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27LBPCO1927K2Z9": {
+    "gstin": "27LBPCO1927K2Z9",
+    "legal_name": "Sangli Alloy Systems LLP",
+    "registration_date": "2015-03-26",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "36OENCA9155A4ZZ": {
+    "gstin": "36OENCA9155A4ZZ",
+    "legal_name": "Jamnagar Instrumentation Equipment LLP",
+    "registration_date": "2016-01-07",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "33TUGCI7502N6ZJ": {
+    "gstin": "33TUGCI7502N6ZJ",
+    "legal_name": "Gulbarga Polymer Services LLP",
+    "registration_date": "2018-07-23",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33AYQCV9931W3Z9": {
+    "gstin": "33AYQCV9931W3Z9",
+    "legal_name": "Raichur Mechanical Technocrats Pvt. Ltd.",
+    "registration_date": "2020-03-13",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33LPRCC3133P4ZM": {
+    "gstin": "33LPRCC3133P4ZM",
+    "legal_name": "Belagavi Alloy Works Pvt. Ltd.",
+    "registration_date": "2017-04-08",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29ZGJCZ9196V5ZG": {
+    "gstin": "29ZGJCZ9196V5ZG",
+    "legal_name": "Chambal Polymer Solutions LLP",
+    "registration_date": "2017-02-17",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27KLJCF9442C6ZK": {
+    "gstin": "27KLJCF9442C6ZK",
+    "legal_name": "Tirupati Industrial Fabricators LLP",
+    "registration_date": "2019-09-05",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33VWGCT6158U8ZG": {
+    "gstin": "33VWGCT6158U8ZG",
+    "legal_name": "Kaveri Infra Projects Private Limited",
+    "registration_date": "2015-02-11",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27YVTCG9218M3ZC": {
+    "gstin": "27YVTCG9218M3ZC",
+    "legal_name": "Amravati Infra Projects Private Limited",
+    "registration_date": "2021-02-02",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "06CRSCN7759F8ZH": {
+    "gstin": "06CRSCN7759F8ZH",
+    "legal_name": "Thoothukudi Electrical Services Pvt. Ltd.",
+    "registration_date": "2020-01-03",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24UJSCZ8581T6Z7": {
+    "gstin": "24UJSCZ8581T6Z7",
+    "legal_name": "Thrissur Mechanical Systems Pvt. Ltd.",
+    "registration_date": "2019-05-11",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "36RZECQ3197G9ZG": {
+    "gstin": "36RZECQ3197G9ZG",
+    "legal_name": "Latur Precision Fabricators LLP",
+    "registration_date": "2021-06-20",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "09RSOCM8130C9ZR": {
+    "gstin": "09RSOCM8130C9ZR",
+    "legal_name": "Marathwada Control Fabricators Pvt. Ltd.",
+    "registration_date": "2023-02-24",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "24LOPCQ5254R2ZS": {
+    "gstin": "24LOPCQ5254R2ZS",
+    "legal_name": "Narmada Valve Industries Pvt. Ltd.",
+    "registration_date": "2022-10-14",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27FHQCA6283C1ZH": {
+    "gstin": "27FHQCA6283C1ZH",
+    "legal_name": "Hosur Instrumentation Works Pvt. Ltd.",
+    "registration_date": "2018-03-13",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33FPXCW2511D1ZC": {
+    "gstin": "33FPXCW2511D1ZC",
+    "legal_name": "Malwa Infra Projects Private Limited",
+    "registration_date": "2019-05-08",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27JXRCA5201L6ZC": {
+    "gstin": "27JXRCA5201L6ZC",
+    "legal_name": "Godavari Power Associates LLP",
+    "registration_date": "2015-06-07",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "09ZJMCX5784B1ZQ": {
+    "gstin": "09ZJMCX5784B1ZQ",
+    "legal_name": "Sivakasi Engineering Industries Pvt. Ltd.",
+    "registration_date": "2022-05-05",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "27XULCV4761A3ZD": {
+    "gstin": "27XULCV4761A3ZD",
+    "legal_name": "Godavari Instrumentation Associates Pvt. Ltd.",
+    "registration_date": "2016-10-04",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "06MXQCI9094W3ZC": {
+    "gstin": "06MXQCI9094W3ZC",
+    "legal_name": "Sivakasi Control Technocrats Pvt. Ltd.",
+    "registration_date": "2018-01-24",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33UFTCS8611H6Z9": {
+    "gstin": "33UFTCS8611H6Z9",
+    "legal_name": "Kaveri Alloy Technocrats Pvt. Ltd.",
+    "registration_date": "2022-07-16",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33NXDCJ2122W2ZB": {
+    "gstin": "33NXDCJ2122W2ZB",
+    "legal_name": "Kurnool Infra Projects Private Limited",
+    "registration_date": "2017-09-24",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27WOKCL9717T9Z5": {
+    "gstin": "27WOKCL9717T9Z5",
+    "legal_name": "Thoothukudi Precision Equipment LLP",
+    "registration_date": "2022-01-16",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24MJFCL7637F2ZP": {
+    "gstin": "24MJFCL7637F2ZP",
+    "legal_name": "Bhavnagar Automation Works LLP",
+    "registration_date": "2017-06-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29CIWCP2085J4Z6": {
+    "gstin": "29CIWCP2085J4Z6",
+    "legal_name": "Kolhapur Flow Fabricators Pvt. Ltd.",
+    "registration_date": "2021-03-23",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "24WMJCZ5392S1ZY": {
+    "gstin": "24WMJCZ5392S1ZY",
+    "legal_name": "Namakkal Flow Fabricators Pvt. Ltd.",
+    "registration_date": "2023-10-14",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33ABICJ6783E1ZV": {
+    "gstin": "33ABICJ6783E1ZV",
+    "legal_name": "Sivakasi Polymer Enterprises LLP",
+    "registration_date": "2015-03-12",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24VIQCC5021O1ZN": {
+    "gstin": "24VIQCC5021O1ZN",
+    "legal_name": "Kongu Engineering Technocrats LLP",
+    "registration_date": "2020-12-09",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06QXJCB7989M1ZX": {
+    "gstin": "06QXJCB7989M1ZX",
+    "legal_name": "Thoothukudi Pumps Technocrats LLP",
+    "registration_date": "2020-09-08",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "24YSGCT1578L7ZB": {
+    "gstin": "24YSGCT1578L7ZB",
+    "legal_name": "Nellore Flow Works Pvt. Ltd.",
+    "registration_date": "2022-04-25",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27ZDHCK5986N5ZU": {
+    "gstin": "27ZDHCK5986N5ZU",
+    "legal_name": "Amravati Engineering Industries Pvt. Ltd.",
+    "registration_date": "2015-10-16",
+    "state": "Maharashtra",
+    "status": "INACTIVE"
+  },
+  "33XUWCD5112N5ZS": {
+    "gstin": "33XUWCD5112N5ZS",
+    "legal_name": "Solapur Mechanical Fabricators Pvt. Ltd.",
+    "registration_date": "2023-07-06",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24DGLCN4569V5ZE": {
+    "gstin": "24DGLCN4569V5ZE",
+    "legal_name": "Dharwad Infra Projects Private Limited",
+    "registration_date": "2019-10-19",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "09HPVCF3601V1ZR": {
+    "gstin": "09HPVCF3601V1ZR",
+    "legal_name": "Vindhya Control Technocrats Pvt. Ltd.",
+    "registration_date": "2019-04-22",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "33FHGCA1863K1ZR": {
+    "gstin": "33FHGCA1863K1ZR",
+    "legal_name": "Sahyadri Polymer Technocrats LLP",
+    "registration_date": "2022-02-01",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29MDUCF5420G8ZF": {
+    "gstin": "29MDUCF5420G8ZF",
+    "legal_name": "Aravalli Infra Projects Private Limited",
+    "registration_date": "2020-12-22",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27CJACY3934D7Z7": {
+    "gstin": "27CJACY3934D7Z7",
+    "legal_name": "Ankleshwar Power Fabricators Pvt. Ltd.",
+    "registration_date": "2019-11-12",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29HYVCG6103B8ZU": {
+    "gstin": "29HYVCG6103B8ZU",
+    "legal_name": "Latur Steel Industries LLP",
+    "registration_date": "2022-02-04",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06UUUCR5190M1ZG": {
+    "gstin": "06UUUCR5190M1ZG",
+    "legal_name": "Aravalli Heavy Systems LLP",
+    "registration_date": "2018-09-25",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "27ZMMCG6206E2ZZ": {
+    "gstin": "27ZMMCG6206E2ZZ",
+    "legal_name": "Malwa Control Works Pvt. Ltd.",
+    "registration_date": "2016-07-09",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24SCUCT6181A7ZB": {
+    "gstin": "24SCUCT6181A7ZB",
+    "legal_name": "Shakti Thermal Solutions Pvt. Ltd.",
+    "registration_date": "2023-04-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27JDVCK3328J1Z5": {
+    "gstin": "27JDVCK3328J1Z5",
+    "legal_name": "Malwa Valve Services Pvt. Ltd.",
+    "registration_date": "2023-08-27",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27UCOCJ1285P6ZR": {
+    "gstin": "27UCOCJ1285P6ZR",
+    "legal_name": "Kurnool Infra Projects Private Limited",
+    "registration_date": "2017-07-20",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33NRECN9554K3ZC": {
+    "gstin": "33NRECN9554K3ZC",
+    "legal_name": "Shakti Heavy Technocrats LLP",
+    "registration_date": "2021-02-28",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33LGJCJ9311P6ZK": {
+    "gstin": "33LGJCJ9311P6ZK",
+    "legal_name": "Vidarbha Alloy Systems LLP",
+    "registration_date": "2018-06-12",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27TMSCR2626K9Z9": {
+    "gstin": "27TMSCR2626K9Z9",
+    "legal_name": "Ankleshwar Control Systems Pvt. Ltd.",
+    "registration_date": "2015-10-07",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29TRPCV9540I6ZP": {
+    "gstin": "29TRPCV9540I6ZP",
+    "legal_name": "Gulbarga Fabrication Equipment Pvt. Ltd.",
+    "registration_date": "2015-07-21",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06GQBCW3369W9ZG": {
+    "gstin": "06GQBCW3369W9ZG",
+    "legal_name": "Karur Steel Associates LLP",
+    "registration_date": "2020-06-27",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33FNXCC7664G8ZD": {
+    "gstin": "33FNXCC7664G8ZD",
+    "legal_name": "Latur Polymer Systems LLP",
+    "registration_date": "2022-02-17",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27YELCJ1677H4ZK": {
+    "gstin": "27YELCJ1677H4ZK",
+    "legal_name": "Konark Infra Projects Private Limited",
+    "registration_date": "2017-06-12",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "06XXKCV5015R3Z7": {
+    "gstin": "06XXKCV5015R3Z7",
+    "legal_name": "Chambal Engineering Systems Pvt. Ltd.",
+    "registration_date": "2020-07-14",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "33SNZCI9027J9Z7": {
+    "gstin": "33SNZCI9027J9Z7",
+    "legal_name": "Sahyadri Steel Works Pvt. Ltd.",
+    "registration_date": "2017-06-06",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29JKXCR7283J2ZJ": {
+    "gstin": "29JKXCR7283J2ZJ",
+    "legal_name": "Malwa Infra Projects Private Limited",
+    "registration_date": "2021-01-16",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "09BVXCP9899U9ZS": {
+    "gstin": "09BVXCP9899U9ZS",
+    "legal_name": "Kurnool Polymer Works Pvt. Ltd.",
+    "registration_date": "2016-07-17",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "24CFJCS8475F8ZW": {
+    "gstin": "24CFJCS8475F8ZW",
+    "legal_name": "Kaveri Pumps Systems LLP",
+    "registration_date": "2019-07-07",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "09QKYCG2803P2Z2": {
+    "gstin": "09QKYCG2803P2Z2",
+    "legal_name": "Davangere Automation Systems Pvt. Ltd.",
+    "registration_date": "2022-10-02",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "06AHHCN2302S6ZL": {
+    "gstin": "06AHHCN2302S6ZL",
+    "legal_name": "Belagavi Pumps Enterprises LLP",
+    "registration_date": "2023-08-19",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "09ATLCI7433B2ZJ": {
+    "gstin": "09ATLCI7433B2ZJ",
+    "legal_name": "Erode Engineering Fabricators LLP",
+    "registration_date": "2016-07-25",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "06KXLCU2987C8ZJ": {
+    "gstin": "06KXLCU2987C8ZJ",
+    "legal_name": "Salem Pumps Solutions LLP",
+    "registration_date": "2016-05-15",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "27JILCR7084Z3ZK": {
+    "gstin": "27JILCR7084Z3ZK",
+    "legal_name": "Belagavi Flow Systems LLP",
+    "registration_date": "2018-04-14",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "09CVUCU7029O4ZY": {
+    "gstin": "09CVUCU7029O4ZY",
+    "legal_name": "Kanchipuram Hydraulic Enterprises Pvt. Ltd.",
+    "registration_date": "2015-10-13",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "29FBSCO3350U5ZB": {
+    "gstin": "29FBSCO3350U5ZB",
+    "legal_name": "Malwa Pumps Solutions Pvt. Ltd.",
+    "registration_date": "2019-09-27",
+    "state": "Karnataka",
+    "status": "INACTIVE"
+  },
+  "27JULCJ1853T2ZD": {
+    "gstin": "27JULCJ1853T2ZD",
+    "legal_name": "Satpura Infra Projects Private Limited",
+    "registration_date": "2019-02-19",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27UPYCT6049S8ZK": {
+    "gstin": "27UPYCT6049S8ZK",
+    "legal_name": "Thrissur Valve Industries Pvt. Ltd.",
+    "registration_date": "2019-04-25",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "06DTPCI9430J3Z4": {
+    "gstin": "06DTPCI9430J3Z4",
+    "legal_name": "Saurashtra Electrical Equipment LLP",
+    "registration_date": "2022-01-24",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "29VGRCJ9898D1ZX": {
+    "gstin": "29VGRCJ9898D1ZX",
+    "legal_name": "Tumakuru Power Technocrats Pvt. Ltd.",
+    "registration_date": "2018-03-14",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "33RPSCM5911F3ZY": {
+    "gstin": "33RPSCM5911F3ZY",
+    "legal_name": "Erode Industrial Services LLP",
+    "registration_date": "2019-07-22",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27RPZCN5621X8ZX": {
+    "gstin": "27RPZCN5621X8ZX",
+    "legal_name": "Erode Steel Works LLP",
+    "registration_date": "2015-12-08",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24FUNCR4195Y6ZL": {
+    "gstin": "24FUNCR4195Y6ZL",
+    "legal_name": "Vidarbha Hydraulic Technocrats LLP",
+    "registration_date": "2020-08-09",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27QAOCG1249E2ZM": {
+    "gstin": "27QAOCG1249E2ZM",
+    "legal_name": "Jamnagar Steel Equipment Pvt. Ltd.",
+    "registration_date": "2015-01-20",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27NYTCL1660C1ZZ": {
+    "gstin": "27NYTCL1660C1ZZ",
+    "legal_name": "Kollam Infra Projects Private Limited",
+    "registration_date": "2017-02-13",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27GPCCT5298O6Z9": {
+    "gstin": "27GPCCT5298O6Z9",
+    "legal_name": "Deccan Instrumentation Systems LLP",
+    "registration_date": "2019-06-19",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33CCECY6248T2ZD": {
+    "gstin": "33CCECY6248T2ZD",
+    "legal_name": "Jalgaon Process Services Pvt. Ltd.",
+    "registration_date": "2019-03-13",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29ZMPCU2828M6ZY": {
+    "gstin": "29ZMPCU2828M6ZY",
+    "legal_name": "Guntur Automation Systems LLP",
+    "registration_date": "2022-11-21",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06TVQCY4227W8Z9": {
+    "gstin": "06TVQCY4227W8Z9",
+    "legal_name": "Satpura Process Associates LLP",
+    "registration_date": "2017-01-05",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "36ZMZCU4690K1ZZ": {
+    "gstin": "36ZMZCU4690K1ZZ",
+    "legal_name": "Chettinad Hydraulic Fabricators Pvt. Ltd.",
+    "registration_date": "2023-09-01",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24HOJCS4934I2ZE": {
+    "gstin": "24HOJCS4934I2ZE",
+    "legal_name": "Tirupati Infra Projects Private Limited",
+    "registration_date": "2019-07-26",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29RFQCZ6166L4Z7": {
+    "gstin": "29RFQCZ6166L4Z7",
+    "legal_name": "Narmada Polymer Works Pvt. Ltd.",
+    "registration_date": "2017-01-22",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "24BXBCF8144S1ZX": {
+    "gstin": "24BXBCF8144S1ZX",
+    "legal_name": "Vindhya Hydraulic Systems Pvt. Ltd.",
+    "registration_date": "2019-02-06",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33ZNRCR3805F6ZV": {
+    "gstin": "33ZNRCR3805F6ZV",
+    "legal_name": "Kongu Thermal Enterprises Pvt. Ltd.",
+    "registration_date": "2017-05-01",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27QZSCY7080E4ZE": {
+    "gstin": "27QZSCY7080E4ZE",
+    "legal_name": "Narmada Control Works LLP",
+    "registration_date": "2023-07-06",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33REUCK8141K9ZM": {
+    "gstin": "33REUCK8141K9ZM",
+    "legal_name": "Kongu Valve Fabricators LLP",
+    "registration_date": "2023-03-21",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27ZGOCC2644V3ZB": {
+    "gstin": "27ZGOCC2644V3ZB",
+    "legal_name": "Nandyal Control Industries Pvt. Ltd.",
+    "registration_date": "2018-02-27",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33MYJCE2238Z3ZQ": {
+    "gstin": "33MYJCE2238Z3ZQ",
+    "legal_name": "Sahyadri Process Services LLP",
+    "registration_date": "2017-04-07",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "36ALXCG5793A8ZA": {
+    "gstin": "36ALXCG5793A8ZA",
+    "legal_name": "Guntur Mechanical Industries Pvt. Ltd.",
+    "registration_date": "2016-04-21",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24FUNCS3147X4ZA": {
+    "gstin": "24FUNCS3147X4ZA",
+    "legal_name": "Shakti Heavy Associates Pvt. Ltd.",
+    "registration_date": "2019-10-16",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "19NLZCH3645F1ZG": {
+    "gstin": "19NLZCH3645F1ZG",
+    "legal_name": "Vijayapura Polymer Associates Pvt. Ltd.",
+    "registration_date": "2021-06-20",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33XXQCM6077C5ZP": {
+    "gstin": "33XXQCM6077C5ZP",
+    "legal_name": "Marathwada Fabrication Enterprises Pvt. Ltd.",
+    "registration_date": "2020-05-06",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29KXDCV1512X9Z3": {
+    "gstin": "29KXDCV1512X9Z3",
+    "legal_name": "Shakti Fabrication Fabricators LLP",
+    "registration_date": "2022-06-26",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "29GKVCN8689J7ZP": {
+    "gstin": "29GKVCN8689J7ZP",
+    "legal_name": "Chettinad Polymer Associates Pvt. Ltd.",
+    "registration_date": "2023-02-07",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27RIDCO5413B1Z3": {
+    "gstin": "27RIDCO5413B1Z3",
+    "legal_name": "Chambal Polymer Technocrats Pvt. Ltd.",
+    "registration_date": "2017-02-11",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "36GAYCW4657M2ZU": {
+    "gstin": "36GAYCW4657M2ZU",
+    "legal_name": "Satpura Hydraulic Associates Pvt. Ltd.",
+    "registration_date": "2022-02-22",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24ZCMCQ7068D6ZC": {
+    "gstin": "24ZCMCQ7068D6ZC",
+    "legal_name": "Ankleshwar Fabrication Solutions Pvt. Ltd.",
+    "registration_date": "2021-07-18",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "27TAECS2656E9Z5": {
+    "gstin": "27TAECS2656E9Z5",
+    "legal_name": "Kolhapur Infra Projects Private Limited",
+    "registration_date": "2020-12-14",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27OGICP2129X8ZY": {
+    "gstin": "27OGICP2129X8ZY",
+    "legal_name": "Jalgaon Infra Projects Private Limited",
+    "registration_date": "2023-08-25",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27EOSCQ9061C3Z2": {
+    "gstin": "27EOSCQ9061C3Z2",
+    "legal_name": "Satpura Infra Projects Private Limited",
+    "registration_date": "2016-02-20",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "19VLVCZ4376B7ZE": {
+    "gstin": "19VLVCZ4376B7ZE",
+    "legal_name": "Kongu Polymer Equipment Pvt. Ltd.",
+    "registration_date": "2019-12-24",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "33SXMCI6267M2ZJ": {
+    "gstin": "33SXMCI6267M2ZJ",
+    "legal_name": "Gulbarga Flow Associates Pvt. Ltd.",
+    "registration_date": "2018-04-25",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "29HDJCY6126J9ZS": {
+    "gstin": "29HDJCY6126J9ZS",
+    "legal_name": "Nandyal Hydraulic Solutions Pvt. Ltd.",
+    "registration_date": "2023-08-25",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "29PPHCO3792U3ZF": {
+    "gstin": "29PPHCO3792U3ZF",
+    "legal_name": "Malwa Infra Projects Private Limited",
+    "registration_date": "2020-02-22",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "33FGXCI6044Y6ZV": {
+    "gstin": "33FGXCI6044Y6ZV",
+    "legal_name": "Alappuzha Precision Equipment Pvt. Ltd.",
+    "registration_date": "2015-12-09",
+    "state": "Tamil Nadu",
+    "status": "INACTIVE"
+  },
+  "33MWFCT3376R3ZU": {
+    "gstin": "33MWFCT3376R3ZU",
+    "legal_name": "Latur Control Fabricators Pvt. Ltd.",
+    "registration_date": "2021-12-20",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "06JBGCA4434Q8ZH": {
+    "gstin": "06JBGCA4434Q8ZH",
+    "legal_name": "Kutch Control Works LLP",
+    "registration_date": "2015-11-11",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "06LCVCC4914Z7ZG": {
+    "gstin": "06LCVCC4914Z7ZG",
+    "legal_name": "Solapur Flow Works LLP",
+    "registration_date": "2019-12-23",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "36EITCW1193D9ZU": {
+    "gstin": "36EITCW1193D9ZU",
+    "legal_name": "Vellore Engineering Solutions Pvt. Ltd.",
+    "registration_date": "2023-06-19",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24EULCH5928E8Z7": {
+    "gstin": "24EULCH5928E8Z7",
+    "legal_name": "Konark Infra Projects Private Limited",
+    "registration_date": "2016-05-10",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33TMQCB8588X4ZF": {
+    "gstin": "33TMQCB8588X4ZF",
+    "legal_name": "Konark Hydraulic Industries Pvt. Ltd.",
+    "registration_date": "2018-04-15",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27IUXCU1827B6ZP": {
+    "gstin": "27IUXCU1827B6ZP",
+    "legal_name": "Kurnool Precision Equipment Pvt. Ltd.",
+    "registration_date": "2020-10-17",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29UNNCG4196B2Z5": {
+    "gstin": "29UNNCG4196B2Z5",
+    "legal_name": "Nellore Infra Projects Private Limited",
+    "registration_date": "2020-12-14",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27DINCX5165J5ZA": {
+    "gstin": "27DINCX5165J5ZA",
+    "legal_name": "Karur Pumps Industries LLP",
+    "registration_date": "2021-04-05",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27MHBCB1318B1ZK": {
+    "gstin": "27MHBCB1318B1ZK",
+    "legal_name": "Kanchipuram Infra Projects Private Limited",
+    "registration_date": "2022-04-06",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "33WKYCM4135O1ZV": {
+    "gstin": "33WKYCM4135O1ZV",
+    "legal_name": "Bharuch Process Industries Pvt. Ltd.",
+    "registration_date": "2018-02-23",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24UZLCK6495Y1ZS": {
+    "gstin": "24UZLCK6495Y1ZS",
+    "legal_name": "Kollam Flow Enterprises LLP",
+    "registration_date": "2017-12-08",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24LKCCO5521W4ZF": {
+    "gstin": "24LKCCO5521W4ZF",
+    "legal_name": "Erode Process Industries LLP",
+    "registration_date": "2020-04-10",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24QDBCP9309T6ZX": {
+    "gstin": "24QDBCP9309T6ZX",
+    "legal_name": "Sivakasi Hydraulic Works Pvt. Ltd.",
+    "registration_date": "2022-10-27",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "06KLVCR9743H1Z3": {
+    "gstin": "06KLVCR9743H1Z3",
+    "legal_name": "Ankleshwar Mechanical Technocrats LLP",
+    "registration_date": "2016-07-14",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "36HLSCX6342M6ZQ": {
+    "gstin": "36HLSCX6342M6ZQ",
+    "legal_name": "Kurnool Infra Projects Private Limited",
+    "registration_date": "2016-10-26",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24HNOCO1102O8ZR": {
+    "gstin": "24HNOCO1102O8ZR",
+    "legal_name": "Nandyal Alloy Enterprises Pvt. Ltd.",
+    "registration_date": "2015-02-24",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29CUWCL1790C2Z2": {
+    "gstin": "29CUWCL1790C2Z2",
+    "legal_name": "Raichur Polymer Works LLP",
+    "registration_date": "2019-10-07",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "19OXZCP4301N1Z4": {
+    "gstin": "19OXZCP4301N1Z4",
+    "legal_name": "Tumakuru Instrumentation Industries LLP",
+    "registration_date": "2018-10-19",
+    "state": "West Bengal",
+    "status": "INACTIVE"
+  },
+  "24PDECN4795D5ZQ": {
+    "gstin": "24PDECN4795D5ZQ",
+    "legal_name": "Vellore Engineering Technocrats Pvt. Ltd.",
+    "registration_date": "2017-03-07",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29VDMCR6864Z6ZG": {
+    "gstin": "29VDMCR6864Z6ZG",
+    "legal_name": "Nandyal Electrical Systems LLP",
+    "registration_date": "2023-09-13",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "09FFLCN7130F8ZP": {
+    "gstin": "09FFLCN7130F8ZP",
+    "legal_name": "Alappuzha Heavy Enterprises Pvt. Ltd.",
+    "registration_date": "2018-05-11",
+    "state": "Uttar Pradesh",
+    "status": "ACTIVE"
+  },
+  "33ZLOCM1342G3ZK": {
+    "gstin": "33ZLOCM1342G3ZK",
+    "legal_name": "Namakkal Thermal Solutions Pvt. Ltd.",
+    "registration_date": "2018-02-11",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "24ATPCP4177F1ZX": {
+    "gstin": "24ATPCP4177F1ZX",
+    "legal_name": "Karur Electrical Fabricators LLP",
+    "registration_date": "2017-01-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24ZSSCI4491H2ZS": {
+    "gstin": "24ZSSCI4491H2ZS",
+    "legal_name": "Nilgiri Heavy Fabricators LLP",
+    "registration_date": "2023-02-04",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33KVRCO2916R9ZG": {
+    "gstin": "33KVRCO2916R9ZG",
+    "legal_name": "Solapur Thermal Enterprises LLP",
+    "registration_date": "2016-08-24",
+    "state": "Tamil Nadu",
+    "status": "INACTIVE"
+  },
+  "29CLXCU2840T2ZQ": {
+    "gstin": "29CLXCU2840T2ZQ",
+    "legal_name": "Dindigul Polymer Services Pvt. Ltd.",
+    "registration_date": "2016-06-01",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "24JLZCC9692C8ZM": {
+    "gstin": "24JLZCC9692C8ZM",
+    "legal_name": "Shakti Hydraulic Associates LLP",
+    "registration_date": "2020-05-09",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "33MKHCF7893O7ZB": {
+    "gstin": "33MKHCF7893O7ZB",
+    "legal_name": "Gulbarga Precision Industries Pvt. Ltd.",
+    "registration_date": "2018-11-16",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "09EGOCE9911W3Z3": {
+    "gstin": "09EGOCE9911W3Z3",
+    "legal_name": "Sahyadri Heavy Works LLP",
+    "registration_date": "2015-12-22",
+    "state": "Uttar Pradesh",
+    "status": "INACTIVE"
+  },
+  "24MILCQ1292R7ZW": {
+    "gstin": "24MILCQ1292R7ZW",
+    "legal_name": "Nandyal Steel Solutions LLP",
+    "registration_date": "2021-09-02",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "36JKECJ7037Y6Z2": {
+    "gstin": "36JKECJ7037Y6Z2",
+    "legal_name": "Kongu Electrical Technocrats LLP",
+    "registration_date": "2017-05-21",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "36UOTCA7607X7ZE": {
+    "gstin": "36UOTCA7607X7ZE",
+    "legal_name": "Solapur Electrical Technocrats LLP",
+    "registration_date": "2018-01-20",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "33VLQCR6932R3ZH": {
+    "gstin": "33VLQCR6932R3ZH",
+    "legal_name": "Belagavi Process Enterprises LLP",
+    "registration_date": "2015-01-06",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "33NTPCB9455Z7ZF": {
+    "gstin": "33NTPCB9455Z7ZF",
+    "legal_name": "Sivakasi Industrial Enterprises LLP",
+    "registration_date": "2020-04-03",
+    "state": "Tamil Nadu",
+    "status": "ACTIVE"
+  },
+  "27EDFCG8895Q1Z6": {
+    "gstin": "27EDFCG8895Q1Z6",
+    "legal_name": "Chambal Pumps Associates Pvt. Ltd.",
+    "registration_date": "2018-11-24",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24JCLCQ3653F2ZB": {
+    "gstin": "24JCLCQ3653F2ZB",
+    "legal_name": "Kolhapur Infra Projects Private Limited",
+    "registration_date": "2018-05-17",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "29GVECA6216O6Z8": {
+    "gstin": "29GVECA6216O6Z8",
+    "legal_name": "Vellore Precision Equipment Pvt. Ltd.",
+    "registration_date": "2016-06-05",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "06WEECX7232H1Z6": {
+    "gstin": "06WEECX7232H1Z6",
+    "legal_name": "Ballari Instrumentation Services LLP",
+    "registration_date": "2015-07-28",
+    "state": "Haryana",
+    "status": "ACTIVE"
+  },
+  "36YGZCL4873V5Z9": {
+    "gstin": "36YGZCL4873V5Z9",
+    "legal_name": "Thoothukudi Hydraulic Technocrats Pvt. Ltd.",
+    "registration_date": "2019-08-12",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "27EOYCY5469F2ZA": {
+    "gstin": "27EOYCY5469F2ZA",
+    "legal_name": "Sangli Steel Technocrats Pvt. Ltd.",
+    "registration_date": "2016-08-04",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "24EIGCS3082S1ZT": {
+    "gstin": "24EIGCS3082S1ZT",
+    "legal_name": "Guntur Flow Fabricators LLP",
+    "registration_date": "2022-12-21",
+    "state": "Gujarat",
+    "status": "INACTIVE"
+  },
+  "27XJRCW9101E4ZX": {
+    "gstin": "27XJRCW9101E4ZX",
+    "legal_name": "Kurnool Instrumentation Fabricators Pvt. Ltd.",
+    "registration_date": "2021-01-26",
+    "state": "Maharashtra",
+    "status": "INACTIVE"
+  },
+  "27YGTCI8892G7ZM": {
+    "gstin": "27YGTCI8892G7ZM",
+    "legal_name": "Palakkad Industrial Equipment Pvt. Ltd.",
+    "registration_date": "2018-05-01",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "36JKYCV8667S8ZG": {
+    "gstin": "36JKYCV8667S8ZG",
+    "legal_name": "Sahyadri Heavy Associates LLP",
+    "registration_date": "2022-07-16",
+    "state": "Telangana",
+    "status": "ACTIVE"
+  },
+  "24PJWCZ3163R6ZY": {
+    "gstin": "24PJWCZ3163R6ZY",
+    "legal_name": "Salem Instrumentation Associates Pvt. Ltd.",
+    "registration_date": "2015-08-01",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24IZXCE7173W3ZY": {
+    "gstin": "24IZXCE7173W3ZY",
+    "legal_name": "Chettinad Alloy Services LLP",
+    "registration_date": "2017-11-05",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "24OMOCE5062Z9ZR": {
+    "gstin": "24OMOCE5062Z9ZR",
+    "legal_name": "Ballari Infra Projects Private Limited",
+    "registration_date": "2022-09-13",
+    "state": "Gujarat",
+    "status": "ACTIVE"
+  },
+  "19CJHCK2069I6Z2": {
+    "gstin": "19CJHCK2069I6Z2",
+    "legal_name": "Sangli Fabrication Enterprises Pvt. Ltd.",
+    "registration_date": "2018-05-20",
+    "state": "West Bengal",
+    "status": "ACTIVE"
+  },
+  "27DIQCG5009D3ZF": {
+    "gstin": "27DIQCG5009D3ZF",
+    "legal_name": "Deccan Alloy Fabricators LLP",
+    "registration_date": "2019-10-23",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "27PSZCQ1561H8ZU": {
+    "gstin": "27PSZCQ1561H8ZU",
+    "legal_name": "Belagavi Mechanical Fabricators Pvt. Ltd.",
+    "registration_date": "2021-09-26",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29ELUCY3820S2ZQ": {
+    "gstin": "29ELUCY3820S2ZQ",
+    "legal_name": "Latur Flow Fabricators Pvt. Ltd.",
+    "registration_date": "2019-04-14",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "27IVECH1429R8ZW": {
+    "gstin": "27IVECH1429R8ZW",
+    "legal_name": "Kongu Pumps Fabricators Pvt. Ltd.",
+    "registration_date": "2021-01-05",
+    "state": "Maharashtra",
+    "status": "ACTIVE"
+  },
+  "29AVNCZ2267L4ZT": {
+    "gstin": "29AVNCZ2267L4ZT",
+    "legal_name": "Davangere Pumps Enterprises Pvt. Ltd.",
+    "registration_date": "2017-06-07",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  },
+  "29CGRCK7124H3ZK": {
+    "gstin": "29CGRCK7124H3ZK",
+    "legal_name": "Palakkad Steel Works Pvt. Ltd.",
+    "registration_date": "2018-02-27",
+    "state": "Karnataka",
+    "status": "ACTIVE"
+  }
+}

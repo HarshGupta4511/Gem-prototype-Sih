@@ -23,14 +23,18 @@ log = logging.getLogger(__name__)
 DEMO_PASSWORD = "Demo@123"
 TENDER1 = "CPCL-DEMO-2026-001"
 
-POLICY_TITLES = {
-    "gem_guidelines.md": "GeM Procurement Guidelines (Demo)",
-    "make_in_india.md": "Make in India — Local Content Guidelines (Demo)",
-    "msme_udyam.md": "MSME / Udyam Registration Reference (Demo)",
-    "oem_authorization_policy.md": "OEM Authorization Policy (Demo)",
-    "blacklist_debarment_policy.md": "Blacklisting and Debarment Policy (Demo)",
-    "cpcl_tender_conditions.md": "CPCL Tender Conditions (Demo)",
-    "document_verification_sop.md": "Document Verification SOP (Demo)",
+# Fictional demo policy documents (replaced 2026-09-30 by the source-grounded
+# authoritative knowledge base). Any KnowledgeDoc still carrying one of these
+# titles is removed from the database at seed time — fictional text must never
+# be presented as government policy.
+OLD_FICTIONAL_POLICY_TITLES = {
+    "GeM Procurement Guidelines (Demo)",
+    "Make in India — Local Content Guidelines (Demo)",
+    "MSME / Udyam Registration Reference (Demo)",
+    "OEM Authorization Policy (Demo)",
+    "Blacklisting and Debarment Policy (Demo)",
+    "CPCL Tender Conditions (Demo)",
+    "Document Verification SOP (Demo)",
 }
 
 BLACKLIST_EXPR = (
@@ -44,9 +48,9 @@ ITR_EXPR = (
 
 
 def _policies_dir() -> Path:
-    root = Path("/home/hatch/workspace/cpcl-bidverify/knowledge_base/policies")
-    if root.is_dir():
-        return root
+    # The authoritative policy collection lives inside this repository.
+    # (A stale Sept-2026 workspace copy at ~/workspace/cpcl-bidverify is
+    # deliberately NOT consulted — it holds the old fictional demo files.)
     return Path(__file__).resolve().parent / "policies"
 
 
@@ -453,20 +457,66 @@ def _seed_users(db) -> dict:
 
 
 def _seed_knowledge(db) -> int:
-    from app.models.models import KnowledgeDoc
+    """Seed the authoritative, source-grounded policy knowledge base.
+
+    Driven by ``policies/manifest.json`` — every document carries title,
+    issuing authority, source URL, publication/effective dates, version and
+    retrieval date. Fictional demo policy documents (and any POLICY doc not
+    present in the manifest) are removed so fictional text is never presented
+    as government policy. Documents whose manifest version changed are
+    re-indexed so the current applicable version is always the one retrieved.
+    Idempotent.
+    """
+    import json
+
+    from app.models.models import KnowledgeChunk, KnowledgeDoc
     from app.services.rag_service import index_knowledge_doc
 
     policies_dir = _policies_dir()
+    manifest_path = policies_dir / "manifest.json"
+    manifest = {}
+    if manifest_path.is_file():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            log.warning("Policy manifest unreadable: %s", manifest_path)
+
+    manifest_titles = {m.get("title") for m in manifest.values() if m.get("title")}
+
+    # 1. Remove fictional/demo policy docs and anything not in the manifest.
+    removed = 0
+    for doc in db.query(KnowledgeDoc).filter(KnowledgeDoc.doc_type == "POLICY").all():
+        if doc.title in OLD_FICTIONAL_POLICY_TITLES or doc.title not in manifest_titles:
+            db.query(KnowledgeChunk).filter(KnowledgeChunk.doc_id == doc.id).delete()
+            db.delete(doc)
+            removed += 1
+    if removed:
+        db.commit()
+        log.info("Seed: removed %d fictional/stale policy docs", removed)
+
+    # 2. Index manifest documents (re-index when the version changed).
     count = 0
-    for filename, title in POLICY_TITLES.items():
+    for filename, meta in manifest.items():
+        title = meta.get("title")
+        if not title:
+            continue
         path = policies_dir / filename
         if not path.is_file():
             log.warning("Policy file missing: %s", path)
             continue
+        version = str(meta.get("version") or "")[:50] or "1.0"
         existing = db.query(KnowledgeDoc).filter(KnowledgeDoc.title == title).one_or_none()
         if existing is not None:
+            if (existing.version or "") == version:
+                continue
+            # Newer/current version available — replace content and re-index.
+            existing.content = path.read_text(encoding="utf-8")
+            existing.version = version
+            db.flush()
+            index_knowledge_doc(db, existing)
+            count += 1
             continue
-        doc = KnowledgeDoc(title=title, doc_type="POLICY", version="1.0",
+        doc = KnowledgeDoc(title=title, doc_type="POLICY", version=version,
                            content=path.read_text(encoding="utf-8"))
         db.add(doc)
         db.flush()

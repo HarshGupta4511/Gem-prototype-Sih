@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   AlertOctagon,
   AlertTriangle,
@@ -24,6 +24,7 @@ import {
   Info,
   Layers,
   MessageSquare,
+  MoreHorizontal,
   Play,
   Plus,
   RefreshCw,
@@ -44,6 +45,7 @@ import type {
   OfficerDecision,
   RecommendationResult,
   DocumentType,
+  PolicyCitation,
 } from '../types';
 import {
   bidsApi,
@@ -53,6 +55,7 @@ import {
   recommendationApi,
   officerApi,
   getErrorMessage,
+  API_BASE_URL,
 } from '../lib/api';
 import {
   formatDate,
@@ -60,7 +63,14 @@ import {
   labelize,
   timeAgo,
 } from '../lib/utils';
+import {
+  displayActualValue,
+  displaySource,
+  displayThreshold,
+} from '../lib/compliance-display';
+import { openDocumentViewer } from '../lib/viewer-context';
 import { useAuth } from '../context/AuthContext';
+import { DEMO_BIDDER_PROFILES } from '../components/tenders/DemoBiddersModal';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import {
@@ -102,6 +112,7 @@ import { LoadingBlock } from '../components/common/ui-helpers';
 export default function BidDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const bidId = Number(id);
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -121,8 +132,26 @@ export default function BidDetailPage() {
   // States
   const [busy, setBusy] = React.useState<string | null>(null);
   const [selectedResult, setSelectedResult] = React.useState<ComplianceResult | null>(null);
-  const [expandedCheck, setExpandedCheck] = React.useState<number | null>(null);
-  const [activeTab, setActiveTab] = React.useState('compliance');
+  const [activeTab, setActiveTab] = React.useState(() => {
+    // Restore the tab the viewer (or browser back) returns to:
+    // explicit navigation state first, then the last tab used for this bid.
+    const fromState = (location.state as { tab?: string } | null)?.tab;
+    if (fromState) return fromState;
+    try {
+      return sessionStorage.getItem(`bid-detail-tab:${bidId}`) ?? 'compliance';
+    } catch {
+      return 'compliance';
+    }
+  });
+  // Remember the tab per bid so browser-back from the document viewer
+  // lands on the tab the document was opened from.
+  React.useEffect(() => {
+    try {
+      sessionStorage.setItem(`bid-detail-tab:${bidId}`, activeTab);
+    } catch {
+      /* storage unavailable — tab just won't persist */
+    }
+  }, [activeTab, bidId]);
 
   // Decision Dialog (First decision)
   const [decisionDialog, setDecisionDialog] = React.useState<OfficerDecision | null>(null);
@@ -138,17 +167,22 @@ export default function BidDetailPage() {
   // Override Dialog
   const [overrideTarget, setOverrideTarget] = React.useState<ComplianceResult | null>(null);
   const [overrideComment, setOverrideComment] = React.useState('');
-  const [overrideDocId, setOverrideDocId] = React.useState('');
   const [overrideError, setOverrideError] = React.useState<string | null>(null);
+  // Row action menu (which compliance row's "More" menu is open)
+  const [openActionMenu, setOpenActionMenu] = React.useState<number | null>(null);
 
   // Clarification Dialog
   const [clarifyOpen, setClarifyOpen] = React.useState(false);
   const [clarifySubject, setClarifySubject] = React.useState('');
   const [clarifyBody, setClarifyBody] = React.useState('');
-  const [sendId, setSendId] = React.useState<number | null>(null);
 
   // Upload state
   const [uploadFile, setUploadFile] = React.useState<File | null>(null);
+  // Demo evidence recovery (bid registered without its dossier, e.g. the
+  // publish-time seed failed): attach a profile's fictional dossier through
+  // the same real backend pipeline.
+  const [demoEvidenceOpen, setDemoEvidenceOpen] = React.useState(false);
+  const [demoProfileKey, setDemoProfileKey] = React.useState<string>('apex');
 
   // Query for document fields
   const processedDocs = React.useMemo(
@@ -208,7 +242,14 @@ export default function BidDetailPage() {
     try {
       await fn();
     } catch (err: unknown) {
-      toast({ title: 'Operation Failed', description: getErrorMessage(err) });
+      const msg = getErrorMessage(err);
+      toast({
+        title: 'Operation Failed',
+        description:
+          msg.includes('Network Error')
+            ? `Network Error — the backend did not respond at ${API_BASE_URL}. Check that the backend container is running and rebuilt (docker compose up --build), with VPN off.`
+            : msg,
+      });
     } finally {
       setBusy(null);
     }
@@ -235,7 +276,7 @@ export default function BidDetailPage() {
     runBusy('recommendation', async () => {
       await recommendationApi.generate(bidId);
       await invalidate();
-      toast({ title: 'AI Advisory Generated', description: 'Policy citations and evidence synthesis updated.' });
+      toast({ title: 'AI Advisory Generated', description: 'Advisory recommendation updated from evaluation findings.' });
     });
 
   // Process Document
@@ -259,6 +300,22 @@ export default function BidDetailPage() {
       toast({ title: 'All Documents Processed', description: 'Document extraction completed.' });
     });
 
+  // Demo evidence recovery: attach a profile's fictional dossier when the
+  // bid has no documents (e.g. publish-time seeding failed). Uses the real
+  // backend pipeline; scores are still derived by the officer's Evaluate.
+  const handleAttachDemoEvidence = () =>
+    runBusy('demo-evidence', async () => {
+      const res = await bidsApi.seedDemoEvidence(bidId, demoProfileKey);
+      setDemoEvidenceOpen(false);
+      await invalidate();
+      toast({
+        title: res.seeded ? 'Demo Evidence Attached' : 'Demo Evidence Already Present',
+        description: res.seeded
+          ? `Dossier document stored and extracted (${res.fields_extracted ?? 0} fields). Run Verification and Evaluate next.`
+          : 'This bidder already has its demo dossier attached.',
+      });
+    });
+
   // Upload handler
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,14 +332,13 @@ export default function BidDetailPage() {
   function openOverride(cr: ComplianceResult) {
     setOverrideTarget(cr);
     setOverrideComment('');
-    setOverrideDocId('');
     setOverrideError(null);
   }
 
   async function confirmOverride() {
     if (!overrideTarget) return;
     if (overrideComment.trim().length === 0) {
-      setOverrideError('A detailed officer justification is mandatory to override deterministic rules.');
+      setOverrideError('A written officer justification is required to override a rule finding.');
       return;
     }
     runBusy('override', async () => {
@@ -290,38 +346,33 @@ export default function BidDetailPage() {
         target_type: 'COMPLIANCE_RESULT',
         target_id: overrideTarget.id,
         officer_comment: overrideComment.trim(),
-        supporting_document_id: overrideDocId ? Number(overrideDocId) : undefined,
       });
       setOverrideTarget(null);
       await invalidate();
-      toast({ title: 'Officer Override Recorded', description: 'Audit chain updated with justification.' });
+      toast({ title: 'Officer Override Recorded', description: 'Original finding preserved; override added to the audit trail.' });
     });
   }
 
   // Clarification handlers
-  async function handleCreateClarification(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleCreateClarification(dispatch: boolean) {
     if (!clarifySubject.trim() || !clarifyBody.trim()) return;
-    runBusy('clarify-create', async () => {
-      await officerApi.clarification({
+    runBusy(dispatch ? 'clarify-dispatch' : 'clarify-create', async () => {
+      const created = await officerApi.clarification({
         bid_id: bidId,
         subject: clarifySubject.trim(),
         body: clarifyBody.trim(),
       });
+      if (dispatch) {
+        await officerApi.sendClarification(created.id);
+      }
       setClarifyOpen(false);
       setClarifySubject('');
       setClarifyBody('');
       await invalidate();
-      toast({ title: 'Clarification Drafted', description: 'Draft query saved to bidder file.' });
-    });
-  }
-
-  async function handleSendClarification(clarifyId: number) {
-    runBusy(`clarify-send-${clarifyId}`, async () => {
-      await officerApi.sendClarification(clarifyId);
-      setSendId(null);
-      await invalidate();
-      toast({ title: 'Clarification Dispatched', description: 'Vendor notified via portal.' });
+      toast({
+        title: dispatch ? 'Clarification Dispatched' : 'Clarification Drafted',
+        description: dispatch ? 'Vendor notified via portal.' : 'Draft query saved to bidder file.',
+      });
     });
   }
 
@@ -390,7 +441,7 @@ export default function BidDetailPage() {
     );
   }
 
-  const { bid, bidder, tender, documents, verification_checks, compliance_results, risk, recommendation, overrides, clarifications } = data;
+  const { bid, bidder, tender, documents, verification_checks, compliance_results, risk, recommendation, audit } = data;
 
   const passedCount = compliance_results.filter((c) => c.status === 'PASS').length;
   const totalRules = compliance_results.length;
@@ -497,15 +548,24 @@ export default function BidDetailPage() {
               <span className="text-[10.5px] uppercase font-semibold">Passed Rules</span>
               <FileCheck className="h-3.5 w-3.5 text-slate-400" />
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="font-mono text-xl font-bold text-emerald-800">
-                {passedCount} / {totalRules}
-              </span>
-              <span className="text-[10px] text-emerald-700">rules met</span>
-            </div>
-            <p className="mt-1 text-[10px] text-slate-500">
-              {totalRules - passedCount} non-pass rules
-            </p>
+            {totalRules === 0 ? (
+              <div className="mt-1">
+                <span className="font-mono text-xl font-bold text-slate-400">—</span>
+                <p className="mt-1 text-[10px] text-slate-500">Not evaluated yet</p>
+              </div>
+            ) : (
+              <>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="font-mono text-xl font-bold text-emerald-800">
+                    {passedCount} / {totalRules}
+                  </span>
+                  <span className="text-[10px] text-emerald-700">rules met</span>
+                </div>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  {totalRules - passedCount} non-pass rules
+                </p>
+              </>
+            )}
           </div>
 
           {/* Pending Reviews */}
@@ -673,7 +733,7 @@ export default function BidDetailPage() {
                 value="extracted"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                4. Extracted Info ({allExtractedFields.length})
+                4. Extracted Information ({allExtractedFields.length})
               </TabsTrigger>
               <TabsTrigger
                 value="risk"
@@ -685,19 +745,19 @@ export default function BidDetailPage() {
                 value="ai"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                6. AI Explanation &amp; Advisory
-              </TabsTrigger>
-              <TabsTrigger
-                value="overrides"
-                className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
-              >
-                7. Overrides &amp; Clarifications ({overrides.length + clarifications.length})
+                6. AI Explanation
               </TabsTrigger>
               <TabsTrigger
                 value="report"
                 className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
               >
-                8. Verification Report
+                7. Verification Report
+              </TabsTrigger>
+              <TabsTrigger
+                value="audit"
+                className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-800 data-[state=active]:text-blue-900 rounded-none px-3.5 py-2.5 text-xs font-semibold"
+              >
+                8. Audit Trail
               </TabsTrigger>
             </TabsList>
           </div>
@@ -708,12 +768,13 @@ export default function BidDetailPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                    Deterministic Compliance Results ({compliance_results.length} rules)
+                    Compliance Evaluation ({compliance_results.length} requirements)
                   </h3>
                   <SystemLayerTag layer="RULE_ENGINE" size="sm" />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Calculated against tender-specific requirements using strict numerical &amp; document matching.
+                  Rule-based evaluation against the tender's requirements. The deterministic
+                  rules engine is the authority for these results — not AI.
                 </p>
               </div>
 
@@ -746,13 +807,12 @@ export default function BidDetailPage() {
                   <TableHeader>
                     <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
                       <TableHead className="py-2.5 px-3">Requirement</TableHead>
-                      <TableHead className="py-2.5 px-3">Rule Type</TableHead>
-                      <TableHead className="py-2.5 px-3">Required Threshold</TableHead>
-                      <TableHead className="py-2.5 px-3">Actual Value</TableHead>
+                      <TableHead className="py-2.5 px-3">Criteria / Threshold</TableHead>
+                      <TableHead className="py-2.5 px-3">Actual Finding</TableHead>
                       <TableHead className="py-2.5 px-3 text-center">Status</TableHead>
                       <TableHead className="py-2.5 px-3 text-right">Weight</TableHead>
                       <TableHead className="py-2.5 px-3 text-right">Evidence</TableHead>
-                      <TableHead className="py-2.5 px-3 text-right">Override</TableHead>
+                      <TableHead className="py-2.5 px-3 text-right">Action</TableHead>
                     </tr>
                   </TableHeader>
                   <TableBody>
@@ -760,9 +820,8 @@ export default function BidDetailPage() {
                       const isOverridden = c.overridden;
                       const reqName = c.requirement?.requirement_name ?? `Requirement #${c.requirement_id}`;
                       const isMandatory = c.requirement?.mandatory ?? false;
-                      const ruleType = c.requirement?.rule_type ?? c.rule_applied;
-                      const threshold = c.requirement?.threshold ?? '—';
-                      const actualValue = c.evidence?.[0]?.value ?? c.explanation ?? 'Not Found';
+                      const firstEvidence = c.evidence?.[0];
+                      const actualValue = displayActualValue(firstEvidence?.value, firstEvidence?.field ?? '');
                       return (
                         <TableRow key={c.id} className="hover:bg-slate-50/60 text-xs">
                           <TableCell className="py-2.5 px-3 font-semibold text-slate-900">
@@ -773,15 +832,10 @@ export default function BidDetailPage() {
                               </span>
                             )}
                           </TableCell>
-                          <TableCell className="py-2.5 px-3">
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10.5px] font-mono text-slate-700 border border-slate-200">
-                              {ruleType}
-                            </span>
+                          <TableCell className="py-2.5 px-3 text-slate-700">
+                            {displayThreshold(c.requirement?.threshold)}
                           </TableCell>
-                          <TableCell className="py-2.5 px-3 font-mono text-slate-700">
-                            {threshold}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 font-mono text-slate-900 font-medium">
+                          <TableCell className="py-2.5 px-3 text-slate-900 font-medium">
                             {actualValue}
                           </TableCell>
                           <TableCell className="py-2.5 px-3 text-center">
@@ -808,14 +862,36 @@ export default function BidDetailPage() {
                           </TableCell>
                           <TableCell className="py-2.5 px-3 text-right">
                             {canDecide && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openOverride(c)}
-                                className="text-xs text-slate-600 hover:text-slate-900 h-7 px-2 border-slate-300"
-                              >
-                                Override
-                              </Button>
+                              <div className="relative inline-block">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setOpenActionMenu(openActionMenu === c.id ? null : c.id)}
+                                  className="text-xs text-slate-500 hover:text-slate-900 h-7 px-2"
+                                  title="More actions"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                                {openActionMenu === c.id && (
+                                  <>
+                                    <div
+                                      className="fixed inset-0 z-40"
+                                      onClick={() => setOpenActionMenu(null)}
+                                    />
+                                    <div className="absolute right-0 z-50 mt-1 w-44 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                                      <button
+                                        className="block w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50"
+                                        onClick={() => {
+                                          setOpenActionMenu(null);
+                                          openOverride(c);
+                                        }}
+                                      >
+                                        Override Finding
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
@@ -838,7 +914,8 @@ export default function BidDetailPage() {
                   <SystemLayerTag layer="VERIFICATION" size="sm" />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Automated verification checks cross-referenced against statutory portal registries.
+                  Which statutory source was checked and what was the result. Detailed
+                  reasoning for each requirement lives under Compliance → View Evidence.
                 </p>
               </div>
 
@@ -869,60 +946,31 @@ export default function BidDetailPage() {
               <Table>
                 <TableHeader>
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
-                    <TableHead className="py-2.5 px-3">Statutory Source</TableHead>
-                    <TableHead className="py-2.5 px-3">Check Type / Scope</TableHead>
-                    <TableHead className="py-2.5 px-3">Identifier Checked</TableHead>
-                    <TableHead className="py-2.5 px-3 text-center">Outcome Status</TableHead>
-                    <TableHead className="py-2.5 px-3">Verification Detail</TableHead>
-                    <TableHead className="py-2.5 px-3 text-right">Raw Payload</TableHead>
+                    <TableHead className="py-2.5 px-3">Source</TableHead>
+                    <TableHead className="py-2.5 px-3">Identifier</TableHead>
+                    <TableHead className="py-2.5 px-3 text-center">Status</TableHead>
+                    <TableHead className="py-2.5 px-3">Finding</TableHead>
                   </tr>
                 </TableHeader>
                 <TableBody>
-                  {verification_checks.map((vc) => {
-                    const isExpanded = expandedCheck === vc.id;
-                    return (
-                      <React.Fragment key={vc.id}>
-                        <TableRow className="hover:bg-slate-50/60 text-xs">
-                          <TableCell className="py-2.5 px-3 font-semibold text-slate-900">
-                            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-mono border border-slate-200">
-                              {vc.source}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-slate-700">
-                            {labelize(vc.source)}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 font-mono text-slate-800">
-                            {vc.identifier}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-center">
-                            <VerificationBadge status={vc.verification_status} />
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-slate-600 max-w-xs truncate">
-                            {vc.evidence_reference || (vc.response_payload ? JSON.stringify(vc.response_payload) : 'External verification verified.')}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-right">
-                            <button
-                              type="button"
-                              onClick={() => setExpandedCheck(isExpanded ? null : vc.id)}
-                              className="text-xs font-semibold text-blue-700 hover:underline"
-                            >
-                              {isExpanded ? 'Hide Payload' : 'View Payload'}
-                            </button>
-                          </TableCell>
-                        </TableRow>
-
-                        {isExpanded && (
-                          <TableRow className="bg-slate-50">
-                            <TableCell colSpan={6} className="p-4">
-                              <div className="rounded border border-slate-200 bg-slate-900 p-3 text-slate-200 font-mono text-[11px] overflow-x-auto">
-                                <pre>{JSON.stringify(vc.response_payload, null, 2)}</pre>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+                  {verification_checks.map((vc) => (
+                    <TableRow key={vc.id} className="hover:bg-slate-50/60 text-xs">
+                      <TableCell className="py-2.5 px-3 font-semibold text-slate-900">
+                        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-mono border border-slate-200">
+                          {displaySource(vc.source)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 font-mono text-slate-800">
+                        {vc.identifier}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-center">
+                        <VerificationBadge status={vc.verification_status} />
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-slate-600 max-w-md">
+                        {vc.evidence_reference || '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -944,6 +992,17 @@ export default function BidDetailPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                {documents.length === 0 && canVerify && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setDemoEvidenceOpen(true)}
+                    className="border-amber-300 text-amber-800 hover:bg-amber-50 text-xs"
+                  >
+                    <FileText className="mr-1.5 h-3.5 w-3.5" />
+                    Attach Demo Evidence
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -992,7 +1051,6 @@ export default function BidDetailPage() {
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
                     <TableHead className="py-2.5 px-3">Filename</TableHead>
                     <TableHead className="py-2.5 px-3">Classification</TableHead>
-                    <TableHead className="py-2.5 px-3 text-center">Confidence</TableHead>
                     <TableHead className="py-2.5 px-3 text-center">Status</TableHead>
                     <TableHead className="py-2.5 px-3 text-right">Pages</TableHead>
                     <TableHead className="py-2.5 px-3 text-right">Uploaded</TableHead>
@@ -1010,11 +1068,6 @@ export default function BidDetailPage() {
                       </TableCell>
                       <TableCell className="py-2.5 px-3">
                         <DocTypeBadge docType={doc.document_type} />
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-center font-mono">
-                        {doc.extraction_confidence != null
-                          ? `${Math.round(doc.extraction_confidence * 100)}%`
-                          : '—'}
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-center">
                         <DocStatusBadge status={doc.processing_status} />
@@ -1041,7 +1094,13 @@ export default function BidDetailPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => navigate(`/app/viewer/${doc.id}`)}
+                            onClick={() =>
+                              openDocumentViewer(navigate, doc.id, {
+                                path: `/app/bids/${bidId}`,
+                                label: 'Back to Bid Documents',
+                                state: { tab: 'documents' },
+                              })
+                            }
                             className="text-xs text-blue-700 hover:text-blue-900 h-7 px-2"
                           >
                             <Eye className="h-3.5 w-3.5" />
@@ -1084,7 +1143,6 @@ export default function BidDetailPage() {
                       <TableHead className="py-2.5 px-3">Extracted Raw Value</TableHead>
                       <TableHead className="py-2.5 px-3">Normalized Value</TableHead>
                       <TableHead className="py-2.5 px-3 text-center">Method</TableHead>
-                      <TableHead className="py-2.5 px-3 text-center">Confidence</TableHead>
                       <TableHead className="py-2.5 px-3">Source Document</TableHead>
                       <TableHead className="py-2.5 px-3 text-right">Page</TableHead>
                     </tr>
@@ -1103,9 +1161,6 @@ export default function BidDetailPage() {
                         </TableCell>
                         <TableCell className="py-2.5 px-3 text-center">
                           <MethodBadge method={f.method} />
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-center font-mono">
-                          {Math.round(f.confidence * 100)}%
                         </TableCell>
                         <TableCell className="py-2.5 px-3 text-slate-600 truncate max-w-xs">
                           {f.docName}
@@ -1127,12 +1182,13 @@ export default function BidDetailPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                    Independent Risk Classification Profile
+                    Risk Analysis
                   </h3>
-                  <SystemLayerTag layer="AI_ASSISTED" size="sm" />
+                  <SystemLayerTag layer="RULE_ENGINE" size="sm" />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Multi-signal anomaly detection covering statutory debarment, financial health, and submission timing.
+                  Independent of the compliance score — computed from the risk engine's
+                  detected signals below.
                 </p>
               </div>
               <div className="text-right">
@@ -1144,7 +1200,7 @@ export default function BidDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
                 <span className="text-[10.5px] uppercase font-semibold text-slate-500 block">
-                  Calculated Risk Score
+                  Risk Score
                 </span>
                 <span className="text-3xl font-mono font-bold text-slate-900 block mt-1">
                   {bid.risk_score != null ? `${Math.round(bid.risk_score)} / 100` : '—'}
@@ -1190,9 +1246,9 @@ export default function BidDetailPage() {
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xs text-slate-900 font-mono">{sig.code}</span>
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border bg-slate-50 text-slate-600 uppercase">
-                              {sig.severity}
+                            <span className="font-semibold text-xs text-slate-900">{labelize(sig.code)}</span>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded border bg-slate-50 text-slate-600 uppercase">
+                              {sig.severity} impact
                             </span>
                           </div>
                           <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">{sig.message}</p>
@@ -1220,10 +1276,12 @@ export default function BidDetailPage() {
                   <SystemLayerTag layer="AI_ASSISTED" size="sm" />
                 </div>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Grounds evaluation findings against CPCL procurement policy and GFR 2017 provisions using RAG retrieval.
+                  Advisory summary derived from the deterministic evaluation findings.
+                  Decision support only — it never replaces the officer's verdict.
                 </p>
               </div>
 
+              {canVerify && (
               <Button
                 size="sm"
                 variant="outline"
@@ -1234,31 +1292,82 @@ export default function BidDetailPage() {
                 <Sparkles className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
                 Refresh AI Recommendation
               </Button>
+              )}
             </div>
 
-            {/* AI Recommendation Box */}
+            {/* AI Recommendation Box — structured advisory */}
             {recommendation ? (
             <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50/50 p-5 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-950">
-                    AI Advisory Recommendation:
-                  </span>
-                  <RecommendationBadge rec={recommendation.recommendation} />
-                </div>
-                <span className="text-[10px] font-mono text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200">
-                  Provider: {(recommendation as any).provider || 'gemini-2.0-flash'}
+              <div className="flex items-center gap-2 border-b border-indigo-100 pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-950">
+                  Overall:
                 </span>
+                <RecommendationBadge rec={recommendation.recommendation} />
               </div>
 
-              <div className="mt-3">
-                <p className="text-xs text-indigo-950 leading-relaxed font-medium">
-                  {recommendation.reason || 'No recommendation generated yet.'}
-                </p>
+              <div className="mt-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950 mb-2">
+                  Key Findings
+                </h4>
+                {(() => {
+                  const flagged = compliance_results.filter((c) => c.status !== 'PASS');
+                  if (flagged.length === 0) {
+                    return (
+                      <p className="text-xs text-indigo-950 leading-relaxed">
+                        All evaluated requirements returned PASS. No blocking findings were detected
+                        by the rules engine.
+                      </p>
+                    );
+                  }
+                  return (
+                    <ol className="space-y-3">
+                      {flagged.map((c, idx) => (
+                        <li key={c.id} className="flex items-start gap-2.5">
+                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs font-semibold text-indigo-950">
+                                {c.requirement?.requirement_name ?? `Requirement #${c.requirement_id}`}
+                              </span>
+                              <StatusBadge status={c.status} />
+                            </div>
+                            <p className="mt-0.5 text-xs text-indigo-900/80 leading-relaxed">
+                              <span className="font-semibold text-indigo-950">Evidence:</span>{' '}
+                              {c.explanation || 'No explanation recorded.'}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  );
+                })()}
               </div>
 
-              <div className="mt-4 border-t border-indigo-100 pt-3 flex items-center justify-between text-[11px] text-indigo-800">
-                <span>Advisory recommendation only. The Procurement Officer retains sole statutory award authority.</span>
+              {(() => {
+                const flagged = compliance_results.filter((c) => c.status !== 'PASS');
+                if (flagged.length === 0) return null;
+                return (
+                  <div className="mt-4 rounded-md bg-white/70 border border-indigo-100 p-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950 mb-1.5">
+                      Officer Guidance
+                    </h4>
+                    <ul className="space-y-1 text-xs text-indigo-950 leading-relaxed list-disc pl-4">
+                      {flagged.map((c) => (
+                        <li key={c.id}>
+                          Review the {labelize(c.status).toLowerCase()}{' '}
+                          {(c.requirement?.requirement_name ?? 'requirement').toLowerCase()}.
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+
+              <div className="mt-4 border-t border-indigo-100 pt-3 text-[11px] text-indigo-800 font-medium">
+                Procurement Officer retains final decision authority. This advisory does not
+                qualify or disqualify any bidder.
               </div>
             </div>
             ) : (
@@ -1270,162 +1379,111 @@ export default function BidDetailPage() {
             </div>
             )}
 
-            {/* Policy Citations (RAG) */}
-            <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-2xs">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-blue-700" />
-                Retrieved Policy Citations (RAG Knowledge Base)
-              </h4>
-
-              {(recommendation as any)?.policy_context && (recommendation as any).policy_context.length > 0 ? (
-                <div className="space-y-3">
-                  {(recommendation as any).policy_context.map((ctx: any, idx: number) => (
-                    <div key={idx} className="rounded border border-slate-200 bg-slate-50 p-3 text-xs">
-                      <p className="font-semibold text-slate-900">{ctx.title}</p>
-                      <p className="mt-1 text-slate-600 leading-relaxed font-serif italic text-[11.5px]">
-                        "{ctx.chunk}"
-                      </p>
-                    </div>
-                  ))}
+            {/* Policy Citations (source-grounded retrieval) */}
+            {(() => {
+              const citations = ((recommendation as any)?.policy_context || []) as PolicyCitation[];
+              if (citations.length === 0) {
+                return (
+                  <p className="text-xs text-slate-500 italic">
+                    No relevant authoritative policy guidance was retrieved for this finding.
+                  </p>
+                );
+              }
+              return (
+                <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-2xs">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-1 flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-blue-700" />
+                    Relevant Policy References
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mb-3">
+                    Retrieved authoritative provisions relevant to the flagged findings above. Advisory context only — they do not change the compliance result or the recommendation.
+                  </p>
+                  <div className="space-y-3">
+                    {citations.map((ctx, idx) => (
+                      <div key={idx} className="rounded border border-slate-200 bg-slate-50 p-3 text-xs">
+                        <p className="font-semibold text-slate-900">{ctx.title}</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">
+                          Authority: {ctx.authority}{ctx.section ? ` · Reference: ${ctx.section}` : ''}
+                        </p>
+                        {ctx.why_relevant && (
+                          <p className="mt-1.5 text-[11px] text-slate-600">
+                            <span className="font-semibold">Why relevant:</span> {ctx.why_relevant}
+                          </p>
+                        )}
+                        {ctx.excerpt && (
+                          <p className="mt-1.5 text-slate-700 leading-relaxed font-serif italic text-[11.5px] line-clamp-4">
+                            “{ctx.excerpt}”
+                          </p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                          {ctx.version && <span>{ctx.version}</span>}
+                          {ctx.effective_date && <span>Effective: {ctx.effective_date}</span>}
+                          {ctx.source_url && (
+                            <a
+                              href={ctx.source_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
+                            >
+                              View Source <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="p-4 text-center text-xs text-slate-400">
-                  No policy citations retrieved for this evaluation.
-                </div>
-              )}
-            </div>
+              );
+            })()}
           </TabsContent>
 
-          {/* SECTION 7: OVERRIDES & CLARIFICATIONS */}
-          <TabsContent value="overrides" className="p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                    Procurement Officer Overrides &amp; Clarification Queries
-                  </h3>
-                  <SystemLayerTag layer="HUMAN_DECISION" size="sm" />
-                </div>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Recorded administrative justifications modifying automated rule evaluation results.
-                </p>
+          {/* SECTION 8: AUDIT TRAIL */}
+          <TabsContent value="audit" className="p-6 space-y-5">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Audit Trail ({audit.length})
+              </h3>
+              <SystemLayerTag layer="AUDIT_CHAIN" size="sm" />
+            </div>
+            <p className="text-xs text-slate-500">
+              Tamper-evident record of every action on this bid — evaluations, overrides,
+              clarifications and decisions.
+            </p>
+
+            {audit.length === 0 ? (
+              <p className="text-xs text-slate-400 italic">No audit events recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <Table>
+                  <TableHeader>
+                    <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
+                      <TableHead className="py-2.5 px-3">Time</TableHead>
+                      <TableHead className="py-2.5 px-3">Actor</TableHead>
+                      <TableHead className="py-2.5 px-3">Action</TableHead>
+                      <TableHead className="py-2.5 px-3">Record</TableHead>
+                    </tr>
+                  </TableHeader>
+                  <TableBody>
+                    {audit.map((a) => (
+                      <TableRow key={a.id} className="hover:bg-slate-50/60 text-xs">
+                        <TableCell className="py-2.5 px-3 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                          {formatDateTime(a.timestamp)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-slate-700">
+                          {a.user_name || 'System'}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 font-semibold text-slate-900">
+                          {labelize(a.action)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-slate-600">
+                          {labelize(a.entity_type)}{a.entity_id ? ` #${a.entity_id}` : ''}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-
-              {canDecide && (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setClarifyOpen(true);
-                    setClarifySubject(`Clarification Query - ${bidder.legal_name}`);
-                  }}
-                  className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium"
-                >
-                  <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
-                  New Clarification Query
-                </Button>
-              )}
-            </div>
-
-            {/* Overrides Table */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3">
-                Recorded Administrative Overrides ({overrides.length})
-              </h4>
-
-              {overrides.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No officer overrides recorded for this bidder.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-slate-500 font-semibold">
-                        <th className="py-2 px-2">Timestamp</th>
-                        <th className="py-2 px-2">Target</th>
-                        <th className="py-2 px-2">Original Status</th>
-                        <th className="py-2 px-2">Justification / Comment</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {overrides.map((ov) => (
-                        <tr key={ov.id}>
-                          <td className="py-2 px-2 font-mono text-[11px] text-slate-500">
-                            {formatDateTime(ov.created_at)}
-                          </td>
-                          <td className="py-2 px-2 font-semibold text-slate-900">{ov.target_type}</td>
-                          <td className="py-2 px-2">
-                            <span className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
-                              {ov.original_status}
-                            </span>
-                          </td>
-                          <td className="py-2 px-2 text-slate-700 leading-relaxed">{ov.officer_comment}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            {/* Clarifications Table */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3">
-                Vendor Clarification Enquiries ({clarifications.length})
-              </h4>
-
-              {clarifications.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No clarification requests issued.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-slate-500 font-semibold">
-                        <th className="py-2 px-2">Created</th>
-                        <th className="py-2 px-2">Subject</th>
-                        <th className="py-2 px-2">Query</th>
-                        <th className="py-2 px-2">Status</th>
-                        <th className="py-2 px-2 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {clarifications.map((cl) => (
-                        <tr key={cl.id}>
-                          <td className="py-2 px-2 font-mono text-[11px] text-slate-500">
-                            {formatDateTime(cl.created_at)}
-                          </td>
-                          <td className="py-2 px-2 font-semibold text-slate-900">{cl.subject}</td>
-                          <td className="py-2 px-2 text-slate-700 max-w-sm truncate">{cl.body}</td>
-                          <td className="py-2 px-2">
-                            <span
-                              className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
-                                cl.status === 'SENT'
-                                  ? 'bg-blue-50 text-blue-800 border border-blue-200'
-                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
-                              }`}
-                            >
-                              {cl.status}
-                            </span>
-                          </td>
-                          <td className="py-2 px-2 text-right">
-                            {cl.status === 'DRAFT' && canDecide && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleSendClarification(cl.id)}
-                                loading={busy === `clarify-send-${cl.id}`}
-                                className="text-xs h-7 px-2"
-                              >
-                                <Send className="mr-1 h-3 w-3" />
-                                Dispatch
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            )}
           </TabsContent>
           {/* SECTION 8: VERIFICATION REPORT HANDOFF */}
           <TabsContent value="report" className="p-6 space-y-5">
@@ -1541,44 +1599,35 @@ export default function BidDetailPage() {
         <DialogContent className="max-w-lg bg-white border border-slate-300">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-slate-900 font-serif">
-              Administrative Rule Override
+              Override Finding
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-600">
-              Override finding for requirement: <strong>{overrideTarget?.requirement?.requirement_name ?? `Requirement #${overrideTarget?.requirement_id}`}</strong> (Currently {overrideTarget?.status})
+              {overrideTarget?.requirement?.requirement_name ?? `Requirement #${overrideTarget?.requirement_id}`}
             </DialogDescription>
           </DialogHeader>
 
           <DialogBody className="space-y-4 pt-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-600">Current Result:</span>
+              {overrideTarget && <StatusBadge status={overrideTarget.status} />}
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              The original automated result is preserved. Your override, justification and
+              identity are recorded in the audit trail alongside it.
+            </p>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Officer Justification for Override *
+                Justification *
               </label>
               <Textarea
                 rows={3}
                 value={overrideComment}
                 onChange={(e) => setOverrideComment(e.target.value)}
-                placeholder="Record statutory exception, authorized exemption, or verified alternative document."
+                placeholder="Record the reason for overriding this finding."
                 className="text-xs border-slate-300"
               />
               {overrideError && <p className="mt-1 text-xs text-rose-600">{overrideError}</p>}
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Supporting Submitted Document (Optional)
-              </label>
-              <Select
-                value={overrideDocId}
-                onChange={(e) => setOverrideDocId(e.target.value)}
-                className="text-xs"
-              >
-                <option value="">None selected</option>
-                {documents.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.filename} ({d.document_type})
-                  </option>
-                ))}
-              </Select>
             </div>
           </DialogBody>
 
@@ -1592,7 +1641,7 @@ export default function BidDetailPage() {
               loading={busy === 'override'}
               className="bg-blue-800 hover:bg-blue-900 text-white font-medium text-xs"
             >
-              Record Override in Ledger
+              Confirm Override
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1636,14 +1685,26 @@ export default function BidDetailPage() {
             <Button variant="ghost" size="sm" onClick={() => setClarifyOpen(false)}>
               Cancel
             </Button>
-            <Button
-              size="sm"
-              onClick={handleCreateClarification}
-              loading={busy === 'clarify-create'}
-              className="bg-blue-800 hover:bg-blue-900 text-white font-medium text-xs"
-            >
-              Save Query
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleCreateClarification(false)}
+                loading={busy === 'clarify-create'}
+                className="text-xs"
+              >
+                Save Draft
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleCreateClarification(true)}
+                loading={busy === 'clarify-dispatch'}
+                className="bg-blue-800 hover:bg-blue-900 text-white font-medium text-xs"
+              >
+                <Send className="mr-1 h-3 w-3" />
+                Save &amp; Dispatch
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1652,9 +1713,67 @@ export default function BidDetailPage() {
       {selectedResult && (
         <EvidenceDrawer
           result={selectedResult}
+          documents={documents}
           onClose={() => setSelectedResult(null)}
         />
       )}
+
+      {/* Attach Demo Evidence Modal (recovery when publish-time seeding failed) */}
+      <Dialog open={demoEvidenceOpen} onOpenChange={setDemoEvidenceOpen}>
+        <DialogContent className="max-w-lg bg-white border border-slate-300">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+              Attach Demo Evidence Dossier
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              This bid has no documents. Select the fictional demo profile whose
+              evidence dossier should be attached for {bidder.legal_name}. The
+              dossier is stored as a normal document and run through the real
+              extraction pipeline; verification, compliance and recommendation
+              are still derived when you run them.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogBody className="space-y-2 pt-3">
+            {DEMO_BIDDER_PROFILES.map((p) => (
+              <label
+                key={p.profile_key}
+                className={`flex items-start gap-3 rounded-md border p-3 cursor-pointer transition-colors ${
+                  demoProfileKey === p.profile_key
+                    ? 'border-blue-700 bg-blue-50/60'
+                    : 'border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="demo-profile"
+                  checked={demoProfileKey === p.profile_key}
+                  onChange={() => setDemoProfileKey(p.profile_key)}
+                  className="mt-1"
+                />
+                <div>
+                  <p className="text-xs font-bold text-slate-900">{p.legal_name}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{p.scenario_description}</p>
+                </div>
+              </label>
+            ))}
+          </DialogBody>
+
+          <DialogFooter className="flex items-center justify-between border-t border-slate-100 pt-3">
+            <Button variant="ghost" size="sm" onClick={() => setDemoEvidenceOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleAttachDemoEvidence}
+              loading={busy === 'demo-evidence'}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs"
+            >
+              Attach &amp; Extract
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

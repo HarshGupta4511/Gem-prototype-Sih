@@ -6,7 +6,6 @@ import {
   AlertOctagon,
   AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
   BarChart3,
   CheckCircle2,
   ChevronRight,
@@ -15,17 +14,14 @@ import {
   FileCheck2,
   FileText,
   Filter,
-  Layers,
   PieChart as PieChartIcon,
   Plus,
   RefreshCw,
-  ShieldAlert,
   ShieldCheck,
   Users,
+  X,
 } from 'lucide-react';
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -70,8 +66,7 @@ export default function Dashboard() {
   // Filter states
   const [selectedTenderForBids, setSelectedTenderForBids] = React.useState<string>('ALL');
   const [attentionFilter, setAttentionFilter] = React.useState<string>('ALL');
-  const [diagram1Tab, setDiagram1Tab] = React.useState<'TENDERS' | 'DENSITY' | 'CARDS'>('TENDERS');
-  const [diagram2Tab, setDiagram2Tab] = React.useState<'VERIFICATION' | 'RISK'>('VERIFICATION');
+  const [attentionModalOpen, setAttentionModalOpen] = React.useState(false);
 
   // Officer inbox notifications
   const { data: inboxItems } = useQuery({
@@ -104,19 +99,19 @@ export default function Dashboard() {
   }, [isOfficer, inboxItems, toast, navigate]);
 
   // Queries
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, isFetching: metricsFetching, refetch: refetchMetrics } = useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardApi.get,
     staleTime: 30000,
   });
 
-  const { data: tenders = [] } = useQuery({
+  const { data: tenders = [], isFetching: tendersFetching, refetch: refetchTenders } = useQuery({
     queryKey: ['tenders'],
     queryFn: tendersApi.list,
     staleTime: 30000,
   });
 
-  const { data: recentAudits = [] } = useQuery({
+  const { data: recentAudits = [], isFetching: auditsFetching, refetch: refetchAudits } = useQuery({
     queryKey: ['audit-recent'],
     queryFn: () => auditApi.list({ limit: 8 }),
     staleTime: 30000,
@@ -124,6 +119,14 @@ export default function Dashboard() {
 
   const metrics = data?.metrics;
   const charts = data?.charts;
+
+  // Refresh reloads every data source rendered on this page.
+  const refreshing = metricsFetching || tendersFetching || auditsFetching;
+  const handleRefresh = () => {
+    refetchMetrics();
+    refetchTenders();
+    refetchAudits();
+  };
 
   // Build items requiring officer attention
   const attentionItems = React.useMemo(() => {
@@ -203,6 +206,13 @@ export default function Dashboard() {
     return attentionItems;
   }, [attentionItems, attentionFilter]);
 
+  // Compact dashboard view: top 5 notices, High Risk / Statutory Mismatch first,
+  // then Pending Officer Decisions. Full list lives in the "View All" modal.
+  const topAttentionItems = React.useMemo(() => {
+    const rank = (severity: string) => (severity === 'CRITICAL' ? 0 : severity === 'HIGH' ? 1 : 2);
+    return [...attentionItems].sort((a, b) => rank(a.severity) - rank(b.severity)).slice(0, 5);
+  }, [attentionItems]);
+
   // Selected tender for "Bids Evaluated" card
   const selectedTenderObj = React.useMemo(() => {
     if (selectedTenderForBids === 'ALL') return null;
@@ -239,7 +249,7 @@ export default function Dashboard() {
         <AlertOctagon className="mx-auto h-8 w-8 text-red-600" />
         <p className="mt-2 text-base font-semibold">Failed to load procurement dashboard</p>
         <p className="text-xs text-red-600">Please verify API connection or try again.</p>
-        <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-4">
+        <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
           Retry
         </Button>
       </div>
@@ -272,10 +282,11 @@ export default function Dashboard() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => refetch()}
+              onClick={handleRefresh}
+              disabled={refreshing}
               className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
             >
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             <Button
@@ -422,7 +433,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 3. REQUIRES OFFICER ATTENTION (With Category & Tender Filter Dropdown) */}
+      {/* 3. REQUIRES OFFICER ATTENTION (Compact: top 5 prioritized, full list in modal) */}
       <div className="rounded-lg border border-amber-300 bg-amber-50/40 p-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
           <div className="flex items-center gap-2.5">
@@ -435,7 +446,7 @@ export default function Dashboard() {
                   Requires Officer Attention
                 </h2>
                 <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                  {filteredAttentionItems.length} Notice{filteredAttentionItems.length !== 1 ? 's' : ''}
+                  {attentionItems.length} Notice{attentionItems.length !== 1 ? 's' : ''}
                 </span>
               </div>
               <p className="text-[11.5px] text-amber-900/80">
@@ -444,38 +455,24 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Attention Filter Dropdown */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <label htmlFor="attention-filter-dropdown" className="text-xs font-semibold text-amber-900 shrink-0 flex items-center gap-1">
-              <Filter className="h-3.5 w-3.5 text-amber-700" />
-              <span>Filter:</span>
-            </label>
-            <select
-              id="attention-filter-dropdown"
-              value={attentionFilter}
-              onChange={(e) => setAttentionFilter(e.target.value)}
-              className="text-xs font-medium border border-amber-300 rounded px-2.5 py-1.5 bg-white text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500 shadow-2xs cursor-pointer"
+          {/* View All opens the full notice drawer with filters */}
+          {attentionItems.length > 5 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAttentionModalOpen(true)}
+              className="border-amber-400 text-amber-950 hover:bg-amber-100 text-xs font-semibold self-start sm:self-auto shrink-0"
             >
-              <option value="ALL">All Notices ({attentionItems.length})</option>
-              <option value="HIGH_RISK">Statutory &amp; High Risk Flags</option>
-              <option value="PENDING">Pending Decisions Awaiting Review</option>
-              {tendersWithAlerts.length > 0 && (
-                <optgroup label="By Specific Tender">
-                  {tendersWithAlerts.map((t) => (
-                    <option key={t.id} value={`tender-${t.id}`}>
-                      {t.tender_number} ({t.count} notice{t.count !== 1 ? 's' : ''})
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-          </div>
+              View All {attentionItems.length} Notices
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
 
-        {/* Notices List */}
+        {/* Compact Notices List (top 5 prioritized) */}
         <div className="mt-3 divide-y divide-amber-200/60">
-          {filteredAttentionItems.length > 0 ? (
-            filteredAttentionItems.map((item) => (
+          {topAttentionItems.length > 0 ? (
+            topAttentionItems.map((item) => (
               <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 hover:bg-amber-100/30 rounded px-2 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <span
@@ -509,118 +506,25 @@ export default function Dashboard() {
             ))
           ) : (
             <div className="py-6 text-center text-xs text-amber-800">
-              No attention notices match the selected filter.
+              No attention notices at this time.
             </div>
           )}
         </div>
+
+        {attentionItems.length > 5 && (
+          <div className="mt-1 border-t border-amber-200/80 pt-2.5 text-center">
+            <button
+              type="button"
+              onClick={() => setAttentionModalOpen(true)}
+              className="text-xs font-semibold text-amber-900 hover:text-amber-950 hover:underline"
+            >
+              Showing {topAttentionItems.length} of {attentionItems.length} notices — View All {attentionItems.length} Notices
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 4. PROCUREMENT LIFECYCLE PIPELINE FLOW (Brand-new Visual Workflow Representation) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-800">
-              <Layers className="h-3.5 w-3.5" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                CPSE Procurement Evaluation Pipeline
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                End-to-end data pipeline from NIT tender publication to statutory cross-verification and officer qualification
-              </p>
-            </div>
-          </div>
-          <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium">
-            Automated &amp; Deterministic
-          </span>
-        </div>
-
-        {/* Visual Pipeline Stages */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Stage 1 */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Stage 01</span>
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
-              </div>
-              <h4 className="mt-1 text-xs font-bold text-slate-900">NIT Publication</h4>
-              <p className="mt-0.5 text-[11px] text-slate-500">Tenders issued &amp; criteria configured</p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="font-mono font-bold text-blue-900">{metrics.active_tenders} active</span>
-              <span className="text-[10px] text-slate-400">{metrics.total_tenders} total</span>
-            </div>
-          </div>
-
-          {/* Stage 2 */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Stage 02</span>
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
-              </div>
-              <h4 className="mt-1 text-xs font-bold text-slate-900">Bid Submissions</h4>
-              <p className="mt-0.5 text-[11px] text-slate-500">Bidder dossiers &amp; documents ingested</p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="font-mono font-bold text-blue-900">{metrics.total_bids} bids</span>
-              <span className="text-[10px] text-slate-400">{metrics.documents_processed} docs</span>
-            </div>
-          </div>
-
-          {/* Stage 3 */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Stage 03</span>
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
-              </div>
-              <h4 className="mt-1 text-xs font-bold text-slate-900">Rule Engine Check</h4>
-              <p className="mt-0.5 text-[11px] text-slate-500">Deterministic criteria verification</p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="font-mono font-bold text-emerald-800">Deterministic</span>
-              <span className="text-[10px] text-slate-400">Zero AI drift</span>
-            </div>
-          </div>
-
-          {/* Stage 4 */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Stage 04</span>
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              </div>
-              <h4 className="mt-1 text-xs font-bold text-slate-900">7-Portal Verification</h4>
-              <p className="mt-0.5 text-[11px] text-slate-500">GSTN, PAN, MSME, Debarment</p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="font-mono font-bold text-emerald-800">7 Adapters</span>
-              <span className="text-[10px] text-slate-400">All Live</span>
-            </div>
-          </div>
-
-          {/* Stage 5 */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 relative flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Stage 05</span>
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-              </div>
-              <h4 className="mt-1 text-xs font-bold text-amber-950">Officer Sign-Off</h4>
-              <p className="mt-0.5 text-[11px] text-amber-900/80">Final qualification &amp; award decisions</p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-amber-200 flex items-center justify-between text-xs">
-              <span className="font-mono font-bold text-amber-900">{metrics.pending_reviews} pending</span>
-              <span className="text-[10px] text-amber-700 font-semibold">Decisions</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. REDESIGNED VISUALIZATIONS GRID (Modern Visual Representations of Procurement Data) */}
+      {/* 4. VISUALIZATIONS GRID (Tender Bid Volume & Bid Risk Profile) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Visual 1: Procurement Performance & Capacity Visualizer */}
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
@@ -635,52 +539,15 @@ export default function Dashboard() {
                   <SystemLayerTag layer="RULE_ENGINE" size="sm" />
                 </div>
                 <p className="mt-0.5 text-[11px] text-slate-500">
-                  Participating bidders, evaluation progress, and compliance distribution
+                  Participating bidders and evaluation progress per tender package
                 </p>
               </div>
 
-              {/* View Switcher Tabs */}
-              <div className="flex items-center rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setDiagram1Tab('TENDERS')}
-                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    diagram1Tab === 'TENDERS'
-                      ? 'bg-white text-blue-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  By Tender
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDiagram1Tab('DENSITY')}
-                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    diagram1Tab === 'DENSITY'
-                      ? 'bg-white text-blue-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Score Density
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDiagram1Tab('CARDS')}
-                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    diagram1Tab === 'CARDS'
-                      ? 'bg-white text-blue-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Summary
-                </button>
-              </div>
             </div>
 
-            {/* Content for Diagram 1 based on selected Tab */}
+            {/* By Tender bid volume chart */}
             <div className="mt-4">
-              {diagram1Tab === 'TENDERS' && (
-                <div>
+              <div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2 px-1">
                     <span>Tender Package &amp; Reference</span>
                     <div className="flex items-center gap-3">
@@ -748,87 +615,6 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-              )}
-
-              {diagram1Tab === 'DENSITY' && (
-                <div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2 px-1">
-                    <span>Compliance Scoring Density Tiers</span>
-                    <span className="text-blue-800 font-semibold">Deterministic Rule Pass (%)</span>
-                  </div>
-
-                  <div className="h-64 w-full">
-                    {charts?.compliance_distribution && charts.compliance_distribution.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                          data={charts.compliance_distribution}
-                          margin={{ top: 10, right: 15, left: -20, bottom: 10 }}
-                        >
-                          <defs>
-                            <linearGradient id="scoreDensityGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="range" tick={{ fontSize: 10, fill: '#64748b' }} />
-                          <YAxis tick={{ fontSize: 10, fill: '#64748b' }} allowDecimals={false} />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #cbd5e1',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                            }}
-                            formatter={(val: number) => [`${val} bids`, 'Frequency']}
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="count"
-                            stroke="#1d4ed8"
-                            strokeWidth={2.5}
-                            fillOpacity={1}
-                            fill="url(#scoreDensityGrad)"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                        No score density distribution available
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {diagram1Tab === 'CARDS' && (
-                <div className="h-64 overflow-y-auto space-y-2 pr-1">
-                  {tenders.map((t) => (
-                    <div
-                      key={t.id}
-                      onClick={() => navigate(`/app/tenders/${t.id}`)}
-                      className="rounded-md border border-slate-200 p-2.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-between text-xs"
-                    >
-                      <div className="min-w-0 pr-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900">{t.tender_number}</span>
-                          <span className="rounded bg-slate-100 px-1.5 py-0.2 text-[10px] font-semibold text-slate-700">
-                            {t.department}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-[11px] text-slate-600 truncate">{t.title}</p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right">
-                          <span className="font-mono font-bold text-blue-900">{t.bidder_count} bids</span>
-                          <p className="text-[10px] text-slate-400">{t.pending_reviews} pending</p>
-                        </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
@@ -840,7 +626,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Visual 2: Statutory Verification & Risk Assessment Intelligence Visualizer */}
+        {/* Visual 2: Bid Risk Profile */}
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
@@ -848,93 +634,19 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <PieChartIcon className="h-4 w-4 text-emerald-700" />
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                    Statutory Integrity &amp; Risk Profile
+                    Bid Risk Profile
                   </h3>
-                  <SystemLayerTag layer="VERIFICATION" size="sm" />
+                  <SystemLayerTag layer="AI_ASSISTED" size="sm" />
                 </div>
                 <p className="mt-0.5 text-[11px] text-slate-500">
-                  Government portal authentication &amp; independent AI advisory classifications
+                  Independent AI advisory risk classifications across evaluated bids
                 </p>
-              </div>
-
-              {/* View Switcher Tabs */}
-              <div className="flex items-center rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setDiagram2Tab('VERIFICATION')}
-                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    diagram2Tab === 'VERIFICATION'
-                      ? 'bg-white text-emerald-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  7 Portals
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDiagram2Tab('RISK')}
-                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    diagram2Tab === 'RISK'
-                      ? 'bg-white text-emerald-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Risk Levels
-                </button>
               </div>
             </div>
 
-            {/* Content for Diagram 2 based on selected Tab */}
+            {/* Bid risk distribution chart */}
             <div className="mt-4">
-              {diagram2Tab === 'VERIFICATION' && (
-                <div className="space-y-3">
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white">
-                        <ShieldCheck className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <h4 className="text-xs font-bold text-emerald-950">
-                          100% Statutory Adapter Availability
-                        </h4>
-                        <p className="text-[11px] text-emerald-900/80">
-                          Continuous mock integration verified across GSTN, PAN, MCA21, EPFO, and GeM Debarment.
-                        </p>
-                      </div>
-                    </div>
-                    <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
-                      7/7 OK
-                    </span>
-                  </div>
-
-                  {/* Portal Health Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {VERIF_SOURCES.slice(0, 6).map((s) => (
-                      <div
-                        key={s.id}
-                        className="rounded border border-slate-200 bg-slate-50/70 p-2 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                          <span className="font-bold text-slate-800 truncate">{s.id}</span>
-                          <span className="text-[10px] text-slate-500 font-mono">[{s.code}]</span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200 shrink-0">
-                          Verified
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded border border-slate-200 bg-slate-50 p-2 text-[11px] text-slate-500 flex items-center justify-between">
-                    <span>CPSE &amp; GeM Blacklist Registry:</span>
-                    <span className="font-semibold text-emerald-700">Real-time Debarment Sync Active</span>
-                  </div>
-                </div>
-              )}
-
-              {diagram2Tab === 'RISK' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
                   <div className="h-56">
                     {charts?.risk_distribution && charts.risk_distribution.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
@@ -995,7 +707,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              )}
             </div>
           </div>
 
@@ -1008,7 +719,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 6. STATUTORY VERIFICATION OVERVIEW MATRIX */}
+      {/* 5. STATUTORY VERIFICATION OVERVIEW MATRIX */}
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div>
@@ -1067,7 +778,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 7. RECENT ACTIVITY TIMELINE (FROM AUDIT TRAIL) */}
+      {/* 6. RECENT ACTIVITY TIMELINE (FROM AUDIT TRAIL) */}
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div>
@@ -1134,6 +845,115 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* ALL NOTICES MODAL (full list with filters; opened from "View All N Notices") */}
+      {attentionModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => setAttentionModalOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="All attention notices"
+        >
+          <div
+            className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-amber-300 bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50/60 px-4 py-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shrink-0">
+                  <AlertTriangle className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-sm font-bold text-amber-950 uppercase tracking-wide">
+                      All Attention Notices
+                    </h2>
+                    <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
+                      {filteredAttentionItems.length} of {attentionItems.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <label htmlFor="attention-filter-modal" className="text-xs font-semibold text-amber-900 flex items-center gap-1">
+                  <Filter className="h-3.5 w-3.5 text-amber-700" />
+                  <span className="hidden sm:inline">Filter:</span>
+                </label>
+                <select
+                  id="attention-filter-modal"
+                  value={attentionFilter}
+                  onChange={(e) => setAttentionFilter(e.target.value)}
+                  className="text-xs font-medium border border-amber-300 rounded px-2 py-1.5 bg-white text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer max-w-[180px]"
+                >
+                  <option value="ALL">All Notices ({attentionItems.length})</option>
+                  <option value="HIGH_RISK">Statutory &amp; High Risk Flags</option>
+                  <option value="PENDING">Pending Decisions Awaiting Review</option>
+                  {tendersWithAlerts.length > 0 && (
+                    <optgroup label="By Specific Tender">
+                      {tendersWithAlerts.map((t) => (
+                        <option key={t.id} value={`tender-${t.id}`}>
+                          {t.tender_number} ({t.count} notice{t.count !== 1 ? 's' : ''})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setAttentionModalOpen(false)}
+                  className="rounded p-1.5 text-amber-900 hover:bg-amber-100"
+                  aria-label="Close notices"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto px-4 py-2">
+              {filteredAttentionItems.length > 0 ? (
+                <div className="divide-y divide-amber-200/60">
+                  {filteredAttentionItems.map((item) => (
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <span
+                          className={`mt-1 inline-block h-2.5 w-2.5 rounded-full shrink-0 ${
+                            item.severity === 'CRITICAL'
+                              ? 'bg-rose-600 ring-2 ring-rose-400/40'
+                              : item.severity === 'HIGH'
+                              ? 'bg-amber-600 ring-2 ring-amber-400/40'
+                              : 'bg-emerald-600'
+                          }`}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-slate-900">{item.title}</span>
+                            <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
+                              {item.category}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">{item.description}</p>
+                        </div>
+                      </div>
+                      <Link
+                        to={item.to}
+                        className="inline-flex items-center gap-1.5 rounded bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-colors shrink-0 self-start sm:self-auto"
+                      >
+                        <span>{item.linkText}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-10 text-center text-xs text-amber-800">
+                  No attention notices match the selected filter.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -68,5 +68,1953 @@
     "registration_date": "2021-10-11",
     "status": "SUSPENDED",
     "category": "MICRO"
+  },
+  "UDYAM-MH-27-0099887": {
+    "category": "SMALL",
+    "enterprise_name": "Nova Engineering Works Private Limited",
+    "registration_date": "2022-02-10",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-MH-27-0099887",
+    "is_mock": true
+  },
+  "UDYAM-KA-03-0076543": {
+    "category": "MEDIUM",
+    "enterprise_name": "PrimeTech Industrial Systems Private Limited",
+    "registration_date": "2019-11-05",
+    "status": "ACTIVE",
+    "udyam_number": "UDYAM-KA-03-0076543",
+    "is_mock": true
+  },
+  "UDYAM-WB-15-9344002": {
+    "udyam_number": "UDYAM-WB-15-9344002",
+    "enterprise_name": "Godavari Control Services LLP",
+    "category": "SMALL",
+    "registration_date": "2021-05-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-44-6862694": {
+    "udyam_number": "UDYAM-GJ-44-6862694",
+    "enterprise_name": "Nellore Engineering Works Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2023-11-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-98-2517325": {
+    "udyam_number": "UDYAM-WB-98-2517325",
+    "enterprise_name": "Bharuch Polymer Enterprises LLP",
+    "category": "MEDIUM",
+    "registration_date": "2016-07-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-5976140": {
+    "udyam_number": "UDYAM-MH-27-5976140",
+    "enterprise_name": "Sivakasi Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2020-04-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-60-2846186": {
+    "udyam_number": "UDYAM-MH-60-2846186",
+    "enterprise_name": "Tumakuru Industrial Solutions LLP",
+    "category": "SMALL",
+    "registration_date": "2017-03-23",
+    "status": "INACTIVE"
+  },
+  "UDYAM-MH-40-7881394": {
+    "udyam_number": "UDYAM-MH-40-7881394",
+    "enterprise_name": "Ankleshwar Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2023-10-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-57-6876801": {
+    "udyam_number": "UDYAM-GJ-57-6876801",
+    "enterprise_name": "Erode Industrial Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2021-01-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-71-1926411": {
+    "udyam_number": "UDYAM-GJ-71-1926411",
+    "enterprise_name": "Nashik Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2017-03-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-42-3160279": {
+    "udyam_number": "UDYAM-TN-42-3160279",
+    "enterprise_name": "Godavari Instrumentation Associates LLP",
+    "category": "SMALL",
+    "registration_date": "2016-09-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-77-2883469": {
+    "udyam_number": "UDYAM-MH-77-2883469",
+    "enterprise_name": "Nilgiri Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2016-01-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-38-5298555": {
+    "udyam_number": "UDYAM-MH-38-5298555",
+    "enterprise_name": "Nashik Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2018-10-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-87-2010247": {
+    "udyam_number": "UDYAM-UP-87-2010247",
+    "enterprise_name": "Tapi Precision Fabricators LLP",
+    "category": "MEDIUM",
+    "registration_date": "2019-10-20",
+    "status": "INACTIVE"
+  },
+  "UDYAM-UP-48-2109394": {
+    "udyam_number": "UDYAM-UP-48-2109394",
+    "enterprise_name": "Tumakuru Automation Solutions Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2016-04-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-16-3302051": {
+    "udyam_number": "UDYAM-HR-16-3302051",
+    "enterprise_name": "Nilgiri Control Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2023-12-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-75-8888049": {
+    "udyam_number": "UDYAM-MH-75-8888049",
+    "enterprise_name": "Tumakuru Instrumentation Services Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2020-09-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-30-5220160": {
+    "udyam_number": "UDYAM-WB-30-5220160",
+    "enterprise_name": "Kollam Polymer Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2021-10-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-19-8145440": {
+    "udyam_number": "UDYAM-WB-19-8145440",
+    "enterprise_name": "Hosur Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2020-04-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-34-4251762": {
+    "udyam_number": "UDYAM-MH-34-4251762",
+    "enterprise_name": "Kongu Control Equipment Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-02-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-90-8095234": {
+    "udyam_number": "UDYAM-GJ-90-8095234",
+    "enterprise_name": "Saurashtra Power Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2016-01-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-69-5794561": {
+    "udyam_number": "UDYAM-MH-69-5794561",
+    "enterprise_name": "Kurnool Engineering Equipment Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2022-12-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-63-5967476": {
+    "udyam_number": "UDYAM-MH-63-5967476",
+    "enterprise_name": "Thrissur Steel Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2017-11-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-36-9114814": {
+    "udyam_number": "UDYAM-TN-36-9114814",
+    "enterprise_name": "Gulbarga Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2016-08-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-93-8485270": {
+    "udyam_number": "UDYAM-HR-93-8485270",
+    "enterprise_name": "Vidarbha Automation Associates Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2015-02-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-58-9728309": {
+    "udyam_number": "UDYAM-GJ-58-9728309",
+    "enterprise_name": "Namakkal Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2020-09-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-52-8683368": {
+    "udyam_number": "UDYAM-HR-52-8683368",
+    "enterprise_name": "Marathwada Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2017-07-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-37-6303857": {
+    "udyam_number": "UDYAM-GJ-37-6303857",
+    "enterprise_name": "Kurnool Valve Services LLP",
+    "category": "MICRO",
+    "registration_date": "2016-04-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-26-1873787": {
+    "udyam_number": "UDYAM-HR-26-1873787",
+    "enterprise_name": "Jalgaon Engineering Associates Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-11-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-53-9495855": {
+    "udyam_number": "UDYAM-GJ-53-9495855",
+    "enterprise_name": "Thoothukudi Precision Equipment Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-11-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-46-1485839": {
+    "udyam_number": "UDYAM-GJ-46-1485839",
+    "enterprise_name": "Tumakuru Automation Industries Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-10-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-91-4479702": {
+    "udyam_number": "UDYAM-TN-91-4479702",
+    "enterprise_name": "Godavari Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2019-08-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-94-6915159": {
+    "udyam_number": "UDYAM-TN-94-6915159",
+    "enterprise_name": "Sahyadri Electrical Solutions Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2019-01-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-40-3781268": {
+    "udyam_number": "UDYAM-MH-40-3781268",
+    "enterprise_name": "Davangere Power Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2015-02-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-35-1749797": {
+    "udyam_number": "UDYAM-TN-35-1749797",
+    "enterprise_name": "Guntur Power Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2023-01-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-43-5699748": {
+    "udyam_number": "UDYAM-GJ-43-5699748",
+    "enterprise_name": "Tirupati Fabrication Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-05-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-19-6041330": {
+    "udyam_number": "UDYAM-GJ-19-6041330",
+    "enterprise_name": "Davangere Flow Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-12-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-85-7631414": {
+    "udyam_number": "UDYAM-GJ-85-7631414",
+    "enterprise_name": "Tirupati Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2020-01-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-86-4006620": {
+    "udyam_number": "UDYAM-GJ-86-4006620",
+    "enterprise_name": "Satpura Engineering Associates Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-03-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-71-4849996": {
+    "udyam_number": "UDYAM-HR-71-4849996",
+    "enterprise_name": "Thoothukudi Electrical Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-06-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-59-6580270": {
+    "udyam_number": "UDYAM-KA-59-6580270",
+    "enterprise_name": "Salem Valve Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2016-04-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-38-7739218": {
+    "udyam_number": "UDYAM-TN-38-7739218",
+    "enterprise_name": "Deccan Control Equipment LLP",
+    "category": "MEDIUM",
+    "registration_date": "2021-01-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-78-6877778": {
+    "udyam_number": "UDYAM-TN-78-6877778",
+    "enterprise_name": "Thoothukudi Engineering Solutions Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-04-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-97-8454975": {
+    "udyam_number": "UDYAM-TN-97-8454975",
+    "enterprise_name": "Davangere Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2016-10-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-10-3049139": {
+    "udyam_number": "UDYAM-TS-10-3049139",
+    "enterprise_name": "Thrissur Industrial Solutions Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-10-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-39-6512378": {
+    "udyam_number": "UDYAM-HR-39-6512378",
+    "enterprise_name": "Chambal Electrical Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2017-01-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-59-5558579": {
+    "udyam_number": "UDYAM-UP-59-5558579",
+    "enterprise_name": "Bhavnagar Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2019-12-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-29-2261374": {
+    "udyam_number": "UDYAM-WB-29-2261374",
+    "enterprise_name": "Dindigul Industrial Fabricators Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-01-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-72-7911536": {
+    "udyam_number": "UDYAM-TN-72-7911536",
+    "enterprise_name": "Davangere Flow Systems Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2020-03-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-72-8269693": {
+    "udyam_number": "UDYAM-GJ-72-8269693",
+    "enterprise_name": "Vijayapura Polymer Services LLP",
+    "category": "SMALL",
+    "registration_date": "2023-04-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-85-5773379": {
+    "udyam_number": "UDYAM-WB-85-5773379",
+    "enterprise_name": "Jalgaon Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2019-07-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-40-2834370": {
+    "udyam_number": "UDYAM-TN-40-2834370",
+    "enterprise_name": "Namakkal Industrial Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2021-04-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-17-4891884": {
+    "udyam_number": "UDYAM-GJ-17-4891884",
+    "enterprise_name": "Ballari Precision Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-10-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-84-3464298": {
+    "udyam_number": "UDYAM-UP-84-3464298",
+    "enterprise_name": "Sangli Electrical Systems LLP",
+    "category": "MEDIUM",
+    "registration_date": "2021-11-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-85-1303476": {
+    "udyam_number": "UDYAM-KA-85-1303476",
+    "enterprise_name": "Salem Instrumentation Enterprises LLP",
+    "category": "SMALL",
+    "registration_date": "2016-09-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-26-2808962": {
+    "udyam_number": "UDYAM-MH-26-2808962",
+    "enterprise_name": "Namakkal Steel Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2017-09-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-70-9948959": {
+    "udyam_number": "UDYAM-GJ-70-9948959",
+    "enterprise_name": "Shakti Power Systems Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2022-10-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-71-1475187": {
+    "udyam_number": "UDYAM-UP-71-1475187",
+    "enterprise_name": "Guntur Valve Technocrats LLP",
+    "category": "MICRO",
+    "registration_date": "2015-03-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-18-4689178": {
+    "udyam_number": "UDYAM-MH-18-4689178",
+    "enterprise_name": "Solapur Hydraulic Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2015-04-09",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-45-5639805": {
+    "udyam_number": "UDYAM-MH-45-5639805",
+    "enterprise_name": "Gulbarga Hydraulic Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2021-06-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-65-8460395": {
+    "udyam_number": "UDYAM-TN-65-8460395",
+    "enterprise_name": "Kurnool Automation Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2019-05-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-39-4157846": {
+    "udyam_number": "UDYAM-TN-39-4157846",
+    "enterprise_name": "Kongu Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2018-05-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-99-2151897": {
+    "udyam_number": "UDYAM-HR-99-2151897",
+    "enterprise_name": "Nilgiri Heavy Solutions Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-05-03",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-52-4016739": {
+    "udyam_number": "UDYAM-TN-52-4016739",
+    "enterprise_name": "Vishal Polymer Associates LLP",
+    "category": "SMALL",
+    "registration_date": "2021-12-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-37-6463874": {
+    "udyam_number": "UDYAM-TN-37-6463874",
+    "enterprise_name": "Deccan Automation Solutions LLP",
+    "category": "MICRO",
+    "registration_date": "2021-10-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-70-7053212": {
+    "udyam_number": "UDYAM-HR-70-7053212",
+    "enterprise_name": "Thrissur Polymer Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-03-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-67-7315623": {
+    "udyam_number": "UDYAM-WB-67-7315623",
+    "enterprise_name": "Tirupati Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2021-08-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-90-8473559": {
+    "udyam_number": "UDYAM-TN-90-8473559",
+    "enterprise_name": "Dindigul Valve Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-05-07",
+    "status": "INACTIVE"
+  },
+  "UDYAM-MH-51-7433223": {
+    "udyam_number": "UDYAM-MH-51-7433223",
+    "enterprise_name": "Satpura Hydraulic Enterprises Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-06-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-55-3806380": {
+    "udyam_number": "UDYAM-GJ-55-3806380",
+    "enterprise_name": "Marathwada Mechanical Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2017-03-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-61-3265825": {
+    "udyam_number": "UDYAM-GJ-61-3265825",
+    "enterprise_name": "Satpura Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2021-09-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-20-4074558": {
+    "udyam_number": "UDYAM-TN-20-4074558",
+    "enterprise_name": "Kaveri Valve Works Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2015-05-16",
+    "status": "INACTIVE"
+  },
+  "UDYAM-GJ-93-1176720": {
+    "udyam_number": "UDYAM-GJ-93-1176720",
+    "enterprise_name": "Palakkad Thermal Works Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2020-01-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-49-6701557": {
+    "udyam_number": "UDYAM-KA-49-6701557",
+    "enterprise_name": "Tumakuru Industrial Enterprises LLP",
+    "category": "SMALL",
+    "registration_date": "2016-07-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-15-1969810": {
+    "udyam_number": "UDYAM-GJ-15-1969810",
+    "enterprise_name": "Vellore Automation Solutions LLP",
+    "category": "MICRO",
+    "registration_date": "2022-01-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-99-4335767": {
+    "udyam_number": "UDYAM-HR-99-4335767",
+    "enterprise_name": "Shakti Automation Technocrats LLP",
+    "category": "MEDIUM",
+    "registration_date": "2019-05-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-53-4352676": {
+    "udyam_number": "UDYAM-TN-53-4352676",
+    "enterprise_name": "Bhavnagar Pumps Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2020-08-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-74-5791290": {
+    "udyam_number": "UDYAM-GJ-74-5791290",
+    "enterprise_name": "Vellore Valve Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-04-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-72-6077558": {
+    "udyam_number": "UDYAM-HR-72-6077558",
+    "enterprise_name": "Kutch Process Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2018-07-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-86-6905346": {
+    "udyam_number": "UDYAM-KA-86-6905346",
+    "enterprise_name": "Vindhya Engineering Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2022-06-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-40-1203734": {
+    "udyam_number": "UDYAM-WB-40-1203734",
+    "enterprise_name": "Thoothukudi Pumps Systems Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2018-06-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-60-4785197": {
+    "udyam_number": "UDYAM-TN-60-4785197",
+    "enterprise_name": "Chettinad Precision Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-06-28",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-39-8508644": {
+    "udyam_number": "UDYAM-MH-39-8508644",
+    "enterprise_name": "Aravalli Automation Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2015-11-28",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-14-9126513": {
+    "udyam_number": "UDYAM-KA-14-9126513",
+    "enterprise_name": "Solapur Electrical Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2023-11-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-83-4343236": {
+    "udyam_number": "UDYAM-HR-83-4343236",
+    "enterprise_name": "Guntur Instrumentation Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2017-09-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-34-1195597": {
+    "udyam_number": "UDYAM-GJ-34-1195597",
+    "enterprise_name": "Jalgaon Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2019-07-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-67-1108958": {
+    "udyam_number": "UDYAM-KA-67-1108958",
+    "enterprise_name": "Kurnool Polymer Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-10-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-78-2005889": {
+    "udyam_number": "UDYAM-KA-78-2005889",
+    "enterprise_name": "Malwa Thermal Fabricators Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2021-11-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-42-7422662": {
+    "udyam_number": "UDYAM-MH-42-7422662",
+    "enterprise_name": "Davangere Pumps Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2023-05-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-10-8627827": {
+    "udyam_number": "UDYAM-UP-10-8627827",
+    "enterprise_name": "Deccan Engineering Enterprises Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-01-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-71-5796108": {
+    "udyam_number": "UDYAM-TN-71-5796108",
+    "enterprise_name": "Hosur Electrical Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-01-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-32-2838117": {
+    "udyam_number": "UDYAM-UP-32-2838117",
+    "enterprise_name": "Jalgaon Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2016-12-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-76-2688764": {
+    "udyam_number": "UDYAM-TN-76-2688764",
+    "enterprise_name": "Sivakasi Valve Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2017-11-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-81-4014752": {
+    "udyam_number": "UDYAM-TN-81-4014752",
+    "enterprise_name": "Davangere Heavy Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-02-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-99-7885645": {
+    "udyam_number": "UDYAM-KA-99-7885645",
+    "enterprise_name": "Belagavi Engineering Industries Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2016-09-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-71-7719112": {
+    "udyam_number": "UDYAM-TN-71-7719112",
+    "enterprise_name": "Bhavnagar Engineering Solutions LLP",
+    "category": "SMALL",
+    "registration_date": "2021-05-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-67-7414228": {
+    "udyam_number": "UDYAM-TN-67-7414228",
+    "enterprise_name": "Dindigul Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2015-07-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-21-9192531": {
+    "udyam_number": "UDYAM-KA-21-9192531",
+    "enterprise_name": "Chettinad Engineering Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2021-07-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-23-2349439": {
+    "udyam_number": "UDYAM-HR-23-2349439",
+    "enterprise_name": "Sivakasi Valve Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2017-02-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-61-1280697": {
+    "udyam_number": "UDYAM-WB-61-1280697",
+    "enterprise_name": "Kurnool Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2016-11-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-22-1703773": {
+    "udyam_number": "UDYAM-GJ-22-1703773",
+    "enterprise_name": "Ballari Heavy Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2018-10-04",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-65-7640944": {
+    "udyam_number": "UDYAM-UP-65-7640944",
+    "enterprise_name": "Namakkal Power Associates Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-11-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-73-2984313": {
+    "udyam_number": "UDYAM-KA-73-2984313",
+    "enterprise_name": "Shakti Valve Solutions LLP",
+    "category": "MEDIUM",
+    "registration_date": "2021-05-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-12-7225008": {
+    "udyam_number": "UDYAM-MH-12-7225008",
+    "enterprise_name": "Vidarbha Electrical Associates LLP",
+    "category": "SMALL",
+    "registration_date": "2016-06-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-61-6991870": {
+    "udyam_number": "UDYAM-GJ-61-6991870",
+    "enterprise_name": "Nellore Fabrication Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2015-09-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-18-6192279": {
+    "udyam_number": "UDYAM-GJ-18-6192279",
+    "enterprise_name": "Tapi Power Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-12-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-73-1525065": {
+    "udyam_number": "UDYAM-GJ-73-1525065",
+    "enterprise_name": "Nellore Process Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2018-06-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-78-4415689": {
+    "udyam_number": "UDYAM-GJ-78-4415689",
+    "enterprise_name": "Amravati Automation Technocrats LLP",
+    "category": "MEDIUM",
+    "registration_date": "2017-09-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-10-2837228": {
+    "udyam_number": "UDYAM-MH-10-2837228",
+    "enterprise_name": "Palakkad Polymer Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2017-12-11",
+    "status": "INACTIVE"
+  },
+  "UDYAM-KA-73-6349502": {
+    "udyam_number": "UDYAM-KA-73-6349502",
+    "enterprise_name": "Kongu Fabrication Equipment Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2015-06-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-72-4810758": {
+    "udyam_number": "UDYAM-WB-72-4810758",
+    "enterprise_name": "Gulbarga Steel Enterprises LLP",
+    "category": "MICRO",
+    "registration_date": "2023-07-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-60-8729080": {
+    "udyam_number": "UDYAM-GJ-60-8729080",
+    "enterprise_name": "Sahyadri Pumps Fabricators LLP",
+    "category": "MEDIUM",
+    "registration_date": "2023-07-15",
+    "status": "INACTIVE"
+  },
+  "UDYAM-GJ-62-4513422": {
+    "udyam_number": "UDYAM-GJ-62-4513422",
+    "enterprise_name": "Kutch Polymer Associates LLP",
+    "category": "SMALL",
+    "registration_date": "2016-02-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-82-7434476": {
+    "udyam_number": "UDYAM-TS-82-7434476",
+    "enterprise_name": "Saurashtra Process Associates LLP",
+    "category": "SMALL",
+    "registration_date": "2018-12-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-17-7908037": {
+    "udyam_number": "UDYAM-GJ-17-7908037",
+    "enterprise_name": "Karur Electrical Works LLP",
+    "category": "MEDIUM",
+    "registration_date": "2018-03-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-80-8955280": {
+    "udyam_number": "UDYAM-MH-80-8955280",
+    "enterprise_name": "Godavari Alloy Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2022-12-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-31-5724876": {
+    "udyam_number": "UDYAM-KA-31-5724876",
+    "enterprise_name": "Deccan Valve Works LLP",
+    "category": "MICRO",
+    "registration_date": "2021-05-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-60-6269338": {
+    "udyam_number": "UDYAM-MH-60-6269338",
+    "enterprise_name": "Karur Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2015-07-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-88-3431869": {
+    "udyam_number": "UDYAM-TN-88-3431869",
+    "enterprise_name": "Nilgiri Alloy Systems LLP",
+    "category": "MEDIUM",
+    "registration_date": "2019-10-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-73-8267749": {
+    "udyam_number": "UDYAM-HR-73-8267749",
+    "enterprise_name": "Vindhya Control Services LLP",
+    "category": "MICRO",
+    "registration_date": "2021-07-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-50-9941093": {
+    "udyam_number": "UDYAM-TN-50-9941093",
+    "enterprise_name": "Hosur Control Systems Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-10-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-13-8273627": {
+    "udyam_number": "UDYAM-KA-13-8273627",
+    "enterprise_name": "Deccan Power Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2021-03-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-84-5061070": {
+    "udyam_number": "UDYAM-MH-84-5061070",
+    "enterprise_name": "Sangli Alloy Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2015-03-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-13-5514406": {
+    "udyam_number": "UDYAM-TS-13-5514406",
+    "enterprise_name": "Jamnagar Instrumentation Equipment LLP",
+    "category": "SMALL",
+    "registration_date": "2016-01-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-86-3154717": {
+    "udyam_number": "UDYAM-TN-86-3154717",
+    "enterprise_name": "Gulbarga Polymer Services LLP",
+    "category": "MICRO",
+    "registration_date": "2018-07-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-82-9838301": {
+    "udyam_number": "UDYAM-TN-82-9838301",
+    "enterprise_name": "Raichur Mechanical Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-03-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-55-5948188": {
+    "udyam_number": "UDYAM-TN-55-5948188",
+    "enterprise_name": "Belagavi Alloy Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-04-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-73-6911086": {
+    "udyam_number": "UDYAM-KA-73-6911086",
+    "enterprise_name": "Chambal Polymer Solutions LLP",
+    "category": "SMALL",
+    "registration_date": "2017-02-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-25-2800344": {
+    "udyam_number": "UDYAM-MH-25-2800344",
+    "enterprise_name": "Tirupati Industrial Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2019-09-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-61-6203275": {
+    "udyam_number": "UDYAM-TN-61-6203275",
+    "enterprise_name": "Kaveri Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2015-02-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-80-1325520": {
+    "udyam_number": "UDYAM-MH-80-1325520",
+    "enterprise_name": "Amravati Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2021-02-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-86-9291537": {
+    "udyam_number": "UDYAM-HR-86-9291537",
+    "enterprise_name": "Thoothukudi Electrical Services Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2020-01-03",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-42-9107418": {
+    "udyam_number": "UDYAM-GJ-42-9107418",
+    "enterprise_name": "Thrissur Mechanical Systems Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-05-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-24-7463385": {
+    "udyam_number": "UDYAM-TS-24-7463385",
+    "enterprise_name": "Latur Precision Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2021-06-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-58-5385981": {
+    "udyam_number": "UDYAM-UP-58-5385981",
+    "enterprise_name": "Marathwada Control Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-02-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-99-1812101": {
+    "udyam_number": "UDYAM-GJ-99-1812101",
+    "enterprise_name": "Narmada Valve Industries Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2022-10-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-13-8149357": {
+    "udyam_number": "UDYAM-MH-13-8149357",
+    "enterprise_name": "Hosur Instrumentation Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-03-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-82-5345113": {
+    "udyam_number": "UDYAM-TN-82-5345113",
+    "enterprise_name": "Malwa Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2019-05-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-76-6256855": {
+    "udyam_number": "UDYAM-MH-76-6256855",
+    "enterprise_name": "Godavari Power Associates LLP",
+    "category": "MICRO",
+    "registration_date": "2015-06-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-69-5678496": {
+    "udyam_number": "UDYAM-UP-69-5678496",
+    "enterprise_name": "Sivakasi Engineering Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-05-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-46-5698820": {
+    "udyam_number": "UDYAM-MH-46-5698820",
+    "enterprise_name": "Godavari Instrumentation Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2016-10-04",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-22-3180399": {
+    "udyam_number": "UDYAM-HR-22-3180399",
+    "enterprise_name": "Sivakasi Control Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2018-01-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-49-2764137": {
+    "udyam_number": "UDYAM-TN-49-2764137",
+    "enterprise_name": "Kaveri Alloy Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2022-07-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-94-3965966": {
+    "udyam_number": "UDYAM-TN-94-3965966",
+    "enterprise_name": "Kurnool Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2017-09-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-99-6006235": {
+    "udyam_number": "UDYAM-MH-99-6006235",
+    "enterprise_name": "Thoothukudi Precision Equipment LLP",
+    "category": "MEDIUM",
+    "registration_date": "2022-01-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-77-1424379": {
+    "udyam_number": "UDYAM-GJ-77-1424379",
+    "enterprise_name": "Bhavnagar Automation Works LLP",
+    "category": "MICRO",
+    "registration_date": "2017-06-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-35-3264550": {
+    "udyam_number": "UDYAM-KA-35-3264550",
+    "enterprise_name": "Kolhapur Flow Fabricators Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-03-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-46-3435551": {
+    "udyam_number": "UDYAM-GJ-46-3435551",
+    "enterprise_name": "Namakkal Flow Fabricators Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2023-10-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-79-4880013": {
+    "udyam_number": "UDYAM-TN-79-4880013",
+    "enterprise_name": "Sivakasi Polymer Enterprises LLP",
+    "category": "MEDIUM",
+    "registration_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-59-8265298": {
+    "udyam_number": "UDYAM-GJ-59-8265298",
+    "enterprise_name": "Kongu Engineering Technocrats LLP",
+    "category": "MICRO",
+    "registration_date": "2020-12-09",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-35-7135479": {
+    "udyam_number": "UDYAM-HR-35-7135479",
+    "enterprise_name": "Thoothukudi Pumps Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2020-09-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-49-9317095": {
+    "udyam_number": "UDYAM-GJ-49-9317095",
+    "enterprise_name": "Nellore Flow Works Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2022-04-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-25-6678053": {
+    "udyam_number": "UDYAM-MH-25-6678053",
+    "enterprise_name": "Amravati Engineering Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2015-10-16",
+    "status": "INACTIVE"
+  },
+  "UDYAM-TN-10-1713620": {
+    "udyam_number": "UDYAM-TN-10-1713620",
+    "enterprise_name": "Solapur Mechanical Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-07-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-48-5193011": {
+    "udyam_number": "UDYAM-GJ-48-5193011",
+    "enterprise_name": "Dharwad Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2019-10-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-33-9369133": {
+    "udyam_number": "UDYAM-UP-33-9369133",
+    "enterprise_name": "Vindhya Control Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-04-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-12-2599674": {
+    "udyam_number": "UDYAM-TN-12-2599674",
+    "enterprise_name": "Sahyadri Polymer Technocrats LLP",
+    "category": "MICRO",
+    "registration_date": "2022-02-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-98-3526348": {
+    "udyam_number": "UDYAM-KA-98-3526348",
+    "enterprise_name": "Aravalli Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2020-12-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-54-9118870": {
+    "udyam_number": "UDYAM-MH-54-9118870",
+    "enterprise_name": "Ankleshwar Power Fabricators Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2019-11-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-36-4146555": {
+    "udyam_number": "UDYAM-KA-36-4146555",
+    "enterprise_name": "Latur Steel Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2022-02-04",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-46-8843896": {
+    "udyam_number": "UDYAM-HR-46-8843896",
+    "enterprise_name": "Aravalli Heavy Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2018-09-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-80-8902644": {
+    "udyam_number": "UDYAM-MH-80-8902644",
+    "enterprise_name": "Malwa Control Works Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2016-07-09",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-75-7241766": {
+    "udyam_number": "UDYAM-GJ-75-7241766",
+    "enterprise_name": "Shakti Thermal Solutions Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2023-04-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-52-8479183": {
+    "udyam_number": "UDYAM-MH-52-8479183",
+    "enterprise_name": "Malwa Valve Services Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-08-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-12-3096321": {
+    "udyam_number": "UDYAM-MH-12-3096321",
+    "enterprise_name": "Kurnool Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2017-07-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-24-8001764": {
+    "udyam_number": "UDYAM-TN-24-8001764",
+    "enterprise_name": "Shakti Heavy Technocrats LLP",
+    "category": "MICRO",
+    "registration_date": "2021-02-28",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-98-3991522": {
+    "udyam_number": "UDYAM-TN-98-3991522",
+    "enterprise_name": "Vidarbha Alloy Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2018-06-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-42-8956931": {
+    "udyam_number": "UDYAM-MH-42-8956931",
+    "enterprise_name": "Ankleshwar Control Systems Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2015-10-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-48-3574012": {
+    "udyam_number": "UDYAM-KA-48-3574012",
+    "enterprise_name": "Gulbarga Fabrication Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2015-07-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-39-9336263": {
+    "udyam_number": "UDYAM-HR-39-9336263",
+    "enterprise_name": "Karur Steel Associates LLP",
+    "category": "MICRO",
+    "registration_date": "2020-06-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-24-7734534": {
+    "udyam_number": "UDYAM-TN-24-7734534",
+    "enterprise_name": "Latur Polymer Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2022-02-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-98-2888011": {
+    "udyam_number": "UDYAM-MH-98-2888011",
+    "enterprise_name": "Konark Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2017-06-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-25-8769652": {
+    "udyam_number": "UDYAM-HR-25-8769652",
+    "enterprise_name": "Chambal Engineering Systems Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-07-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-87-5723447": {
+    "udyam_number": "UDYAM-TN-87-5723447",
+    "enterprise_name": "Sahyadri Steel Works Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2017-06-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-36-7209462": {
+    "udyam_number": "UDYAM-KA-36-7209462",
+    "enterprise_name": "Malwa Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2021-01-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-38-4535201": {
+    "udyam_number": "UDYAM-UP-38-4535201",
+    "enterprise_name": "Kurnool Polymer Works Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2016-07-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-88-5710921": {
+    "udyam_number": "UDYAM-GJ-88-5710921",
+    "enterprise_name": "Kaveri Pumps Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2019-07-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-11-4069364": {
+    "udyam_number": "UDYAM-UP-11-4069364",
+    "enterprise_name": "Davangere Automation Systems Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2022-10-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-45-1038845": {
+    "udyam_number": "UDYAM-HR-45-1038845",
+    "enterprise_name": "Belagavi Pumps Enterprises LLP",
+    "category": "MICRO",
+    "registration_date": "2023-08-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-28-8867908": {
+    "udyam_number": "UDYAM-UP-28-8867908",
+    "enterprise_name": "Erode Engineering Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2016-07-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-11-4814967": {
+    "udyam_number": "UDYAM-HR-11-4814967",
+    "enterprise_name": "Salem Pumps Solutions LLP",
+    "category": "SMALL",
+    "registration_date": "2016-05-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-81-4155028": {
+    "udyam_number": "UDYAM-MH-81-4155028",
+    "enterprise_name": "Belagavi Flow Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2018-04-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-42-1058791": {
+    "udyam_number": "UDYAM-UP-42-1058791",
+    "enterprise_name": "Kanchipuram Hydraulic Enterprises Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2015-10-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-12-8756368": {
+    "udyam_number": "UDYAM-KA-12-8756368",
+    "enterprise_name": "Malwa Pumps Solutions Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2019-09-27",
+    "status": "INACTIVE"
+  },
+  "UDYAM-MH-86-5595911": {
+    "udyam_number": "UDYAM-MH-86-5595911",
+    "enterprise_name": "Satpura Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2019-02-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-11-9776413": {
+    "udyam_number": "UDYAM-MH-11-9776413",
+    "enterprise_name": "Thrissur Valve Industries Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2019-04-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-72-9537728": {
+    "udyam_number": "UDYAM-HR-72-9537728",
+    "enterprise_name": "Saurashtra Electrical Equipment LLP",
+    "category": "MEDIUM",
+    "registration_date": "2022-01-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-35-7123092": {
+    "udyam_number": "UDYAM-KA-35-7123092",
+    "enterprise_name": "Tumakuru Power Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-03-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-24-9559946": {
+    "udyam_number": "UDYAM-TN-24-9559946",
+    "enterprise_name": "Erode Industrial Services LLP",
+    "category": "SMALL",
+    "registration_date": "2019-07-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-19-5306148": {
+    "udyam_number": "UDYAM-MH-19-5306148",
+    "enterprise_name": "Erode Steel Works LLP",
+    "category": "MICRO",
+    "registration_date": "2015-12-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-29-8451909": {
+    "udyam_number": "UDYAM-GJ-29-8451909",
+    "enterprise_name": "Vidarbha Hydraulic Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2020-08-09",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-80-4091217": {
+    "udyam_number": "UDYAM-MH-80-4091217",
+    "enterprise_name": "Jamnagar Steel Equipment Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2015-01-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-58-2041002": {
+    "udyam_number": "UDYAM-MH-58-2041002",
+    "enterprise_name": "Kollam Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2017-02-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-11-2204843": {
+    "udyam_number": "UDYAM-MH-11-2204843",
+    "enterprise_name": "Deccan Instrumentation Systems LLP",
+    "category": "SMALL",
+    "registration_date": "2019-06-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-45-9894835": {
+    "udyam_number": "UDYAM-TN-45-9894835",
+    "enterprise_name": "Jalgaon Process Services Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2019-03-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-85-5021568": {
+    "udyam_number": "UDYAM-KA-85-5021568",
+    "enterprise_name": "Guntur Automation Systems LLP",
+    "category": "MEDIUM",
+    "registration_date": "2022-11-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-73-1465744": {
+    "udyam_number": "UDYAM-HR-73-1465744",
+    "enterprise_name": "Satpura Process Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2017-01-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-70-4258183": {
+    "udyam_number": "UDYAM-TS-70-4258183",
+    "enterprise_name": "Chettinad Hydraulic Fabricators Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-09-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-66-6555582": {
+    "udyam_number": "UDYAM-GJ-66-6555582",
+    "enterprise_name": "Tirupati Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2019-07-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-59-7148979": {
+    "udyam_number": "UDYAM-KA-59-7148979",
+    "enterprise_name": "Narmada Polymer Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-01-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-86-2158830": {
+    "udyam_number": "UDYAM-GJ-86-2158830",
+    "enterprise_name": "Vindhya Hydraulic Systems Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-02-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-66-5884269": {
+    "udyam_number": "UDYAM-TN-66-5884269",
+    "enterprise_name": "Kongu Thermal Enterprises Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2017-05-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-28-1334544": {
+    "udyam_number": "UDYAM-MH-28-1334544",
+    "enterprise_name": "Narmada Control Works LLP",
+    "category": "MEDIUM",
+    "registration_date": "2023-07-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-25-3044719": {
+    "udyam_number": "UDYAM-TN-25-3044719",
+    "enterprise_name": "Kongu Valve Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2023-03-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-64-8644219": {
+    "udyam_number": "UDYAM-MH-64-8644219",
+    "enterprise_name": "Nandyal Control Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-02-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-22-6812643": {
+    "udyam_number": "UDYAM-TN-22-6812643",
+    "enterprise_name": "Sahyadri Process Services LLP",
+    "category": "MICRO",
+    "registration_date": "2017-04-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-16-2133549": {
+    "udyam_number": "UDYAM-TS-16-2133549",
+    "enterprise_name": "Guntur Mechanical Industries Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2016-04-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-59-5828734": {
+    "udyam_number": "UDYAM-GJ-59-5828734",
+    "enterprise_name": "Shakti Heavy Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2019-10-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-35-2954608": {
+    "udyam_number": "UDYAM-WB-35-2954608",
+    "enterprise_name": "Vijayapura Polymer Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-06-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-29-8391914": {
+    "udyam_number": "UDYAM-TN-29-8391914",
+    "enterprise_name": "Marathwada Fabrication Enterprises Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2020-05-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-74-2193850": {
+    "udyam_number": "UDYAM-KA-74-2193850",
+    "enterprise_name": "Shakti Fabrication Fabricators LLP",
+    "category": "MEDIUM",
+    "registration_date": "2022-06-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-84-4096176": {
+    "udyam_number": "UDYAM-KA-84-4096176",
+    "enterprise_name": "Chettinad Polymer Associates Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-02-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-29-3429762": {
+    "udyam_number": "UDYAM-MH-29-3429762",
+    "enterprise_name": "Chambal Polymer Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-02-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-95-7909140": {
+    "udyam_number": "UDYAM-TS-95-7909140",
+    "enterprise_name": "Satpura Hydraulic Associates Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-02-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-52-3343115": {
+    "udyam_number": "UDYAM-GJ-52-3343115",
+    "enterprise_name": "Ankleshwar Fabrication Solutions Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-07-18",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-75-1299841": {
+    "udyam_number": "UDYAM-MH-75-1299841",
+    "enterprise_name": "Kolhapur Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2020-12-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-78-2436674": {
+    "udyam_number": "UDYAM-MH-78-2436674",
+    "enterprise_name": "Jalgaon Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2023-08-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-23-5251387": {
+    "udyam_number": "UDYAM-MH-23-5251387",
+    "enterprise_name": "Satpura Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2016-02-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-74-7220176": {
+    "udyam_number": "UDYAM-WB-74-7220176",
+    "enterprise_name": "Kongu Polymer Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2019-12-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-63-7278503": {
+    "udyam_number": "UDYAM-TN-63-7278503",
+    "enterprise_name": "Gulbarga Flow Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-04-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-62-2988495": {
+    "udyam_number": "UDYAM-KA-62-2988495",
+    "enterprise_name": "Nandyal Hydraulic Solutions Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2023-08-25",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-15-8119772": {
+    "udyam_number": "UDYAM-KA-15-8119772",
+    "enterprise_name": "Malwa Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2020-02-22",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-80-3217857": {
+    "udyam_number": "UDYAM-TN-80-3217857",
+    "enterprise_name": "Alappuzha Precision Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2015-12-09",
+    "status": "INACTIVE"
+  },
+  "UDYAM-TN-60-6889795": {
+    "udyam_number": "UDYAM-TN-60-6889795",
+    "enterprise_name": "Latur Control Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-12-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-83-3908312": {
+    "udyam_number": "UDYAM-HR-83-3908312",
+    "enterprise_name": "Kutch Control Works LLP",
+    "category": "MEDIUM",
+    "registration_date": "2015-11-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-96-1054643": {
+    "udyam_number": "UDYAM-HR-96-1054643",
+    "enterprise_name": "Solapur Flow Works LLP",
+    "category": "MEDIUM",
+    "registration_date": "2019-12-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-45-4408352": {
+    "udyam_number": "UDYAM-TS-45-4408352",
+    "enterprise_name": "Vellore Engineering Solutions Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2023-06-19",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-80-4454500": {
+    "udyam_number": "UDYAM-GJ-80-4454500",
+    "enterprise_name": "Konark Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2016-05-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-45-9480858": {
+    "udyam_number": "UDYAM-TN-45-9480858",
+    "enterprise_name": "Konark Hydraulic Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-04-15",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-50-1493308": {
+    "udyam_number": "UDYAM-MH-50-1493308",
+    "enterprise_name": "Kurnool Precision Equipment Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2020-10-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-99-9894391": {
+    "udyam_number": "UDYAM-KA-99-9894391",
+    "enterprise_name": "Nellore Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2020-12-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-24-8522569": {
+    "udyam_number": "UDYAM-MH-24-8522569",
+    "enterprise_name": "Karur Pumps Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2021-04-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-79-3315891": {
+    "udyam_number": "UDYAM-MH-79-3315891",
+    "enterprise_name": "Kanchipuram Infra Projects Private Limited",
+    "category": "SMALL",
+    "registration_date": "2022-04-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-69-2948341": {
+    "udyam_number": "UDYAM-TN-69-2948341",
+    "enterprise_name": "Bharuch Process Industries Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-02-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-44-6584141": {
+    "udyam_number": "UDYAM-GJ-44-6584141",
+    "enterprise_name": "Kollam Flow Enterprises LLP",
+    "category": "MICRO",
+    "registration_date": "2017-12-08",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-83-3572237": {
+    "udyam_number": "UDYAM-GJ-83-3572237",
+    "enterprise_name": "Erode Process Industries LLP",
+    "category": "MEDIUM",
+    "registration_date": "2020-04-10",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-92-8816184": {
+    "udyam_number": "UDYAM-GJ-92-8816184",
+    "enterprise_name": "Sivakasi Hydraulic Works Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2022-10-27",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-67-6716654": {
+    "udyam_number": "UDYAM-HR-67-6716654",
+    "enterprise_name": "Ankleshwar Mechanical Technocrats LLP",
+    "category": "MICRO",
+    "registration_date": "2016-07-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-35-4217370": {
+    "udyam_number": "UDYAM-TS-35-4217370",
+    "enterprise_name": "Kurnool Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2016-10-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-57-8877115": {
+    "udyam_number": "UDYAM-GJ-57-8877115",
+    "enterprise_name": "Nandyal Alloy Enterprises Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2015-02-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-23-7006297": {
+    "udyam_number": "UDYAM-KA-23-7006297",
+    "enterprise_name": "Raichur Polymer Works LLP",
+    "category": "MICRO",
+    "registration_date": "2019-10-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-33-6529144": {
+    "udyam_number": "UDYAM-WB-33-6529144",
+    "enterprise_name": "Tumakuru Instrumentation Industries LLP",
+    "category": "MICRO",
+    "registration_date": "2018-10-19",
+    "status": "INACTIVE"
+  },
+  "UDYAM-GJ-58-9649795": {
+    "udyam_number": "UDYAM-GJ-58-9649795",
+    "enterprise_name": "Vellore Engineering Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2017-03-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-53-4170697": {
+    "udyam_number": "UDYAM-KA-53-4170697",
+    "enterprise_name": "Nandyal Electrical Systems LLP",
+    "category": "MICRO",
+    "registration_date": "2023-09-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-14-3528480": {
+    "udyam_number": "UDYAM-UP-14-3528480",
+    "enterprise_name": "Alappuzha Heavy Enterprises Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-05-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-63-7507598": {
+    "udyam_number": "UDYAM-TN-63-7507598",
+    "enterprise_name": "Namakkal Thermal Solutions Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2018-02-11",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-86-3181329": {
+    "udyam_number": "UDYAM-GJ-86-3181329",
+    "enterprise_name": "Karur Electrical Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2017-01-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-47-7101092": {
+    "udyam_number": "UDYAM-GJ-47-7101092",
+    "enterprise_name": "Nilgiri Heavy Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2023-02-04",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-15-9415766": {
+    "udyam_number": "UDYAM-TN-15-9415766",
+    "enterprise_name": "Solapur Thermal Enterprises LLP",
+    "category": "MICRO",
+    "registration_date": "2016-08-24",
+    "status": "INACTIVE"
+  },
+  "UDYAM-KA-32-4862839": {
+    "udyam_number": "UDYAM-KA-32-4862839",
+    "enterprise_name": "Dindigul Polymer Services Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2016-06-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-95-5121708": {
+    "udyam_number": "UDYAM-GJ-95-5121708",
+    "enterprise_name": "Shakti Hydraulic Associates LLP",
+    "category": "MEDIUM",
+    "registration_date": "2020-05-09",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-35-9790030": {
+    "udyam_number": "UDYAM-TN-35-9790030",
+    "enterprise_name": "Gulbarga Precision Industries Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2018-11-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-UP-33-2855780": {
+    "udyam_number": "UDYAM-UP-33-2855780",
+    "enterprise_name": "Sahyadri Heavy Works LLP",
+    "category": "MICRO",
+    "registration_date": "2015-12-22",
+    "status": "INACTIVE"
+  },
+  "UDYAM-GJ-32-8241923": {
+    "udyam_number": "UDYAM-GJ-32-8241923",
+    "enterprise_name": "Nandyal Steel Solutions LLP",
+    "category": "SMALL",
+    "registration_date": "2021-09-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-44-8380965": {
+    "udyam_number": "UDYAM-TS-44-8380965",
+    "enterprise_name": "Kongu Electrical Technocrats LLP",
+    "category": "SMALL",
+    "registration_date": "2017-05-21",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-82-1212213": {
+    "udyam_number": "UDYAM-TS-82-1212213",
+    "enterprise_name": "Solapur Electrical Technocrats LLP",
+    "category": "MEDIUM",
+    "registration_date": "2018-01-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-32-1269442": {
+    "udyam_number": "UDYAM-TN-32-1269442",
+    "enterprise_name": "Belagavi Process Enterprises LLP",
+    "category": "MEDIUM",
+    "registration_date": "2015-01-06",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TN-85-8197327": {
+    "udyam_number": "UDYAM-TN-85-8197327",
+    "enterprise_name": "Sivakasi Industrial Enterprises LLP",
+    "category": "MICRO",
+    "registration_date": "2020-04-03",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-88-2298487": {
+    "udyam_number": "UDYAM-MH-88-2298487",
+    "enterprise_name": "Chambal Pumps Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-11-24",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-55-1558595": {
+    "udyam_number": "UDYAM-GJ-55-1558595",
+    "enterprise_name": "Kolhapur Infra Projects Private Limited",
+    "category": "MICRO",
+    "registration_date": "2018-05-17",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-90-2672614": {
+    "udyam_number": "UDYAM-KA-90-2672614",
+    "enterprise_name": "Vellore Precision Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2016-06-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-HR-42-6871827": {
+    "udyam_number": "UDYAM-HR-42-6871827",
+    "enterprise_name": "Ballari Instrumentation Services LLP",
+    "category": "MEDIUM",
+    "registration_date": "2015-07-28",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-19-1482057": {
+    "udyam_number": "UDYAM-TS-19-1482057",
+    "enterprise_name": "Thoothukudi Hydraulic Technocrats Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2019-08-12",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-24-6123040": {
+    "udyam_number": "UDYAM-MH-24-6123040",
+    "enterprise_name": "Sangli Steel Technocrats Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2016-08-04",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-50-1407192": {
+    "udyam_number": "UDYAM-GJ-50-1407192",
+    "enterprise_name": "Guntur Flow Fabricators LLP",
+    "category": "MICRO",
+    "registration_date": "2022-12-21",
+    "status": "INACTIVE"
+  },
+  "UDYAM-MH-28-6823678": {
+    "udyam_number": "UDYAM-MH-28-6823678",
+    "enterprise_name": "Kurnool Instrumentation Fabricators Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-01-26",
+    "status": "INACTIVE"
+  },
+  "UDYAM-MH-29-3889529": {
+    "udyam_number": "UDYAM-MH-29-3889529",
+    "enterprise_name": "Palakkad Industrial Equipment Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-05-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-TS-17-1206075": {
+    "udyam_number": "UDYAM-TS-17-1206075",
+    "enterprise_name": "Sahyadri Heavy Associates LLP",
+    "category": "MICRO",
+    "registration_date": "2022-07-16",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-61-1332757": {
+    "udyam_number": "UDYAM-GJ-61-1332757",
+    "enterprise_name": "Salem Instrumentation Associates Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2015-08-01",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-67-9659402": {
+    "udyam_number": "UDYAM-GJ-67-9659402",
+    "enterprise_name": "Chettinad Alloy Services LLP",
+    "category": "MEDIUM",
+    "registration_date": "2017-11-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-32-9480847": {
+    "udyam_number": "UDYAM-GJ-32-9480847",
+    "enterprise_name": "Ballari Infra Projects Private Limited",
+    "category": "MEDIUM",
+    "registration_date": "2022-09-13",
+    "status": "ACTIVE"
+  },
+  "UDYAM-WB-35-4618036": {
+    "udyam_number": "UDYAM-WB-35-4618036",
+    "enterprise_name": "Sangli Fabrication Enterprises Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2018-05-20",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-73-4314867": {
+    "udyam_number": "UDYAM-MH-73-4314867",
+    "enterprise_name": "Deccan Alloy Fabricators LLP",
+    "category": "SMALL",
+    "registration_date": "2019-10-23",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-30-1018742": {
+    "udyam_number": "UDYAM-MH-30-1018742",
+    "enterprise_name": "Belagavi Mechanical Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-09-26",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-38-5959994": {
+    "udyam_number": "UDYAM-KA-38-5959994",
+    "enterprise_name": "Latur Flow Fabricators Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2019-04-14",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-20-7989346": {
+    "udyam_number": "UDYAM-MH-20-7989346",
+    "enterprise_name": "Kongu Pumps Fabricators Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2021-01-05",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-26-2001267": {
+    "udyam_number": "UDYAM-KA-26-2001267",
+    "enterprise_name": "Davangere Pumps Enterprises Pvt. Ltd.",
+    "category": "SMALL",
+    "registration_date": "2017-06-07",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-69-4125574": {
+    "udyam_number": "UDYAM-KA-69-4125574",
+    "enterprise_name": "Palakkad Steel Works Pvt. Ltd.",
+    "category": "MICRO",
+    "registration_date": "2018-02-27",
+    "status": "ACTIVE"
   }
 }

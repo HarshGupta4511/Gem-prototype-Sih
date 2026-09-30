@@ -1,1 +1,187 @@
-[{"authority": "CPCL", "blacklisted": false, "company_name": "Deccan Industrial Traders", "debarred": true, "period": "2024-01-15 to 2027-01-14", "reason": "Debarred for submission of fraudulent experience certificates in tender CPCL-2023-118"}, {"authority": "CPCL", "company_name": "CareWell Enterprises Pvt Ltd", "blacklisted": true, "debarred": false, "period": "2025-06-01 to 2028-05-31", "reason": "Blacklisted for submission of forged turnover certificates in tender CPCL-2024-071 (demo record)"}]
+[
+  {
+    "authority": "CPCL",
+    "blacklisted": false,
+    "company_name": "Deccan Industrial Traders",
+    "debarred": true,
+    "period": "2024-01-15 to 2027-01-14",
+    "reason": "Debarred for submission of fraudulent experience certificates in tender CPCL-2023-118"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "CareWell Enterprises Pvt Ltd",
+    "blacklisted": true,
+    "debarred": false,
+    "period": "2025-06-01 to 2028-05-31",
+    "reason": "Blacklisted for submission of forged turnover certificates in tender CPCL-2024-071 (demo record)"
+  },
+  {
+    "company_name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": false,
+    "authority": "CPCL",
+    "reason": "Blacklisted for submission of forged solvency certificates in tender CPCL-2024-093 (fictional demo record)",
+    "period": "2025-01-10 to 2028-01-09",
+    "is_mock": true
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Kurnool Valve Services LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Jalgaon Engineering Associates Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Thoothukudi Engineering Solutions Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Thrissur Industrial Solutions Pvt. Ltd.",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Davangere Flow Systems Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Namakkal Industrial Technocrats LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Ballari Precision Industries Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Gulbarga Hydraulic Works Pvt. Ltd.",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Guntur Instrumentation Associates LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Karur Electrical Works LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Deccan Valve Works LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Vindhya Control Services LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Tirupati Industrial Fabricators LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Vidarbha Alloy Systems LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Sahyadri Steel Works Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Kurnool Polymer Works Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Erode Engineering Fabricators LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Guntur Automation Systems LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Kollam Flow Enterprises LLP",
+    "blacklisted": true,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "authority": "CPCL",
+    "company_name": "Nilgiri Heavy Fabricators LLP",
+    "blacklisted": false,
+    "debarred": true,
+    "period": "2024-06-01 to 2027-05-31",
+    "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  }
+]

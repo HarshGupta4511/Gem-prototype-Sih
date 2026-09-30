@@ -328,11 +328,28 @@ export interface AuditLog {
   target_label?: string | null;
 }
 
+// A citable authoritative policy record produced by policy retrieval for a
+// compliance finding. Each record traces UI -> chunk -> source document ->
+// official URL -> exact rule/section/clause.
+export interface PolicyCitation {
+  title: string;
+  authority: string;
+  source_url: string;
+  document_type: string;
+  version: string;
+  publication_date: string;
+  effective_date: string;
+  section: string;
+  why_relevant: string;
+  excerpt: string;
+  score: number;
+}
+
 export interface RecommendationResult {
   recommendation: Recommendation;
   reason: string;
   evidence: unknown[];
-  policy_context: { title: string; chunk: string }[];
+  policy_context: PolicyCitation[];
   provider: string;
 }
 
@@ -376,6 +393,7 @@ export interface TenderBidderRow {
   bid_status: BidStatus;
   compliance_score: number | null;
   risk_level: RiskLevel | null;
+  recommendation: Recommendation | null;
   officer_decision: OfficerDecision | null;
   submitted_at: string;
 }

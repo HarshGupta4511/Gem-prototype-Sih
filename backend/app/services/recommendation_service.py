@@ -7,10 +7,76 @@ officer always decides.
 
 from __future__ import annotations
 
-PROVIDER = "rules+rag-demo"
+PROVIDER = "rules+policy-retrieval"
 FINAL_LINE = "Final decision remains with the Procurement Officer."
 
 NON_PASS = ("MISSING", "EXPIRED", "MISMATCH", "REVIEW_REQUIRED")
+
+# Retrieval fires for every non-PASS compliance finding (including FAIL —
+# a failed finding is exactly when policy context matters most) and for
+# critical/high-severity blacklist or debarment risk signals.
+RETRIEVAL_STATUSES = NON_PASS + ("FAIL",)
+SIGNAL_RETRIEVAL_CODES = ("BLACKLISTED", "DEBARRED")
+
+# Topic -> authoritative document titles allowed for retrieval. Only topics
+# with a verified authoritative source are listed here; findings on any
+# other topic (GST, PAN, OEM authorization, turnover, missing documents, ...)
+# produce no retrieval at all — "No authoritative policy source is currently
+# configured for this topic." Matching is keyword-based over the requirement
+# name, description, threshold and category.
+RETRIEVAL_TOPICS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
+    (
+        ("make in india", "mii", "local content", "class-i", "class-ii"),
+        ("Public Procurement (Preference to Make in India), Order 2017 — Revision dated 19.07.2024",),
+    ),
+    (
+        ("udyam", "msme", "micro small", "small medium"),
+        ("Udyam Registration — MSME Classification (Ministry of MSME)",),
+    ),
+    (
+        ("blacklist", "debar"),
+        (
+            "General Financial Rules, 2017 — Procurement Provisions",
+            "Debarment of Firms from Bidding — DoE Guidelines",
+        ),
+    ),
+]
+
+
+def _retrieval_topic(item: dict) -> tuple[str, ...] | None:
+    """Authoritative document titles configured for the finding's topic.
+
+    Returns None when no authoritative policy source is configured.
+    """
+    haystack = " ".join(
+        [
+            str(item.get("requirement_name") or ""),
+            str(item.get("description") or ""),
+            str(item.get("threshold") or ""),
+            str(item.get("expected_value") or ""),
+            str(item.get("category") or ""),
+        ]
+    ).lower()
+    for keywords, titles in RETRIEVAL_TOPICS:
+        if any(k in haystack for k in keywords):
+            return titles
+    return None
+
+
+def _topic_titles(keywords: tuple[str, ...]) -> tuple[str, ...] | None:
+    """Document titles for a known topic entry (lookup by its keywords)."""
+    for entry_keywords, titles in RETRIEVAL_TOPICS:
+        if entry_keywords == keywords:
+            return titles
+    return None
+
+# Minimum cosine-similarity score for a policy chunk to be cited. Prevents
+# top-k from being returned merely for being the least irrelevant chunk.
+# Retrieval is additionally scoped to the authoritative documents configured
+# for the finding's topic, so this gate only filters weak matches within
+# an already topically-coherent corpus. Calibrated against the seeded
+# authoritative corpus (TF-IDF path).
+MIN_RELEVANCE = 0.10
 
 
 def _load_items(db, results):
@@ -28,19 +94,66 @@ def _load_items(db, results):
     items = []
     for r in results:
         t = reqs.get(r.requirement_id)
+        evidence_items = list(r.evidence or []) if isinstance(r.evidence, list) else []
+        doc_types = sorted(
+            {
+                str(e.get("document_type") or e.get("doc_type") or "")
+                for e in evidence_items
+                if isinstance(e, dict)
+            }
+            - {""}
+        )
         items.append(
             {
                 "requirement_id": r.requirement_id,
                 "requirement_name": t.requirement_name if t else "",
                 "description": t.description if t else "",
+                "category": t.category if t else "",
+                "threshold": t.threshold if t else None,
+                "expected_value": t.expected_value if t else None,
                 "mandatory": bool(t.mandatory) if t else False,
                 "weight": r.weight,
                 "status": r.status,
                 "explanation": r.explanation or "",
                 "source": r.source or "",
+                "document_types": doc_types,
             }
         )
     return items
+
+
+def _retrieval_query(item: dict) -> str:
+    """Build the RAG query from the full finding (§7): requirement name,
+    criteria/threshold, compliance finding/explanation, verification finding,
+    document type(s), extracted value, and status."""
+    parts = [
+        item.get("requirement_name") or "",
+        item.get("threshold") or "",
+        item.get("expected_value") or "",
+        item.get("description") or "",
+        item.get("status") or "",
+        item.get("explanation") or "",
+        item.get("source") or "",
+        " ".join(item.get("document_types") or []),
+    ]
+    return " ".join(p for p in parts if p).strip()
+
+
+def _policy_citation(hit: dict) -> dict:
+    """Shape a retrieval hit as a citable policy context record."""
+    return {
+        "title": hit.get("doc_title"),
+        "authority": hit.get("authority"),
+        "source_url": hit.get("source_url"),
+        "document_type": hit.get("document_type"),
+        "version": hit.get("version"),
+        "publication_date": hit.get("publication_date"),
+        "effective_date": hit.get("effective_date"),
+        "section": hit.get("section"),
+        "why_relevant": hit.get("why_relevant"),
+        "excerpt": hit.get("excerpt"),
+        "score": hit.get("score"),
+    }
 
 
 def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
@@ -121,27 +234,47 @@ def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
             "without officer review of the listing."
         )
 
-    # RAG policy context for each non-PASS requirement (top-1 chunk each).
+    # RAG policy context: retrieve citable authoritative provisions for each
+    # non-PASS finding. The recommendation itself stays fully deterministic —
+    # retrieval only adds policy context and the official source.
+    # A hit is cited only when it clears the relevance gate AND comes from an
+    # authoritative document; otherwise no citation is produced for that
+    # finding ("No relevant authoritative policy guidance was retrieved").
     policy_context = []
     seen = set()
-    for i in non_pass:
-        query = f"{i['requirement_name']} {i['description']}".strip()
+
+    def _retrieve(query: str, doc_titles: tuple[str, ...] | None) -> None:
+        if not query or not doc_titles:
+            # No authoritative policy source is configured for this topic.
+            return
         try:
-            res = rag_service.search(db, query, top_k=1)
+            res = rag_service.search(db, query, top_k=2, doc_titles=list(doc_titles))
         except Exception:
-            continue
+            return
         for hit in res.get("results", []):
-            key = (hit.get("doc_id"), hit.get("chunk"))
+            if float(hit.get("score") or 0) < MIN_RELEVANCE:
+                continue
+            meta = rag_service.doc_metadata(hit.get("doc_title") or "")
+            if meta.get("authority_level") != "AUTHORITATIVE":
+                continue
+            key = (hit.get("doc_id"), hit.get("section"))
             if key in seen:
                 continue
             seen.add(key)
-            policy_context.append(
-                {
-                    "title": hit.get("doc_title"),
-                    "chunk": hit.get("chunk"),
-                    "score": hit.get("score"),
-                }
-            )
+            policy_context.append(_policy_citation(hit))
+
+    flagged = [i for i in items if i["status"] in RETRIEVAL_STATUSES]
+    for i in flagged:
+        _retrieve(_retrieval_query(i), _retrieval_topic(i))
+    # Critical/high blacklist or debarment risk signals get policy context
+    # even when the compliance finding itself passed (portal-level flag).
+    debar_titles = _topic_titles(("blacklist", "debar"))
+    for s in signals:
+        if s.get("code") in SIGNAL_RETRIEVAL_CODES and (s.get("severity") or "") in (
+            "critical",
+            "high",
+        ):
+            _retrieve(f"{s.get('code')} {s.get('message', '')}".strip(), debar_titles)
 
     check_ids = [
         row[0]
@@ -165,6 +298,10 @@ def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
     bid.recommendation = recommendation
     bid.recommendation_reason = reason
     bid.recommendation_evidence = evidence_refs
+    # Persist citable policy context alongside the recommendation so Bid
+    # Detail shows the same citations when the bid is reopened. Stored as
+    # plain data — never influences scores, risk, or the officer decision.
+    bid.policy_context = policy_context
 
     append_audit(
         db,

@@ -16,7 +16,6 @@ import {
   Plus,
   Scale,
   ShieldCheck,
-  Sparkles,
   Trash2,
   UserCheck,
 } from 'lucide-react';
@@ -46,12 +45,8 @@ import {
 import type {
   CreateTenderRequest,
   RequirementDraft,
-  SuggestedRequirement,
-  SuggestRequirementsRequest,
   TenderType,
-  BidType,
 } from '../../types';
-import { SystemLayerTag } from '../common/SystemLayerTag';
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -67,7 +62,6 @@ const step1Schema = z
       .number({ invalid_type_error: 'Enter a valid amount' })
       .min(0, 'Estimated value must be non-negative'),
     tender_type: z.string(),
-    bid_type: z.string(),
     emd_amount_inr: z.string(),
     delivery_period: z.string(),
     place_of_delivery: z.string(),
@@ -232,7 +226,6 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
   const [drafts, setDrafts] = useState<DraftRow[]>(() =>
     STANDARD_TEMPLATE.map((r) => toDraftRow(r, r.weight))
   );
-  const [suggesting, setSuggesting] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [confirmedDeclaration, setConfirmedDeclaration] = useState(false);
@@ -255,7 +248,6 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
       closing_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       estimated_value_inr: 50000000,
       tender_type: 'OPEN',
-      bid_type: 'TWO_PACKET',
       emd_amount_inr: '1000000',
       delivery_period: '24 Weeks',
       place_of_delivery: 'CPCL Manali Refinery, Chennai, Tamil Nadu',
@@ -283,47 +275,6 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
 
   const onStep1Submit = () => {
     setStep(2);
-  };
-
-  const handleSuggest = async () => {
-    const desc = step1Values.description;
-    if (!desc || desc.length < 10) {
-      toast({ title: 'Tender description needed', description: 'Please provide a descriptive scope in Step 1.' });
-      return;
-    }
-    setSuggesting(true);
-    try {
-      const res = await tendersApi.suggestRequirements({
-        title: step1Values.title || 'Procurement Tender',
-        description: desc,
-        department: step1Values.department,
-      });
-      const suggestions = res.requirements || [];
-      if (suggestions && suggestions.length > 0) {
-        const newRows = suggestions.map((s: SuggestedRequirement) =>
-          toDraftRow(
-            {
-              requirement_name: s.requirement_name,
-              category: 'TECHNICAL',
-              description: s.description || '',
-              mandatory: s.mandatory,
-              rule_type: 'CUSTOM_RULE',
-              rule_config: {},
-              threshold: s.threshold || null,
-              verification_source: null,
-              weight: s.weight || 10,
-            },
-            s.weight || 10
-          )
-        );
-        setDrafts(newRows);
-        toast({ title: 'AI Requirements Generated', description: `${newRows.length} requirements generated from tender scope.` });
-      }
-    } catch {
-      toast({ title: 'AI Assistant Notice', description: 'Could not fetch suggestions. Using standard template.' });
-    } finally {
-      setSuggesting(false);
-    }
   };
 
   const addManualRow = () => {
@@ -371,7 +322,6 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
         closing_date: step1Values.closing_date,
         estimated_value_inr: Number(step1Values.estimated_value_inr),
         tender_type: (step1Values.tender_type as TenderType) || null,
-        bid_type: (step1Values.bid_type as BidType) || null,
         emd_amount_inr: step1Values.emd_amount_inr ? Number(step1Values.emd_amount_inr) : undefined,
         delivery_period: step1Values.delivery_period,
         place_of_delivery: step1Values.place_of_delivery,
@@ -382,7 +332,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
           mandatory: d.mandatory,
           rule_type: d.rule_type,
           rule_config: d.rule_config,
-          threshold: d.threshold,
+          threshold: d.threshold?.trim() || null,
           verification_source: d.verification_source,
           weight: d.weight,
         })),
@@ -633,16 +583,6 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="bid_type">
-                      Evaluation Envelope
-                    </label>
-                    <Select id="bid_type" className="border-slate-300 text-xs" {...register('bid_type')}>
-                      <option value="TWO_PACKET">Two-Packet (Tech + Price)</option>
-                      <option value="SINGLE_PACKET">Single Packet</option>
-                    </Select>
-                  </div>
-
-                  <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Issue Date (System Date)
                     </label>
@@ -675,22 +615,21 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
           {/* STEP 2: REQUIREMENTS & WEIGHTS */}
           {step === 2 && (
             <div className="space-y-5">
-              {/* AI REQUIREMENT ASSISTANCE BLOCK */}
+              {/* REQUIREMENT TEMPLATE BLOCK */}
               <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
                   <div className="flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded bg-indigo-600 text-white">
-                      <Sparkles className="h-4 w-4" />
+                      <ListChecks className="h-4 w-4" />
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-indigo-950 font-serif">
-                          AI Requirement Assistance
+                          Standard Requirement Template
                         </span>
-                        <SystemLayerTag layer="AI_ASSISTED" size="sm" />
                       </div>
                       <p className="text-[11px] text-indigo-900/80">
-                        Synthesizes statutory &amp; technical criteria based on tender category and technical scope.
+                        Start from the standard GeM qualification rules, then adjust criteria and weights.
                       </p>
                     </div>
                   </div>
@@ -705,21 +644,11 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                     >
                       Reset Standard GeM Rules
                     </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleSuggest}
-                      loading={suggesting}
-                      className="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-medium"
-                    >
-                      <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                      Generate from Scope
-                    </Button>
                   </div>
                 </div>
 
                 <div className="mt-2.5 flex items-center justify-between text-xs text-indigo-900">
-                  <span>Advisory only: Procurement Officer retains full discretion to add, adjust weights, or remove criteria.</span>
+                  <span>Procurement Officer retains full discretion to add, adjust weights, or remove criteria.</span>
                   <button
                     type="button"
                     onClick={addManualRow}
@@ -836,7 +765,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
 
                 {!isWeightValid && (
                   <span className="text-xs font-semibold text-rose-800">
-                    Weights must sum to exactly 100% before advancing.
+                    Requirement weights must total exactly 100%.
                   </span>
                 )}
               </div>
@@ -894,9 +823,9 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Tender / Bid Envelope:</span>
+                    <span className="text-slate-500 block">Tender Type:</span>
                     <span className="font-medium text-slate-800">
-                      {step1Values.tender_type} • {step1Values.bid_type}
+                      {step1Values.tender_type}
                     </span>
                   </div>
                   <div>

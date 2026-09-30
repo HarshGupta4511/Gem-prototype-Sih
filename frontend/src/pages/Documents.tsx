@@ -467,20 +467,12 @@ export default function Documents() {
               <DocStatusBadge status={result.doc.processing_status} />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
               <div>
                 <span className="text-slate-500 block">Classified Document Type:</span>
                 <div className="mt-1">
                   <DocTypeBadge docType={(detectedType as DocumentType) || 'GST_CERTIFICATE'} />
                 </div>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Classification Confidence:</span>
-                <span className="font-mono font-bold text-slate-900 text-sm block mt-1">
-                  {result.doc.extraction_confidence != null
-                    ? `${Math.round(result.doc.extraction_confidence * 100)}%`
-                    : '100%'}
-                </span>
               </div>
               <div>
                 <span className="text-slate-500 block">Page Count / Size:</span>
@@ -503,7 +495,7 @@ export default function Documents() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                 Extracted Entities &amp; Values ({result.fields.length})
               </h3>
-              <span className="text-[11px] text-slate-500">Method &amp; Confidence breakdown</span>
+              <span className="text-[11px] text-slate-500">Extraction method</span>
             </div>
 
             <div className="overflow-x-auto">
@@ -514,7 +506,6 @@ export default function Documents() {
                     <TableHead className="py-2.5 px-3">Extracted Value</TableHead>
                     <TableHead className="py-2.5 px-3">Normalized Value</TableHead>
                     <TableHead className="py-2.5 px-3 text-center">Extraction Method</TableHead>
-                    <TableHead className="py-2.5 px-3 text-right">Confidence</TableHead>
                   </tr>
                 </TableHeader>
                 <TableBody>
@@ -531,9 +522,6 @@ export default function Documents() {
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-center">
                         <MethodBadge method={f.extraction_method} />
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-right font-mono font-semibold">
-                        {Math.round(f.confidence * 100)}%
                       </TableCell>
                     </TableRow>
                   ))}

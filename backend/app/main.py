@@ -59,6 +59,31 @@ def _ensure_tender_wizard_columns() -> None:
         logger.exception("Failed to add tender wizard columns")
 
 
+def _ensure_policy_context_column() -> None:
+    """Additive, idempotent migration for bid_submissions.policy_context.
+
+    ``create_all`` does not add columns to an existing ``bid_submissions``
+    table, so databases created before the source-grounded RAG policy context
+    shipped would otherwise miss the new nullable JSON column. Adds it only
+    when missing and never touches existing data.
+    """
+    from sqlalchemy import inspect, text
+
+    try:
+        existing = {c["name"] for c in inspect(engine).get_columns("bid_submissions")}
+    except Exception:
+        logger.exception("Could not inspect bid_submissions table; skipping column migration")
+        return
+    if "policy_context" in existing:
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE bid_submissions ADD COLUMN policy_context JSON"))
+        logger.info("Added policy_context column to bid_submissions")
+    except Exception:
+        logger.exception("Failed to add policy_context column")
+
+
 def _backfill_tender_wizard_fields(db=None) -> None:
     """Fill Step-1 wizard fields on demo tenders that predate the wizard.
 
@@ -100,6 +125,7 @@ def _backfill_tender_wizard_fields(db=None) -> None:
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     _ensure_tender_wizard_columns()
+    _ensure_policy_context_column()
     _backfill_tender_wizard_fields()
     if is_dev_secret():
         logger.warning("JWT_SECRET is the dev default — set JWT_SECRET env var")

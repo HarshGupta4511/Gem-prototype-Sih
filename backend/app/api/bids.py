@@ -30,9 +30,11 @@ from app.schemas.schemas import (
     BidOut,
     ClarificationOut,
     ComplianceResultOut,
+    DemoEvidenceSeedRequest,
     DocumentOut,
     OverrideOut,
     RecommendationOut,
+    RequirementOut,
     RiskOut,
     VerificationCheckOut,
 )
@@ -41,6 +43,9 @@ from app.services import audit_service
 router = APIRouter(prefix="/api/bids", tags=["bids"])
 
 _SUBMITTER = require_roles("PROCUREMENT_OFFICER", "VERIFIER")
+# Deletion is a procurement-officer-only destructive action (verifier may
+# register/process, but only the officer may delete).
+_OFFICER = require_roles("PROCUREMENT_OFFICER")
 
 
 def _utcnow() -> datetime:
@@ -184,16 +189,17 @@ def get_bid(
     doc_ids = [d.id for d in documents]
 
     comp_rows = (
-        db.query(ComplianceResult, TenderRequirement.requirement_name)
-        .join(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
+        db.query(ComplianceResult, TenderRequirement)
+        .outerjoin(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
         .filter(ComplianceResult.bid_id == bid_id)
         .order_by(ComplianceResult.id)
         .all()
     )
     compliance_results = []
-    for result, requirement_name in comp_rows:
+    for result, req in comp_rows:
         item = ComplianceResultOut.model_validate(result)
-        item.requirement_name = requirement_name
+        item.requirement_name = req.requirement_name if req else None
+        item.requirement = RequirementOut.model_validate(req) if req else None
         compliance_results.append(item)
 
     risk_row = db.query(RiskAssessment).filter(RiskAssessment.bid_id == bid_id).one_or_none()
@@ -222,8 +228,8 @@ def get_bid(
             recommendation=bid.recommendation,
             reason=bid.recommendation_reason,
             evidence=stored_evidence,
-            policy_context=[],
-            provider=None,
+            policy_context=bid.policy_context or [],
+            provider="rules+policy-retrieval" if (bid.policy_context or []) else None,
         )
 
     overrides = (
@@ -268,3 +274,54 @@ def bid_documents(
         db.query(Document).filter(Document.bid_id == bid_id).order_by(Document.id.desc()).all()
     )
     return [DocumentOut.model_validate(d) for d in documents]
+
+
+@router.post("/{bid_id}/seed-demo-evidence")
+def seed_demo_evidence(
+    bid_id: int,
+    payload: DemoEvidenceSeedRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(_SUBMITTER),
+):
+    """Attach a fictional demo-bidder evidence dossier to an existing bid.
+
+    Stores the dossier as a normal document and runs the REAL extraction
+    pipeline (classification + regex/LLM extraction) — the same service that
+    runs automatically on upload. Verification, compliance/risk and the AI
+    recommendation are deliberately NOT pre-computed: the officer runs those
+    from the existing Bid Detail buttons, so scores are derived live.
+    Idempotent per (bid, profile): a repeat call creates no duplicate
+    bidder or document rows.
+    """
+    from app.services import demo_seed_service
+
+    try:
+        return demo_seed_service.seed_demo_bidder_evidence(
+            db, bid_id, payload.profile_key, user_id=user.id
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        )
+
+
+@router.delete("/{bid_id}")
+def delete_bid(
+    bid_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Delete a bid submission and all its derived data (documents, extracted
+    fields, verification checks, compliance results, risk, clarifications).
+
+    Procurement Officer only. The append-only audit trail is preserved; a
+    ``BID_DELETED`` event records the deletion.
+    """
+    from app.services import delete_service
+
+    try:
+        return delete_service.delete_bid(db, bid_id, user_id=user.id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        )

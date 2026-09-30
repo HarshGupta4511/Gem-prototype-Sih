@@ -100,6 +100,8 @@ export const tendersApi = {
   list: () => api.get<TenderListItem[]>('/tenders').then((r) => r.data),
   get: (id: number) => api.get<TenderDetail>(`/tenders/${id}`).then((r) => r.data),
   create: (body: CreateTenderRequest) => api.post<Tender>('/tenders', body).then((r) => r.data),
+  /** Delete a tender and every bid/derived record under it. Procurement Officer only. */
+  delete: (id: number) => api.delete(`/tenders/${id}`).then((r) => r.data),
   analyzeDraft: (tender_text: string) =>
     api.post<{ requirements: RequirementDraft[] }>('/tenders/analyze-draft', { tender_text }).then((r) => r.data),
   /** AI-suggested requirements (advisory) — officer reviews before creation. */
@@ -123,6 +125,11 @@ export const bidsApi = {
     api.get<BidSummary[]>('/bids', { params: tender_id ? { tender_id } : {} }).then((r) => r.data),
   create: (body: CreateBidRequest) => api.post('/bids', body).then((r) => r.data),
   get: (bid_id: number) => api.get<BidDetail>(`/bids/${bid_id}`).then((r) => r.data),
+  /** Attach a demo bidder's fictional evidence dossier via the real backend pipeline. */
+  seedDemoEvidence: (bid_id: number, profile_key: string) =>
+    api.post(`/bids/${bid_id}/seed-demo-evidence`, { profile_key }).then((r) => r.data),
+  /** Delete a bid and all its derived data. Procurement Officer only. */
+  delete: (bid_id: number) => api.delete(`/bids/${bid_id}`).then((r) => r.data),
 };
 
 // --------------------------------------------------------------- documents

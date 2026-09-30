@@ -414,3 +414,48 @@ def test_suggest_requirements_parses_llm_json(monkeypatch):
     assert out[0]["mandatory"] is True
     assert out[1]["weight"] == 0  # unparseable weight -> safe 0, officer fixes it
     assert out[1]["threshold"] == "Minimum Rs 50 lakh"
+
+
+def test_parse_threshold_plain_number_no_crash():
+    """Regression: a plain-number threshold (e.g. '15000') must not raise
+    IndexError — the fallback regex has no capture groups."""
+    from app.services.tender_intel_service import _parse_threshold_number
+    assert _parse_threshold_number("15000") == 15000.0
+    assert _parse_threshold_number("15,000") == 15000.0
+    assert _parse_threshold_number("28.5") == 28.5
+    assert _parse_threshold_number("") is None
+    assert _parse_threshold_number(None) is None
+    assert _parse_threshold_number("not a number") is None
+    assert _parse_threshold_number("₹25,00,000") == 2500000
+    assert _parse_threshold_number("2 years") == 2.0
+    assert _parse_threshold_number("50%") == 50.0
+
+
+def test_wizard_create_with_plain_number_threshold(db):
+    """End-to-end: tender creation with a manually typed plain-number
+    threshold must succeed, not 500 (IndexError regression)."""
+    from datetime import date
+    from app.schemas.schemas import TenderCreate
+    officer = _officer()
+    db.add(officer)
+    db.commit()
+    payload = TenderCreate(
+        tender_number="THR-001",
+        title="Threshold Test",
+        organization="CPCL",
+        department="Proc",
+        description="d",
+        closing_date=date(2026, 12, 31),
+        estimated_value_inr=100000,
+        requirements=[
+            {"requirement_name": "EMD Amount", "category": "FINANCIAL",
+             "description": "d", "mandatory": True, "rule_type": "MINIMUM",
+             "rule_config": {}, "threshold": "15000",
+             "verification_source": None, "weight": 100},
+        ],
+    )
+    out = tenders_mod.create_tender(payload, db, officer)
+    assert out.tender_number == "THR-001"
+    req = db.query(TenderRequirement).filter_by(tender_id=out.id).one()
+    assert req.rule_type == "MINIMUM"
+    assert req.rule_config["value"] == 15000.0

@@ -295,6 +295,15 @@ class BidCreateResponse(BaseModel):
     bidder: BidderOut
 
 
+class DemoEvidenceSeedRequest(BaseModel):
+    """Attach a fictional demo-bidder evidence dossier to an existing bid.
+
+    ``profile_key`` is one of ``apex`` | ``vertex`` | ``nova`` | ``primetech``.
+    """
+
+    profile_key: str
+
+
 class BidListItem(BaseModel):
     bid_id: int
     legal_name: str
@@ -409,6 +418,7 @@ class ComplianceResultOut(BaseModel):
     bid_id: int
     requirement_id: int
     requirement_name: str | None = None  # convenience, filled by the router
+    requirement: RequirementOut | None = None  # nested tender requirement (name, threshold, mandatory), filled by the router
     status: RequirementStatus
     weight: float
     weighted_contribution: float = 0.0

@@ -307,6 +307,9 @@ class BidSubmission(Base):
     recommendation: Mapped[str | None] = mapped_column(String(40), nullable=True)
     recommendation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     recommendation_evidence: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    # Citable RAG policy context persisted at recommendation time. Additive,
+    # nullable — never affects compliance score, risk, or officer decision.
+    policy_context: Mapped[list | None] = mapped_column(JSON, nullable=True)
     officer_decision: Mapped[str | None] = mapped_column(String(40), nullable=True)
     officer_decision_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     decided_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)

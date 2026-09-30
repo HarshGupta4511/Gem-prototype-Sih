@@ -1,1 +1,1734 @@
-{"AAFCA1234E": {"itr_filed_upto": 2025, "name": "Apex Flow Systems Private Limited", "pan": "AAFCA1234E", "status": "ACTIVE"}, "BBMWB5678F": {"itr_filed_upto": 2023, "name": "Bharat Mech Works", "pan": "BBMWB5678F", "status": "ACTIVE"}, "CCPLC9012G": {"itr_filed_upto": 2025, "name": "Crestline Trading Co", "pan": "CCPLC9012G", "status": "ACTIVE"}, "DDITR3456H": {"itr_filed_upto": 2025, "name": "Deccan Industrial Traders", "pan": "DDITR3456H", "status": "ACTIVE"}, "EEENG7890J": {"itr_filed_upto": 2025, "name": "Everest Engineering Co", "pan": "EEENG7890J", "status": "ACTIVE"}, "FFPEQ2345K": {"itr_filed_upto": 2025, "name": "Fusion Petro Equipment LLP", "pan": "FFPEQ2345K", "status": "ACTIVE"}, "GGCON6789L": {"itr_filed_upto": 2025, "name": "Ganesh Controls", "pan": "GGCON6789L", "status": "ACTIVE"}, "HHSHG1234M": {"itr_filed_upto": 2024, "name": "Harsh Safety Gear", "pan": "HHSHG1234M", "status": "ACTIVE"}, "AAHCA2345M": {"pan": "AAHCA2345M", "name": "Apex MediSupply Private Limited", "status": "ACTIVE", "itr_filed_upto": 2025}, "BBHCB3456N": {"pan": "BBHCB3456N", "name": "BrightCare Traders Pvt Ltd", "status": "ACTIVE", "itr_filed_upto": 2025}}
+{
+  "AAFCA1234E": {
+    "itr_filed_upto": 2025,
+    "name": "Apex Flow Systems Private Limited",
+    "pan": "AAFCA1234E",
+    "status": "ACTIVE"
+  },
+  "BBMWB5678F": {
+    "itr_filed_upto": 2023,
+    "name": "Bharat Mech Works",
+    "pan": "BBMWB5678F",
+    "status": "ACTIVE"
+  },
+  "CCPLC9012G": {
+    "itr_filed_upto": 2025,
+    "name": "Crestline Trading Co",
+    "pan": "CCPLC9012G",
+    "status": "ACTIVE"
+  },
+  "DDITR3456H": {
+    "itr_filed_upto": 2025,
+    "name": "Deccan Industrial Traders",
+    "pan": "DDITR3456H",
+    "status": "ACTIVE"
+  },
+  "EEENG7890J": {
+    "itr_filed_upto": 2025,
+    "name": "Everest Engineering Co",
+    "pan": "EEENG7890J",
+    "status": "ACTIVE"
+  },
+  "FFPEQ2345K": {
+    "itr_filed_upto": 2025,
+    "name": "Fusion Petro Equipment LLP",
+    "pan": "FFPEQ2345K",
+    "status": "ACTIVE"
+  },
+  "GGCON6789L": {
+    "itr_filed_upto": 2025,
+    "name": "Ganesh Controls",
+    "pan": "GGCON6789L",
+    "status": "ACTIVE"
+  },
+  "HHSHG1234M": {
+    "itr_filed_upto": 2024,
+    "name": "Harsh Safety Gear",
+    "pan": "HHSHG1234M",
+    "status": "ACTIVE"
+  },
+  "AAHCA2345M": {
+    "pan": "AAHCA2345M",
+    "name": "Apex MediSupply Private Limited",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "BBHCB3456N": {
+    "pan": "BBHCB3456N",
+    "name": "BrightCare Traders Pvt Ltd",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "AANNE5678P": {
+    "name": "Nova Infra Projects Private Limited",
+    "status": "ACTIVE",
+    "assessment_year": "2025-26",
+    "pan_aadhaar_linked": true,
+    "itr_filed_upto": 2025,
+    "is_mock": true
+  },
+  "AAPCP9876Q": {
+    "name": "PrimeTech Industrial Systems Private Limited",
+    "status": "ACTIVE",
+    "assessment_year": "2025-26",
+    "pan_aadhaar_linked": true,
+    "itr_filed_upto": 2025,
+    "is_mock": true
+  },
+  "SWYCI8650Y": {
+    "pan": "SWYCI8650Y",
+    "name": "Godavari Control Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QZRCD4319X": {
+    "pan": "QZRCD4319X",
+    "name": "Nellore Engineering Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IKPCU1754R": {
+    "pan": "IKPCU1754R",
+    "name": "Bharuch Polymer Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QBVCC7340M": {
+    "pan": "QBVCC7340M",
+    "name": "Sivakasi Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PTRCF6998R": {
+    "pan": "PTRCF6998R",
+    "name": "Tumakuru Industrial Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "RBQCK3805N": {
+    "pan": "RBQCK3805N",
+    "name": "Ankleshwar Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VEVCD2089P": {
+    "pan": "VEVCD2089P",
+    "name": "Erode Industrial Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LVMCF4700S": {
+    "pan": "LVMCF4700S",
+    "name": "Nashik Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MNDCJ3956X": {
+    "pan": "MNDCJ3956X",
+    "name": "Godavari Instrumentation Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KUVCQ8599Y": {
+    "pan": "KUVCQ8599Y",
+    "name": "Nilgiri Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DLYCX6076M": {
+    "pan": "DLYCX6076M",
+    "name": "Nashik Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LDTCT8272Z": {
+    "pan": "LDTCT8272Z",
+    "name": "Tapi Precision Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "JEJCA3788V": {
+    "pan": "JEJCA3788V",
+    "name": "Tumakuru Automation Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CSFCW1751S": {
+    "pan": "CSFCW1751S",
+    "name": "Nilgiri Control Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BZACW8543W": {
+    "pan": "BZACW8543W",
+    "name": "Tumakuru Instrumentation Services Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VWUCC2440V": {
+    "pan": "VWUCC2440V",
+    "name": "Kollam Polymer Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SHWCI3214S": {
+    "pan": "SHWCI3214S",
+    "name": "Hosur Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IXSCI7194U": {
+    "pan": "IXSCI7194U",
+    "name": "Kongu Control Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FJZCV9526K": {
+    "pan": "FJZCV9526K",
+    "name": "Saurashtra Power Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YTICS5996T": {
+    "pan": "YTICS5996T",
+    "name": "Kurnool Engineering Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NGQCJ1839D": {
+    "pan": "NGQCJ1839D",
+    "name": "Thrissur Steel Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DFRCU5858M": {
+    "pan": "DFRCU5858M",
+    "name": "Gulbarga Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HHCCR9094G": {
+    "pan": "HHCCR9094G",
+    "name": "Vidarbha Automation Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XSHCW9028S": {
+    "pan": "XSHCW9028S",
+    "name": "Namakkal Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MPNCE4308U": {
+    "pan": "MPNCE4308U",
+    "name": "Marathwada Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZHLCP9129Q": {
+    "pan": "ZHLCP9129Q",
+    "name": "Kurnool Valve Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZILCC6315G": {
+    "pan": "ZILCC6315G",
+    "name": "Jalgaon Engineering Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FQOCQ5560J": {
+    "pan": "FQOCQ5560J",
+    "name": "Thoothukudi Precision Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CZICZ8008S": {
+    "pan": "CZICZ8008S",
+    "name": "Tumakuru Automation Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UXDCX1130D": {
+    "pan": "UXDCX1130D",
+    "name": "Godavari Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MPUCD3937V": {
+    "pan": "MPUCD3937V",
+    "name": "Sahyadri Electrical Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BNTCB7771P": {
+    "pan": "BNTCB7771P",
+    "name": "Davangere Power Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PJPCK7143L": {
+    "pan": "PJPCK7143L",
+    "name": "Guntur Power Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TEQCT5844U": {
+    "pan": "TEQCT5844U",
+    "name": "Tirupati Fabrication Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JJQCR8818Z": {
+    "pan": "JJQCR8818Z",
+    "name": "Davangere Flow Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RSECB4644J": {
+    "pan": "RSECB4644J",
+    "name": "Tirupati Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EARCO6012K": {
+    "pan": "EARCO6012K",
+    "name": "Satpura Engineering Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MIPCJ8458R": {
+    "pan": "MIPCJ8458R",
+    "name": "Thoothukudi Electrical Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YDRCU5094G": {
+    "pan": "YDRCU5094G",
+    "name": "Salem Valve Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YEUCB4553C": {
+    "pan": "YEUCB4553C",
+    "name": "Deccan Control Equipment LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KEDCS9134U": {
+    "pan": "KEDCS9134U",
+    "name": "Thoothukudi Engineering Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QCKCB7902Y": {
+    "pan": "QCKCB7902Y",
+    "name": "Davangere Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GRCCX6395K": {
+    "pan": "GRCCX6395K",
+    "name": "Thrissur Industrial Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BZECO3609D": {
+    "pan": "BZECO3609D",
+    "name": "Chambal Electrical Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UXECD2381Q": {
+    "pan": "UXECD2381Q",
+    "name": "Bhavnagar Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ONYCP3559V": {
+    "pan": "ONYCP3559V",
+    "name": "Dindigul Industrial Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TPVCR1614T": {
+    "pan": "TPVCR1614T",
+    "name": "Davangere Flow Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BZVCF5603U": {
+    "pan": "BZVCF5603U",
+    "name": "Vijayapura Polymer Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LVZCZ7627A": {
+    "pan": "LVZCZ7627A",
+    "name": "Jalgaon Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IBYCP8058Y": {
+    "pan": "IBYCP8058Y",
+    "name": "Namakkal Industrial Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BWGCX9662A": {
+    "pan": "BWGCX9662A",
+    "name": "Ballari Precision Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PBECE6534W": {
+    "pan": "PBECE6534W",
+    "name": "Sangli Electrical Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TFYCE1256M": {
+    "pan": "TFYCE1256M",
+    "name": "Salem Instrumentation Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JNZCE4695V": {
+    "pan": "JNZCE4695V",
+    "name": "Namakkal Steel Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BHICH8239Y": {
+    "pan": "BHICH8239Y",
+    "name": "Shakti Power Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IVKCQ1343J": {
+    "pan": "IVKCQ1343J",
+    "name": "Guntur Valve Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OKZCZ7653R": {
+    "pan": "OKZCZ7653R",
+    "name": "Solapur Hydraulic Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WKLCM9196U": {
+    "pan": "WKLCM9196U",
+    "name": "Gulbarga Hydraulic Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QOSCM8264F": {
+    "pan": "QOSCM8264F",
+    "name": "Kurnool Automation Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "APDCW1885V": {
+    "pan": "APDCW1885V",
+    "name": "Kongu Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HQLCW9632A": {
+    "pan": "HQLCW9632A",
+    "name": "Nilgiri Heavy Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XRICK9614Q": {
+    "pan": "XRICK9614Q",
+    "name": "Vishal Polymer Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SNRCN6741M": {
+    "pan": "SNRCN6741M",
+    "name": "Deccan Automation Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BUXCK5029L": {
+    "pan": "BUXCK5029L",
+    "name": "Thrissur Polymer Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SRFCV5314I": {
+    "pan": "SRFCV5314I",
+    "name": "Tirupati Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "AYOCP8270P": {
+    "pan": "AYOCP8270P",
+    "name": "Dindigul Valve Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "SUCCW3404Z": {
+    "pan": "SUCCW3404Z",
+    "name": "Satpura Hydraulic Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PUDCE9879K": {
+    "pan": "PUDCE9879K",
+    "name": "Marathwada Mechanical Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FQXCC3936D": {
+    "pan": "FQXCC3936D",
+    "name": "Satpura Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JTGCB7076N": {
+    "pan": "JTGCB7076N",
+    "name": "Kaveri Valve Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "FAKCV3128H": {
+    "pan": "FAKCV3128H",
+    "name": "Palakkad Thermal Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FPUCJ8626F": {
+    "pan": "FPUCJ8626F",
+    "name": "Tumakuru Industrial Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VQXCT8719L": {
+    "pan": "VQXCT8719L",
+    "name": "Vellore Automation Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BNRCV5756N": {
+    "pan": "BNRCV5756N",
+    "name": "Shakti Automation Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MGYCN7643E": {
+    "pan": "MGYCN7643E",
+    "name": "Bhavnagar Pumps Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TEDCO9709S": {
+    "pan": "TEDCO9709S",
+    "name": "Vellore Valve Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VADCZ2920C": {
+    "pan": "VADCZ2920C",
+    "name": "Kutch Process Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UPCCC6813O": {
+    "pan": "UPCCC6813O",
+    "name": "Vindhya Engineering Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FUYCA3181S": {
+    "pan": "FUYCA3181S",
+    "name": "Thoothukudi Pumps Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JAICU3355A": {
+    "pan": "JAICU3355A",
+    "name": "Chettinad Precision Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LBECI9176E": {
+    "pan": "LBECI9176E",
+    "name": "Aravalli Automation Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YEDCI6027U": {
+    "pan": "YEDCI6027U",
+    "name": "Solapur Electrical Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ATBCL6448I": {
+    "pan": "ATBCL6448I",
+    "name": "Guntur Instrumentation Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WZACA6537Q": {
+    "pan": "WZACA6537Q",
+    "name": "Jalgaon Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UHGCD2637M": {
+    "pan": "UHGCD2637M",
+    "name": "Kurnool Polymer Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LUUCM7325G": {
+    "pan": "LUUCM7325G",
+    "name": "Malwa Thermal Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VJJCL2850Q": {
+    "pan": "VJJCL2850Q",
+    "name": "Davangere Pumps Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TYKCA7440H": {
+    "pan": "TYKCA7440H",
+    "name": "Deccan Engineering Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SZQCI2530I": {
+    "pan": "SZQCI2530I",
+    "name": "Hosur Electrical Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VOOCM8298C": {
+    "pan": "VOOCM8298C",
+    "name": "Jalgaon Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CUXCN5787U": {
+    "pan": "CUXCN5787U",
+    "name": "Sivakasi Valve Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KZNCC1264Q": {
+    "pan": "KZNCC1264Q",
+    "name": "Davangere Heavy Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SAKCL3115L": {
+    "pan": "SAKCL3115L",
+    "name": "Belagavi Engineering Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VJGCW3939S": {
+    "pan": "VJGCW3939S",
+    "name": "Bhavnagar Engineering Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CQQCD7161D": {
+    "pan": "CQQCD7161D",
+    "name": "Dindigul Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YPFCG8275N": {
+    "pan": "YPFCG8275N",
+    "name": "Chettinad Engineering Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SPFCV3720X": {
+    "pan": "SPFCV3720X",
+    "name": "Sivakasi Valve Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SCFCE4245U": {
+    "pan": "SCFCE4245U",
+    "name": "Kurnool Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BAICY1848L": {
+    "pan": "BAICY1848L",
+    "name": "Ballari Heavy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZTCCU7814H": {
+    "pan": "ZTCCU7814H",
+    "name": "Namakkal Power Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LAPCU1150B": {
+    "pan": "LAPCU1150B",
+    "name": "Shakti Valve Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XQJCG4931M": {
+    "pan": "XQJCG4931M",
+    "name": "Vidarbha Electrical Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MIFCU7791P": {
+    "pan": "MIFCU7791P",
+    "name": "Nellore Fabrication Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RQICI5149W": {
+    "pan": "RQICI5149W",
+    "name": "Tapi Power Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZYOCF3924T": {
+    "pan": "ZYOCF3924T",
+    "name": "Nellore Process Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RUWCW1506H": {
+    "pan": "RUWCW1506H",
+    "name": "Amravati Automation Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BZOCB9515Y": {
+    "pan": "BZOCB9515Y",
+    "name": "Palakkad Polymer Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "VNRCS9672Z": {
+    "pan": "VNRCS9672Z",
+    "name": "Kongu Fabrication Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IXGCL6458H": {
+    "pan": "IXGCL6458H",
+    "name": "Gulbarga Steel Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OJPCA5781K": {
+    "pan": "OJPCA5781K",
+    "name": "Sahyadri Pumps Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "CRRCB2197I": {
+    "pan": "CRRCB2197I",
+    "name": "Kutch Polymer Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OKYCK1426R": {
+    "pan": "OKYCK1426R",
+    "name": "Saurashtra Process Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NACCC1220D": {
+    "pan": "NACCC1220D",
+    "name": "Karur Electrical Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XPACR4497M": {
+    "pan": "XPACR4497M",
+    "name": "Godavari Alloy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NNCCA5049K": {
+    "pan": "NNCCA5049K",
+    "name": "Deccan Valve Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UHXCA9123E": {
+    "pan": "UHXCA9123E",
+    "name": "Karur Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RGRCO5862I": {
+    "pan": "RGRCO5862I",
+    "name": "Nilgiri Alloy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BLMCC3033M": {
+    "pan": "BLMCC3033M",
+    "name": "Vindhya Control Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KZDCK6410M": {
+    "pan": "KZDCK6410M",
+    "name": "Hosur Control Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YCLCY2670S": {
+    "pan": "YCLCY2670S",
+    "name": "Deccan Power Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LBPCO1927K": {
+    "pan": "LBPCO1927K",
+    "name": "Sangli Alloy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OENCA9155A": {
+    "pan": "OENCA9155A",
+    "name": "Jamnagar Instrumentation Equipment LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TUGCI7502N": {
+    "pan": "TUGCI7502N",
+    "name": "Gulbarga Polymer Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "AYQCV9931W": {
+    "pan": "AYQCV9931W",
+    "name": "Raichur Mechanical Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LPRCC3133P": {
+    "pan": "LPRCC3133P",
+    "name": "Belagavi Alloy Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZGJCZ9196V": {
+    "pan": "ZGJCZ9196V",
+    "name": "Chambal Polymer Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KLJCF9442C": {
+    "pan": "KLJCF9442C",
+    "name": "Tirupati Industrial Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VWGCT6158U": {
+    "pan": "VWGCT6158U",
+    "name": "Kaveri Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YVTCG9218M": {
+    "pan": "YVTCG9218M",
+    "name": "Amravati Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CRSCN7759F": {
+    "pan": "CRSCN7759F",
+    "name": "Thoothukudi Electrical Services Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UJSCZ8581T": {
+    "pan": "UJSCZ8581T",
+    "name": "Thrissur Mechanical Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RZECQ3197G": {
+    "pan": "RZECQ3197G",
+    "name": "Latur Precision Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RSOCM8130C": {
+    "pan": "RSOCM8130C",
+    "name": "Marathwada Control Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LOPCQ5254R": {
+    "pan": "LOPCQ5254R",
+    "name": "Narmada Valve Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FHQCA6283C": {
+    "pan": "FHQCA6283C",
+    "name": "Hosur Instrumentation Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FPXCW2511D": {
+    "pan": "FPXCW2511D",
+    "name": "Malwa Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JXRCA5201L": {
+    "pan": "JXRCA5201L",
+    "name": "Godavari Power Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZJMCX5784B": {
+    "pan": "ZJMCX5784B",
+    "name": "Sivakasi Engineering Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XULCV4761A": {
+    "pan": "XULCV4761A",
+    "name": "Godavari Instrumentation Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MXQCI9094W": {
+    "pan": "MXQCI9094W",
+    "name": "Sivakasi Control Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UFTCS8611H": {
+    "pan": "UFTCS8611H",
+    "name": "Kaveri Alloy Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NXDCJ2122W": {
+    "pan": "NXDCJ2122W",
+    "name": "Kurnool Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WOKCL9717T": {
+    "pan": "WOKCL9717T",
+    "name": "Thoothukudi Precision Equipment LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MJFCL7637F": {
+    "pan": "MJFCL7637F",
+    "name": "Bhavnagar Automation Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CIWCP2085J": {
+    "pan": "CIWCP2085J",
+    "name": "Kolhapur Flow Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WMJCZ5392S": {
+    "pan": "WMJCZ5392S",
+    "name": "Namakkal Flow Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ABICJ6783E": {
+    "pan": "ABICJ6783E",
+    "name": "Sivakasi Polymer Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VIQCC5021O": {
+    "pan": "VIQCC5021O",
+    "name": "Kongu Engineering Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QXJCB7989M": {
+    "pan": "QXJCB7989M",
+    "name": "Thoothukudi Pumps Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YSGCT1578L": {
+    "pan": "YSGCT1578L",
+    "name": "Nellore Flow Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZDHCK5986N": {
+    "pan": "ZDHCK5986N",
+    "name": "Amravati Engineering Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "XUWCD5112N": {
+    "pan": "XUWCD5112N",
+    "name": "Solapur Mechanical Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DGLCN4569V": {
+    "pan": "DGLCN4569V",
+    "name": "Dharwad Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HPVCF3601V": {
+    "pan": "HPVCF3601V",
+    "name": "Vindhya Control Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FHGCA1863K": {
+    "pan": "FHGCA1863K",
+    "name": "Sahyadri Polymer Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MDUCF5420G": {
+    "pan": "MDUCF5420G",
+    "name": "Aravalli Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CJACY3934D": {
+    "pan": "CJACY3934D",
+    "name": "Ankleshwar Power Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HYVCG6103B": {
+    "pan": "HYVCG6103B",
+    "name": "Latur Steel Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UUUCR5190M": {
+    "pan": "UUUCR5190M",
+    "name": "Aravalli Heavy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZMMCG6206E": {
+    "pan": "ZMMCG6206E",
+    "name": "Malwa Control Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SCUCT6181A": {
+    "pan": "SCUCT6181A",
+    "name": "Shakti Thermal Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JDVCK3328J": {
+    "pan": "JDVCK3328J",
+    "name": "Malwa Valve Services Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UCOCJ1285P": {
+    "pan": "UCOCJ1285P",
+    "name": "Kurnool Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NRECN9554K": {
+    "pan": "NRECN9554K",
+    "name": "Shakti Heavy Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LGJCJ9311P": {
+    "pan": "LGJCJ9311P",
+    "name": "Vidarbha Alloy Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TMSCR2626K": {
+    "pan": "TMSCR2626K",
+    "name": "Ankleshwar Control Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TRPCV9540I": {
+    "pan": "TRPCV9540I",
+    "name": "Gulbarga Fabrication Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GQBCW3369W": {
+    "pan": "GQBCW3369W",
+    "name": "Karur Steel Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FNXCC7664G": {
+    "pan": "FNXCC7664G",
+    "name": "Latur Polymer Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YELCJ1677H": {
+    "pan": "YELCJ1677H",
+    "name": "Konark Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XXKCV5015R": {
+    "pan": "XXKCV5015R",
+    "name": "Chambal Engineering Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SNZCI9027J": {
+    "pan": "SNZCI9027J",
+    "name": "Sahyadri Steel Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JKXCR7283J": {
+    "pan": "JKXCR7283J",
+    "name": "Malwa Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BVXCP9899U": {
+    "pan": "BVXCP9899U",
+    "name": "Kurnool Polymer Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CFJCS8475F": {
+    "pan": "CFJCS8475F",
+    "name": "Kaveri Pumps Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QKYCG2803P": {
+    "pan": "QKYCG2803P",
+    "name": "Davangere Automation Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "AHHCN2302S": {
+    "pan": "AHHCN2302S",
+    "name": "Belagavi Pumps Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ATLCI7433B": {
+    "pan": "ATLCI7433B",
+    "name": "Erode Engineering Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KXLCU2987C": {
+    "pan": "KXLCU2987C",
+    "name": "Salem Pumps Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JILCR7084Z": {
+    "pan": "JILCR7084Z",
+    "name": "Belagavi Flow Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CVUCU7029O": {
+    "pan": "CVUCU7029O",
+    "name": "Kanchipuram Hydraulic Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FBSCO3350U": {
+    "pan": "FBSCO3350U",
+    "name": "Malwa Pumps Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "JULCJ1853T": {
+    "pan": "JULCJ1853T",
+    "name": "Satpura Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UPYCT6049S": {
+    "pan": "UPYCT6049S",
+    "name": "Thrissur Valve Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DTPCI9430J": {
+    "pan": "DTPCI9430J",
+    "name": "Saurashtra Electrical Equipment LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VGRCJ9898D": {
+    "pan": "VGRCJ9898D",
+    "name": "Tumakuru Power Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RPSCM5911F": {
+    "pan": "RPSCM5911F",
+    "name": "Erode Industrial Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RPZCN5621X": {
+    "pan": "RPZCN5621X",
+    "name": "Erode Steel Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FUNCR4195Y": {
+    "pan": "FUNCR4195Y",
+    "name": "Vidarbha Hydraulic Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QAOCG1249E": {
+    "pan": "QAOCG1249E",
+    "name": "Jamnagar Steel Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NYTCL1660C": {
+    "pan": "NYTCL1660C",
+    "name": "Kollam Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GPCCT5298O": {
+    "pan": "GPCCT5298O",
+    "name": "Deccan Instrumentation Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CCECY6248T": {
+    "pan": "CCECY6248T",
+    "name": "Jalgaon Process Services Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZMPCU2828M": {
+    "pan": "ZMPCU2828M",
+    "name": "Guntur Automation Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TVQCY4227W": {
+    "pan": "TVQCY4227W",
+    "name": "Satpura Process Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZMZCU4690K": {
+    "pan": "ZMZCU4690K",
+    "name": "Chettinad Hydraulic Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HOJCS4934I": {
+    "pan": "HOJCS4934I",
+    "name": "Tirupati Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RFQCZ6166L": {
+    "pan": "RFQCZ6166L",
+    "name": "Narmada Polymer Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "BXBCF8144S": {
+    "pan": "BXBCF8144S",
+    "name": "Vindhya Hydraulic Systems Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZNRCR3805F": {
+    "pan": "ZNRCR3805F",
+    "name": "Kongu Thermal Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QZSCY7080E": {
+    "pan": "QZSCY7080E",
+    "name": "Narmada Control Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "REUCK8141K": {
+    "pan": "REUCK8141K",
+    "name": "Kongu Valve Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZGOCC2644V": {
+    "pan": "ZGOCC2644V",
+    "name": "Nandyal Control Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MYJCE2238Z": {
+    "pan": "MYJCE2238Z",
+    "name": "Sahyadri Process Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ALXCG5793A": {
+    "pan": "ALXCG5793A",
+    "name": "Guntur Mechanical Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FUNCS3147X": {
+    "pan": "FUNCS3147X",
+    "name": "Shakti Heavy Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NLZCH3645F": {
+    "pan": "NLZCH3645F",
+    "name": "Vijayapura Polymer Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "XXQCM6077C": {
+    "pan": "XXQCM6077C",
+    "name": "Marathwada Fabrication Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KXDCV1512X": {
+    "pan": "KXDCV1512X",
+    "name": "Shakti Fabrication Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GKVCN8689J": {
+    "pan": "GKVCN8689J",
+    "name": "Chettinad Polymer Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "RIDCO5413B": {
+    "pan": "RIDCO5413B",
+    "name": "Chambal Polymer Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GAYCW4657M": {
+    "pan": "GAYCW4657M",
+    "name": "Satpura Hydraulic Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZCMCQ7068D": {
+    "pan": "ZCMCQ7068D",
+    "name": "Ankleshwar Fabrication Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TAECS2656E": {
+    "pan": "TAECS2656E",
+    "name": "Kolhapur Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OGICP2129X": {
+    "pan": "OGICP2129X",
+    "name": "Jalgaon Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EOSCQ9061C": {
+    "pan": "EOSCQ9061C",
+    "name": "Satpura Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VLVCZ4376B": {
+    "pan": "VLVCZ4376B",
+    "name": "Kongu Polymer Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "SXMCI6267M": {
+    "pan": "SXMCI6267M",
+    "name": "Gulbarga Flow Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HDJCY6126J": {
+    "pan": "HDJCY6126J",
+    "name": "Nandyal Hydraulic Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PPHCO3792U": {
+    "pan": "PPHCO3792U",
+    "name": "Malwa Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FGXCI6044Y": {
+    "pan": "FGXCI6044Y",
+    "name": "Alappuzha Precision Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "MWFCT3376R": {
+    "pan": "MWFCT3376R",
+    "name": "Latur Control Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JBGCA4434Q": {
+    "pan": "JBGCA4434Q",
+    "name": "Kutch Control Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LCVCC4914Z": {
+    "pan": "LCVCC4914Z",
+    "name": "Solapur Flow Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EITCW1193D": {
+    "pan": "EITCW1193D",
+    "name": "Vellore Engineering Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EULCH5928E": {
+    "pan": "EULCH5928E",
+    "name": "Konark Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "TMQCB8588X": {
+    "pan": "TMQCB8588X",
+    "name": "Konark Hydraulic Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IUXCU1827B": {
+    "pan": "IUXCU1827B",
+    "name": "Kurnool Precision Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UNNCG4196B": {
+    "pan": "UNNCG4196B",
+    "name": "Nellore Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DINCX5165J": {
+    "pan": "DINCX5165J",
+    "name": "Karur Pumps Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MHBCB1318B": {
+    "pan": "MHBCB1318B",
+    "name": "Kanchipuram Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WKYCM4135O": {
+    "pan": "WKYCM4135O",
+    "name": "Bharuch Process Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UZLCK6495Y": {
+    "pan": "UZLCK6495Y",
+    "name": "Kollam Flow Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "LKCCO5521W": {
+    "pan": "LKCCO5521W",
+    "name": "Erode Process Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "QDBCP9309T": {
+    "pan": "QDBCP9309T",
+    "name": "Sivakasi Hydraulic Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KLVCR9743H": {
+    "pan": "KLVCR9743H",
+    "name": "Ankleshwar Mechanical Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HLSCX6342M": {
+    "pan": "HLSCX6342M",
+    "name": "Kurnool Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "HNOCO1102O": {
+    "pan": "HNOCO1102O",
+    "name": "Nandyal Alloy Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CUWCL1790C": {
+    "pan": "CUWCL1790C",
+    "name": "Raichur Polymer Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OXZCP4301N": {
+    "pan": "OXZCP4301N",
+    "name": "Tumakuru Instrumentation Industries LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "PDECN4795D": {
+    "pan": "PDECN4795D",
+    "name": "Vellore Engineering Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VDMCR6864Z": {
+    "pan": "VDMCR6864Z",
+    "name": "Nandyal Electrical Systems LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "FFLCN7130F": {
+    "pan": "FFLCN7130F",
+    "name": "Alappuzha Heavy Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZLOCM1342G": {
+    "pan": "ZLOCM1342G",
+    "name": "Namakkal Thermal Solutions Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ATPCP4177F": {
+    "pan": "ATPCP4177F",
+    "name": "Karur Electrical Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ZSSCI4491H": {
+    "pan": "ZSSCI4491H",
+    "name": "Nilgiri Heavy Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "KVRCO2916R": {
+    "pan": "KVRCO2916R",
+    "name": "Solapur Thermal Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "CLXCU2840T": {
+    "pan": "CLXCU2840T",
+    "name": "Dindigul Polymer Services Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JLZCC9692C": {
+    "pan": "JLZCC9692C",
+    "name": "Shakti Hydraulic Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "MKHCF7893O": {
+    "pan": "MKHCF7893O",
+    "name": "Gulbarga Precision Industries Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EGOCE9911W": {
+    "pan": "EGOCE9911W",
+    "name": "Sahyadri Heavy Works LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "MILCQ1292R": {
+    "pan": "MILCQ1292R",
+    "name": "Nandyal Steel Solutions LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JKECJ7037Y": {
+    "pan": "JKECJ7037Y",
+    "name": "Kongu Electrical Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "UOTCA7607X": {
+    "pan": "UOTCA7607X",
+    "name": "Solapur Electrical Technocrats LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "VLQCR6932R": {
+    "pan": "VLQCR6932R",
+    "name": "Belagavi Process Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "NTPCB9455Z": {
+    "pan": "NTPCB9455Z",
+    "name": "Sivakasi Industrial Enterprises LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EDFCG8895Q": {
+    "pan": "EDFCG8895Q",
+    "name": "Chambal Pumps Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JCLCQ3653F": {
+    "pan": "JCLCQ3653F",
+    "name": "Kolhapur Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "GVECA6216O": {
+    "pan": "GVECA6216O",
+    "name": "Vellore Precision Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "WEECX7232H": {
+    "pan": "WEECX7232H",
+    "name": "Ballari Instrumentation Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "YGZCL4873V": {
+    "pan": "YGZCL4873V",
+    "name": "Thoothukudi Hydraulic Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EOYCY5469F": {
+    "pan": "EOYCY5469F",
+    "name": "Sangli Steel Technocrats Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "EIGCS3082S": {
+    "pan": "EIGCS3082S",
+    "name": "Guntur Flow Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "XJRCW9101E": {
+    "pan": "XJRCW9101E",
+    "name": "Kurnool Instrumentation Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "INACTIVE"
+  },
+  "YGTCI8892G": {
+    "pan": "YGTCI8892G",
+    "name": "Palakkad Industrial Equipment Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "JKYCV8667S": {
+    "pan": "JKYCV8667S",
+    "name": "Sahyadri Heavy Associates LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PJWCZ3163R": {
+    "pan": "PJWCZ3163R",
+    "name": "Salem Instrumentation Associates Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IZXCE7173W": {
+    "pan": "IZXCE7173W",
+    "name": "Chettinad Alloy Services LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "OMOCE5062Z": {
+    "pan": "OMOCE5062Z",
+    "name": "Ballari Infra Projects Private Limited",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CJHCK2069I": {
+    "pan": "CJHCK2069I",
+    "name": "Sangli Fabrication Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "DIQCG5009D": {
+    "pan": "DIQCG5009D",
+    "name": "Deccan Alloy Fabricators LLP",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "PSZCQ1561H": {
+    "pan": "PSZCQ1561H",
+    "name": "Belagavi Mechanical Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "ELUCY3820S": {
+    "pan": "ELUCY3820S",
+    "name": "Latur Flow Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "IVECH1429R": {
+    "pan": "IVECH1429R",
+    "name": "Kongu Pumps Fabricators Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "AVNCZ2267L": {
+    "pan": "AVNCZ2267L",
+    "name": "Davangere Pumps Enterprises Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  },
+  "CGRCK7124H": {
+    "pan": "CGRCK7124H",
+    "name": "Palakkad Steel Works Pvt. Ltd.",
+    "itr_filed_upto": 2025,
+    "status": "ACTIVE"
+  }
+}

@@ -18,13 +18,12 @@ import {
   Scale,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
   UserCheck,
   Users,
 } from 'lucide-react';
-import { tendersApi, bidsApi, getErrorMessage } from '../lib/api';
+import { tendersApi, bidsApi, getErrorMessage, API_BASE_URL } from '../lib/api';
 import { formatINR, labelize } from '../lib/utils';
 import { useToast } from '../components/ui/toaster';
 import { Button } from '../components/ui/button';
@@ -39,20 +38,24 @@ import {
   TableCell,
 } from '../components/ui/table';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
+import DemoBiddersModal, {
+  normalizeBidderName,
+  type DemoBidderProfile,
+} from '../components/tenders/DemoBiddersModal';
 import type {
   CreateTenderRequest,
   RequirementDraft,
   RequirementCategory,
   RuleType,
   AdapterSource,
-  SuggestedRequirement,
   TenderType,
-  BidType,
   CreateBidRequest,
 } from '../types';
 
 interface QueuedBidder {
   clientId: string;
+  /** Demo evidence profile key ('apex' | 'vertex' | 'nova' | 'primetech') — set only for modal-loaded demo bidders. */
+  demo_profile_key?: string;
   legal_name: string;
   trade_name?: string;
   pan?: string;
@@ -73,6 +76,7 @@ const DEFAULT_REQUIREMENTS: RequirementDraft[] = [
     mandatory: true,
     rule_type: 'REGISTRATION_STATUS',
     rule_config: { status: 'ACTIVE' },
+    threshold: 'Active GST registration',
     verification_source: 'GSTN',
     weight: 15,
     policy_reference: 'GFR 2017 Rule 144(i) & GeM General Terms',
@@ -84,6 +88,7 @@ const DEFAULT_REQUIREMENTS: RequirementDraft[] = [
     mandatory: true,
     rule_type: 'IDENTITY_MATCH',
     rule_config: { match_field: 'pan' },
+    threshold: 'Active PAN',
     verification_source: 'PAN_IT',
     weight: 10,
     policy_reference: 'Income Tax Act 1961 Section 139A',
@@ -108,6 +113,7 @@ const DEFAULT_REQUIREMENTS: RequirementDraft[] = [
     mandatory: true,
     rule_type: 'EXISTENCE',
     rule_config: { document_type: 'EXPERIENCE_CERTIFICATE' },
+    threshold: '3 years',
     verification_source: null,
     weight: 20,
     policy_reference: 'Public Procurement Policy for CPSEs §3.1',
@@ -119,6 +125,7 @@ const DEFAULT_REQUIREMENTS: RequirementDraft[] = [
     mandatory: false,
     rule_type: 'REGISTRATION_STATUS',
     rule_config: { status: 'ACTIVE' },
+    threshold: 'Valid Udyam registration',
     verification_source: 'UDYAM',
     weight: 10,
     policy_reference: 'Public Procurement Policy for MSEs Order 2012',
@@ -139,7 +146,13 @@ const DEFAULT_REQUIREMENTS: RequirementDraft[] = [
 ];
 
 const SAMPLE_DEMO_BIDDERS: Omit<QueuedBidder, 'clientId'>[] = [
+  // Preloaded with the 'apex' demo profile key so the modal's Apex entry
+  // deduplicates against it (same normalized legal name) AND the publish
+  // step attaches the profile's fictional evidence dossier via the backend
+  // seed endpoint. Without the key this bidder was registered with
+  // Documents: 0 and the modal Apex could never be selected.
   {
+    demo_profile_key: 'apex',
     legal_name: 'Apex Flow Systems Pvt Ltd',
     trade_name: 'Apex Industrial Solutions',
     pan: 'AAACA1234A',
@@ -151,30 +164,6 @@ const SAMPLE_DEMO_BIDDERS: Omit<QueuedBidder, 'clientId'>[] = [
     contact_email: 'contracts@apexflow.co.in',
     contact_phone: '+91 98400 12345',
   },
-  {
-    legal_name: 'Bharat Mech Works',
-    trade_name: 'Bharat Engineering',
-    pan: 'BBBCB5678B',
-    gstin: '33BBBCB5678B1Z2',
-    udyam: 'UDYAM-TN-02-0054321',
-    cin: 'U28110TN2012PTC084512',
-    registered_address: '14/B G.S.T. Road, Guindy, Chennai - 600032',
-    contact_name: 'S. Sundaram',
-    contact_email: 'sales@bharatmech.in',
-    contact_phone: '+91 98410 56789',
-  },
-  {
-    legal_name: 'Crestline Pumps Pvt Ltd',
-    trade_name: 'Crestline India',
-    pan: 'CCCC1234C',
-    gstin: '27CCCC1234C1Z9',
-    udyam: 'UDYAM-MH-01-0098765',
-    cin: 'U29120MH2018PTC112233',
-    registered_address: 'TTC Industrial Area, MIDC, Navi Mumbai - 400705',
-    contact_name: 'A. K. Sharma',
-    contact_email: 'tenders@crestlinepumps.com',
-    contact_phone: '+91 98200 45678',
-  },
 ];
 
 export default function CreateTender() {
@@ -183,7 +172,6 @@ export default function CreateTender() {
 
   const [currentStep, setCurrentStep] = React.useState(1);
   const [publishing, setPublishing] = React.useState(false);
-  const [aiGenerating, setAiGenerating] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Step 1 State: Scope & Identification
@@ -209,7 +197,6 @@ export default function CreateTender() {
   });
   const [estimatedValue, setEstimatedValue] = React.useState<number>(45000000);
   const [tenderType, setTenderType] = React.useState<TenderType>('GOODS');
-  const [bidType, setBidType] = React.useState<BidType>('TWO_PACKET');
   const [emdAmount, setEmdAmount] = React.useState<string>('900000');
   const [deliveryPeriod, setDeliveryPeriod] = React.useState('20 Weeks');
   const [placeOfDelivery, setPlaceOfDelivery] = React.useState(
@@ -239,10 +226,18 @@ export default function CreateTender() {
   // Step 4 State: Declaration
   const [gfrDeclaration, setGfrDeclaration] = React.useState(false);
 
+  // Demo bidders modal (Stage 3)
+  const [demoModalOpen, setDemoModalOpen] = React.useState(false);
+
   const totalWeight = React.useMemo(
     () => requirements.reduce((acc, r) => acc + (Number(r.weight) || 0), 0),
     [requirements]
   );
+
+  // Stage 2 gate: the officer cannot proceed to Stage 3 unless the total
+  // requirement weight is exactly 100%. The backend enforces the same rule
+  // (422) at publish time so it cannot be bypassed.
+  const isWeightValid = Math.round(totalWeight * 100) / 100 === 100;
 
   // Add bidder to queue
   const handleAddBidder = (e: React.FormEvent) => {
@@ -288,60 +283,34 @@ export default function CreateTender() {
   };
 
   const handleLoadSampleBidders = () => {
-    const fresh = SAMPLE_DEMO_BIDDERS.map((b, i) => ({
-      ...b,
-      clientId: `sample-${i}-${Date.now()}`,
-    }));
-    setBidders(fresh);
-    toast({
-      title: 'Sample Bidders Queued',
-      description: 'Loaded 3 pre-configured demonstration enterprise bidders.',
-    });
+    setDemoModalOpen(true);
   };
 
-  // AI Suggest Requirements
-  const handleSuggestRequirements = async () => {
-    if (!description.trim()) {
+  /** Appends modal-selected demo bidders to the existing queue via the same
+   *  QueuedBidder shape as manual registration. Skips duplicates by legal name.
+   *  The demo profile key is carried through so publish-time can attach the
+   *  profile's fictional evidence dossier via the backend seed endpoint. */
+  const handleLoadSelectedDemoBidders = (selected: DemoBidderProfile[]) => {
+    const existing = new Set(bidders.map((b) => normalizeBidderName(b.legal_name)));
+    const fresh: QueuedBidder[] = [];
+    for (const profile of selected) {
+      if (existing.has(normalizeBidderName(profile.legal_name))) continue;
+      existing.add(normalizeBidderName(profile.legal_name));
+      const { scenario, scenario_tone, scenario_description, profile_key, ...registration } = profile;
+      fresh.push({ ...registration, demo_profile_key: profile_key, clientId: `demo-${Date.now()}-${fresh.length}` });
+    }
+    if (fresh.length === 0) {
       toast({
-        title: 'Input Required',
-        description: 'Provide a tender scope description first to derive requirement rules.',
+        title: 'Demo bidders already loaded.',
+        description: 'The selected demo bidders are already in the tender queue.',
       });
       return;
     }
-    setAiGenerating(true);
-    try {
-      const res = await tendersApi.suggestRequirements({
-        title,
-        description,
-        department,
-      });
-      const suggested = res.requirements || [];
-      if (suggested.length > 0) {
-        const mapped: RequirementDraft[] = suggested.map((s: SuggestedRequirement) => ({
-          requirement_name: s.requirement_name,
-          category: 'TECHNICAL',
-          description: s.description || 'Verified according to technical specifications.',
-          mandatory: s.mandatory,
-          rule_type: 'CUSTOM_RULE',
-          rule_config: {},
-          threshold: s.threshold || null,
-          verification_source: null,
-          weight: s.weight || 10,
-        }));
-        setRequirements(mapped);
-        toast({
-          title: 'Requirements Synthesized',
-          description: `${mapped.length} qualification rules derived from tender description.`,
-        });
-      }
-    } catch (err) {
-      toast({
-        title: 'Advisory Engine Notice',
-        description: 'Could not fetch external suggestions; keeping standard CPSE template.',
-      });
-    } finally {
-      setAiGenerating(false);
-    }
+    setBidders((prev) => [...prev, ...fresh]);
+    toast({
+      title: 'Demo Bidders Loaded',
+      description: `${fresh.length} fictional demo bidder(s) added to the tender queue.`,
+    });
   };
 
   // Requirement row editing
@@ -398,7 +367,6 @@ export default function CreateTender() {
         closing_date: closingDate,
         estimated_value_inr: Number(estimatedValue),
         tender_type: tenderType,
-        bid_type: bidType,
         emd_amount_inr: emdAmount ? Number(emdAmount) : undefined,
         delivery_period: deliveryPeriod,
         place_of_delivery: placeOfDelivery,
@@ -409,7 +377,7 @@ export default function CreateTender() {
           mandatory: r.mandatory,
           rule_type: r.rule_type,
           rule_config: r.rule_config || {},
-          threshold: r.threshold,
+          threshold: r.threshold?.trim() || null,
           expected_value: r.expected_value,
           verification_source: r.verification_source,
           weight: Number(r.weight) || 5,
@@ -422,6 +390,8 @@ export default function CreateTender() {
 
       // 2. Register Queued Bidders for this Tender
       let registeredBiddersCount = 0;
+      let demoEvidenceCount = 0;
+      const demoEvidenceErrors: string[] = [];
       for (const b of bidders) {
         try {
           const bidPayload: CreateBidRequest = {
@@ -437,16 +407,41 @@ export default function CreateTender() {
             contact_email: b.contact_email,
             contact_phone: b.contact_phone,
           };
-          await bidsApi.create(bidPayload);
+          const created = await bidsApi.create(bidPayload);
           registeredBiddersCount++;
+          // 2b. For modal-loaded demo bidders, attach the profile's fictional
+          // evidence dossier through the real backend pipeline (documents ->
+          // extraction; the officer runs verification/compliance from Bid
+          // Detail). Failures are reported with the real reason — never
+          // silently swallowed — and the evidence can be attached later from
+          // Bid Detail → Documents → "Attach Demo Evidence".
+          const bidId = created?.bid?.id;
+          if (b.demo_profile_key && bidId) {
+            try {
+              await bidsApi.seedDemoEvidence(bidId, b.demo_profile_key);
+              demoEvidenceCount++;
+            } catch (seedErr) {
+              const reason = getErrorMessage(seedErr);
+              demoEvidenceErrors.push(`${b.legal_name}: ${reason}`);
+              console.warn(`Could not seed demo evidence for ${b.legal_name}:`, seedErr);
+            }
+          }
         } catch (bidErr) {
           console.warn(`Could not register bidder ${b.legal_name}:`, bidErr);
         }
       }
 
+      const evidenceFailed = demoEvidenceErrors.length;
+      const networkHint = demoEvidenceErrors.some((e) => e.includes('Network Error'))
+        ? ` The backend did not respond at ${API_BASE_URL} — check that the backend service is running and rebuilt.`
+        : '';
       toast({
         title: 'Tender Package Published',
-        description: `Tender #${createdTender.tender_number} published with ${registeredBiddersCount} participating bidder(s).`,
+        description: `Tender #${createdTender.tender_number} published with ${registeredBiddersCount} participating bidder(s).` +
+          (demoEvidenceCount > 0 ? ` Demo evidence attached for ${demoEvidenceCount} demo bidder(s).` : '') +
+          (evidenceFailed > 0
+            ? ` Demo evidence FAILED for ${evidenceFailed} bidder(s) — bids were registered without evidence. Reason: ${demoEvidenceErrors[0]}.${networkHint} You can attach it later from the bid's Documents tab.`
+            : ''),
       });
 
       // Navigate directly to the new tender dossier command center
@@ -666,20 +661,6 @@ export default function CreateTender() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1">
-                Bidding System
-              </label>
-              <Select
-                value={bidType}
-                onChange={(e) => setBidType(e.target.value as BidType)}
-                className="text-xs"
-              >
-                <option value="TWO_PACKET">Two-Packet System (Technical + Financial)</option>
-                <option value="SINGLE_PACKET">Single-Packet System</option>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
                 Bid Submission Closing Date *
               </label>
               <Input
@@ -763,17 +744,6 @@ export default function CreateTender() {
                 type="button"
                 variant="outline"
                 size="sm"
-                loading={aiGenerating}
-                onClick={handleSuggestRequirements}
-                className="h-8 text-xs font-medium border-blue-200 text-blue-900 bg-blue-50/50 hover:bg-blue-100"
-              >
-                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                AI Suggest from Scope
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
                 onClick={addManualRequirement}
                 className="h-8 text-xs font-medium border-slate-300 text-slate-700"
               >
@@ -790,19 +760,19 @@ export default function CreateTender() {
               <span className="font-semibold text-slate-800">Total Scored Weight:</span>
               <span
                 className={`font-mono font-bold text-sm ${
-                  totalWeight === 100 ? 'text-emerald-700' : 'text-amber-700'
+                  isWeightValid ? 'text-emerald-700' : 'text-rose-700'
                 }`}
               >
                 {totalWeight}% / 100%
               </span>
             </div>
-            {totalWeight === 100 ? (
+            {isWeightValid ? (
               <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Perfectly Balanced
               </span>
             ) : (
-              <span className="text-[11px] text-amber-700 font-medium">
-                Adjust requirement weights so the total equals 100%.
+              <span className="text-[11px] font-semibold text-rose-700">
+                Requirement weights must total exactly 100%.
               </span>
             )}
           </div>
@@ -910,7 +880,9 @@ export default function CreateTender() {
             <Button
               type="button"
               onClick={() => setCurrentStep(3)}
-              className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium"
+              disabled={!isWeightValid}
+              title={isWeightValid ? undefined : 'Requirement weights must total exactly 100%.'}
+              className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continue to Register Participating Bidders
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
@@ -937,16 +909,21 @@ export default function CreateTender() {
               </p>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleLoadSampleBidders}
-              className="h-8 text-xs font-medium border-slate-300 text-slate-800 bg-slate-50 hover:bg-slate-100"
-            >
-              <Users className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
-              Load Demo Participating Bidders
-            </Button>
+            <div className="flex flex-col items-start sm:items-end gap-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleLoadSampleBidders}
+                className="h-8 text-xs font-medium border-slate-300 text-slate-800 bg-slate-50 hover:bg-slate-100"
+              >
+                <Users className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
+                Load Demo Participating Bidders
+              </Button>
+              <p className="text-[11px] text-slate-500">
+                Need sample data for a demonstration? Load preconfigured fictional bidders.
+              </p>
+            </div>
           </div>
 
           {/* Quick Registration Form */}
@@ -1166,6 +1143,14 @@ export default function CreateTender() {
         </div>
       )}
 
+      {/* Demo bidders selection modal (Stage 3) */}
+      <DemoBiddersModal
+        open={demoModalOpen}
+        onOpenChange={setDemoModalOpen}
+        existingNames={bidders.map((b) => normalizeBidderName(b.legal_name))}
+        onLoad={handleLoadSelectedDemoBidders}
+      />
+
       {/* STEP 4: REVIEW & PUBLICATION */}
       {currentStep === 4 && (
         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-6">
@@ -1194,7 +1179,7 @@ export default function CreateTender() {
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-2">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Commercial Terms</span>
               <p className="text-lg font-bold text-slate-900 font-mono">{formatINR(estimatedValue)}</p>
-              <p className="text-xs text-slate-700">Type: <strong className="font-semibold">{tenderType}</strong> • System: <strong className="font-semibold">{bidType}</strong></p>
+              <p className="text-xs text-slate-700">Type: <strong className="font-semibold">{tenderType}</strong></p>
               <p className="text-xs text-slate-700">EMD: <strong className="font-mono">{emdAmount ? formatINR(Number(emdAmount)) : 'Exempted'}</strong></p>
               <p className="text-[11px] text-slate-500">Closes: {closingDate}</p>
             </div>

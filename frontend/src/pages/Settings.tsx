@@ -52,7 +52,7 @@ export default function Settings() {
   const { toast } = useToast();
   const [seedDialogOpen, setSeedDialogOpen] = React.useState(false);
 
-  const { data: providers, isLoading, isError, refetch } = useQuery({
+  const { data: providers, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['providers'],
     queryFn: dashboardApi.providers,
     retry: false,
@@ -101,9 +101,10 @@ export default function Settings() {
               variant="outline"
               size="sm"
               onClick={() => refetch()}
+              disabled={isFetching}
               className="h-8 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 text-slate-500 ${isFetching ? 'animate-spin' : ''}`} />
               Refresh Diagnostics
             </Button>
           </div>

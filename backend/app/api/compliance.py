@@ -22,6 +22,7 @@ from app.schemas.schemas import (
     ComplianceEvaluateResponse,
     ComplianceGetResponse,
     ComplianceResultOut,
+    RequirementOut,
     RiskOut,
 )
 from app.services import compliance_service
@@ -48,9 +49,10 @@ class RiskOverviewItem(BaseModel):
     top_signals: list[str] = []
 
 
-def _orm_result_out(result: ComplianceResult, name: str | None) -> ComplianceResultOut:
+def _orm_result_out(result: ComplianceResult, req: TenderRequirement | None) -> ComplianceResultOut:
     out = ComplianceResultOut.model_validate(result)
-    out.requirement_name = name
+    out.requirement_name = req.requirement_name if req else None
+    out.requirement = RequirementOut.model_validate(req) if req else None
     return out
 
 
@@ -101,8 +103,8 @@ def evaluate(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found")
     outcome = compliance_service.evaluate_bid(db, payload.bid_id, user_id=user.id)
     rows = (
-        db.query(ComplianceResult, TenderRequirement.requirement_name)
-        .join(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
+        db.query(ComplianceResult, TenderRequirement)
+        .outerjoin(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
         .filter(ComplianceResult.bid_id == payload.bid_id)
         .order_by(ComplianceResult.id)
         .all()
@@ -111,7 +113,7 @@ def evaluate(
         db.query(RiskAssessment).filter(RiskAssessment.bid_id == payload.bid_id).one_or_none()
     )
     return ComplianceEvaluateResponse(
-        results=[_orm_result_out(r, name) for r, name in rows],
+        results=[_orm_result_out(r, req) for r, req in rows],
         compliance_score=outcome.get("compliance_score", 0.0),
         risk=RiskOut.model_validate(risk_row),
     )
@@ -132,8 +134,8 @@ def get_compliance(
     ).filter(ComplianceResult.bid_id == bid_id).count() == 0:
         return ComplianceGetResponse(results=[], compliance_score=None, evaluated_at=None)
     rows = (
-        db.query(ComplianceResult, TenderRequirement.requirement_name)
-        .join(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
+        db.query(ComplianceResult, TenderRequirement)
+        .outerjoin(TenderRequirement, ComplianceResult.requirement_id == TenderRequirement.id)
         .filter(ComplianceResult.bid_id == bid_id)
         .order_by(ComplianceResult.id)
         .all()
@@ -144,7 +146,7 @@ def get_compliance(
         .scalar()
     )
     return ComplianceGetResponse(
-        results=[_orm_result_out(r, name) for r, name in rows],
+        results=[_orm_result_out(r, req) for r, req in rows],
         compliance_score=bid.compliance_score,
         evaluated_at=evaluated_at,
     )

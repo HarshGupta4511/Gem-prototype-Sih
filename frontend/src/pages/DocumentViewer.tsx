@@ -42,6 +42,7 @@ import {
   MethodBadge,
 } from '../components/common/badges';
 import { formatDateTime, labelize, truncate } from '../lib/utils';
+import { resolveViewerReturn } from '../lib/viewer-context';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
 import type { DocumentType } from '../types';
 
@@ -68,7 +69,9 @@ const DOCUMENT_TYPES: DocumentType[] = [
 export default function DocumentViewer() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const openedFromBid = (location.state as { from?: string } | null)?.from === 'bid';
+  // Where the viewer was opened from — resolved explicitly by the opener,
+  // with safe fallbacks for deep links (see lib/viewer-context).
+  const contextReturn = resolveViewerReturn(location.state);
   const docId = id ? Number(id) : NaN;
   const { canVerify, canDecide } = useAuth();
   const { toast } = useToast();
@@ -176,10 +179,11 @@ export default function DocumentViewer() {
       <div className="space-y-4">
         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
           <Link
-            to="/app/documents"
+            to={contextReturn.path}
+            state={contextReturn.state}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:underline mb-4"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to Document Verification Lab
+            <ArrowLeft className="h-3.5 w-3.5" /> {contextReturn.label}
           </Link>
           <EmptyState
             icon={<FileSearch className="h-8 w-8 text-slate-400" />}
@@ -192,8 +196,8 @@ export default function DocumentViewer() {
   }
 
   const isImage = doc.mime_type.startsWith('image/');
-  const backTarget = openedFromBid ? `/app/bids/${doc.bid_id}` : '/app/documents';
-  const backLabel = openedFromBid ? 'Return to Bidder Evaluation Dossier' : 'Return to Verification Lab';
+  // Prefer the explicit opener context; fall back to the document's own bid.
+  const viewerReturn = resolveViewerReturn(location.state, doc.bid_id);
 
   return (
     <div className="space-y-5">
@@ -202,11 +206,12 @@ export default function DocumentViewer() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <Link
-              to={backTarget}
+              to={viewerReturn.path}
+              state={viewerReturn.state}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 hover:text-blue-950 transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>{backLabel}</span>
+              <span>{viewerReturn.label}</span>
             </Link>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-slate-500">DOC ID #{doc.id}</span>

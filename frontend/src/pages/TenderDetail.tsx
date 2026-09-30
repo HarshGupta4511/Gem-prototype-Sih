@@ -1,28 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
-  Calendar,
   CheckCircle2,
   ChevronRight,
   Clock,
-  ExternalLink,
-  FileCheck,
-  FileSpreadsheet,
-  FileText,
-  Filter,
-  Layers,
-  Scale,
-  ShieldAlert,
   ShieldCheck,
-  Sparkles,
-  UserCheck,
   Users,
-  Plus,
+  Trash2,
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { auditApi, tendersApi, bidsApi, getErrorMessage } from '../lib/api';
+import { auditApi, tendersApi, bidsApi, complianceApi, getErrorMessage } from '../lib/api';
 import { formatDate, formatDateTime, formatINR, labelize } from '../lib/utils';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -37,6 +26,7 @@ import {
   DialogFooter,
 } from '../components/ui/dialog';
 import { useToast } from '../components/ui/toaster';
+import { useAuth } from '../context/AuthContext';
 import {
   Table,
   TableBody,
@@ -51,7 +41,6 @@ import {
   LoadingBlock,
 } from '../components/common/ui-helpers';
 import {
-  BidStatusBadge,
   DecisionBadge,
   RecommendationBadge,
   RiskBadge,
@@ -111,8 +100,33 @@ export default function TenderDetail() {
   const validId = Number.isFinite(tenderId);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isOfficer, canVerify } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Delete Tender confirmation (Procurement Officer only)
+  const [deleteTenderOpen, setDeleteTenderOpen] = useState(false);
+  const [deletingTender, setDeletingTender] = useState(false);
+  // Bulk bidder delete (Procurement Officer only)
+  const [selectedBidIds, setSelectedBidIds] = useState<number[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  // Manage-bidders selection mode: checkboxes hidden until the officer opts in
+  const [manageMode, setManageMode] = useState(false);
+  // Bidder table sort (UI-only): 'asc' = Compliance Score Low -> High (default)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  // Clear row selection whenever a different tender is opened
+  useEffect(() => {
+    setSelectedBidIds([]);
+    setBulkDeleteOpen(false);
+    setManageMode(false);
+  }, [tenderId]);
+
+  // Intelligent evaluation status modal
+  const [evalModalOpen, setEvalModalOpen] = useState(false);
+  const [evaluating, setEvaluating] = useState(false);
+  const [evalProgress, setEvalProgress] = useState<{ done: number; total: number; name: string } | null>(null);
 
   // Register Bidder Modal state
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
@@ -186,6 +200,122 @@ export default function TenderDetail() {
     }
   };
 
+  const toggleSelectBid = (bidId: number) => {
+    setSelectedBidIds((prev) =>
+      prev.includes(bidId) ? prev.filter((id) => id !== bidId) : [...prev, bidId]
+    );
+  };
+
+  const toggleSelectAllBids = () => {
+    setSelectedBidIds((prev) =>
+      prev.length === bidders.length ? [] : bidders.map((b: TenderBidderRow) => b.bid_id)
+    );
+  };
+
+  const confirmBulkDeleteBids = async () => {
+    if (selectedBidIds.length === 0) return;
+    setBulkDeleting(true);
+    const failures: string[] = [];
+    for (const bidId of selectedBidIds) {
+      try {
+        await bidsApi.delete(bidId);
+      } catch (err) {
+        const name = bidders.find((b: TenderBidderRow) => b.bid_id === bidId)?.legal_name ?? `Bid #${bidId}`;
+        failures.push(`${name}: ${getErrorMessage(err)}`);
+      }
+    }
+    setBulkDeleting(false);
+    setBulkDeleteOpen(false);
+    const deleted = selectedBidIds.length - failures.length;
+    setSelectedBidIds([]);
+    setManageMode(false);
+    queryClient.invalidateQueries({ queryKey: ['tender', tenderId] });
+    queryClient.invalidateQueries({ queryKey: ['tender-comparison', tenderId] });
+    queryClient.invalidateQueries({ queryKey: ['tenders'] });
+    if (failures.length === 0) {
+      toast({
+        title: 'Bidders Removed',
+        description: `${deleted} bidder${deleted === 1 ? '' : 's'} and all derived records were deleted. The audit trail is preserved.`,
+      });
+    } else {
+      toast({
+        title: 'Partial Delete',
+        description: `${deleted} removed, ${failures.length} failed: ${failures.join('; ')}`,
+      });
+    }
+  };
+
+  // ---- Intelligent evaluation state -------------------------------------
+  // Derived from real backend data: a bidder counts as evaluated only when the
+  // compliance engine has actually produced a score (evaluate_bid persists the
+  // score together with the risk assessment in the same pass).
+  const evaluatedBids = bidders.filter((b: TenderBidderRow) => b.compliance_score != null);
+  const pendingBids = bidders.filter((b: TenderBidderRow) => b.compliance_score == null);
+
+  // UI-only ordering: evaluated bidders by real compliance score, unevaluated
+  // (missing score — never treated as 0) grouped consistently at the end.
+  const sortedBidders = useMemo(() => {
+    const evaluated = bidders.filter((b: TenderBidderRow) => b.compliance_score != null);
+    const unevaluated = bidders.filter((b: TenderBidderRow) => b.compliance_score == null);
+    evaluated.sort((a, b) =>
+      sortDir === 'asc'
+        ? (a.compliance_score as number) - (b.compliance_score as number)
+        : (b.compliance_score as number) - (a.compliance_score as number)
+    );
+    return [...evaluated, ...unevaluated];
+  }, [bidders, sortDir]);
+
+  const runEvaluation = async (targets: TenderBidderRow[]) => {
+    if (targets.length === 0 || evaluating) return;
+    setEvaluating(true);
+    const failures: string[] = [];
+    let done = 0;
+    for (const b of targets) {
+      setEvalProgress({ done, total: targets.length, name: b.legal_name });
+      try {
+        await complianceApi.evaluate(b.bid_id);
+        done += 1;
+        setEvalProgress({ done, total: targets.length, name: b.legal_name });
+      } catch (err) {
+        failures.push(`${b.legal_name}: ${getErrorMessage(err)}`);
+      }
+    }
+    setEvaluating(false);
+    setEvalProgress(null);
+    queryClient.invalidateQueries({ queryKey: ['tender', tenderId] });
+    queryClient.invalidateQueries({ queryKey: ['tender-comparison', tenderId] });
+    queryClient.invalidateQueries({ queryKey: ['tenders'] });
+    if (failures.length === 0) {
+      toast({
+        title: 'Evaluation Complete',
+        description: `${done} bidder${done === 1 ? '' : 's'} evaluated through the deterministic rules engine.`,
+      });
+    } else {
+      toast({
+        title: 'Evaluation Partial',
+        description: `${done} evaluated, ${failures.length} failed: ${failures.join('; ')}`,
+      });
+    }
+  };
+
+  const confirmDeleteTender = async () => {
+    setDeletingTender(true);
+    try {
+      await tendersApi.delete(tenderId);
+      queryClient.invalidateQueries({ queryKey: ['tenders'] });
+      toast({
+        title: 'Tender Deleted',
+        description: 'The tender and all its bids and derived records were deleted.',
+      });
+      navigate('/app/tenders');
+    } catch (err) {
+      toast({ title: 'Delete Failed', description: getErrorMessage(err) });
+    } finally {
+      setDeletingTender(false);
+      setDeleteTenderOpen(false);
+    }
+  };
+
   if (!validId) {
     return (
       <EmptyState
@@ -224,9 +354,6 @@ export default function TenderDetail() {
 
   const { tender, requirements, stats } = detail;
 
-  // Running weight tally
-  const totalWeight = requirements.reduce((acc, r) => acc + (r.weight ?? 0), 0);
-  const isWeightValid = Math.round(totalWeight) === 100;
   const mandatoryCount = requirements.filter((r) => r.mandatory).length;
 
   return (
@@ -261,7 +388,7 @@ export default function TenderDetail() {
                 {tender.status}
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                {tender.tender_type || 'OPEN'} • {tender.bid_type || 'TWO_PACKET'}
+                {tender.tender_type || 'OPEN'}
               </span>
             </div>
             <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900 font-serif">
@@ -277,22 +404,51 @@ export default function TenderDetail() {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => setActiveTab('matrix')}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
+              onClick={() => setEvalModalOpen(true)}
+              disabled={bidders.length === 0}
+              className={
+                pendingBids.length === 0 && bidders.length > 0
+                  ? 'bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium shadow-xs'
+                  : 'bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium shadow-xs'
+              }
+              title={
+                bidders.length === 0
+                  ? 'No bidders to evaluate'
+                  : pendingBids.length === 0
+                    ? 'All bidders already evaluated — review status or re-evaluate'
+                    : `${pendingBids.length} of ${bidders.length} bidders still require evaluation`
+              }
             >
-              <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
-              Compare Bidders
+              {pendingBids.length === 0 && bidders.length > 0 ? (
+                <>
+                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                  All {bidders.length} Evaluated
+                </>
+              ) : pendingBids.length === bidders.length ? (
+                <>
+                  <Users className="mr-1.5 h-3.5 w-3.5" />
+                  Evaluate Bidders ({bidders.length})
+                </>
+              ) : (
+                <>
+                  <Users className="mr-1.5 h-3.5 w-3.5" />
+                  Evaluate {pendingBids.length} Remaining
+                </>
+              )}
             </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab('bidders')}
-              className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium shadow-xs"
-            >
-              <Users className="mr-1.5 h-3.5 w-3.5" />
-              Evaluate Bidders ({bidders.length})
-            </Button>
+            {isOfficer && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteTenderOpen(true)}
+                className="border-rose-300 text-rose-700 hover:bg-rose-50 text-xs"
+                title="Delete this tender"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                Delete Tender
+              </Button>
+            )}
           </div>
         </div>
 
@@ -444,12 +600,6 @@ export default function TenderDetail() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500 font-medium">Bidding Envelope Mode</dt>
-                  <dd className="font-semibold text-slate-900 mt-0.5">
-                    {tender.bid_type ? labelize(tender.bid_type) : 'TWO_PACKET'}
-                  </dd>
-                </div>
-                <div>
                   <dt className="text-slate-500 font-medium">Delivery / Execution Period</dt>
                   <dd className="font-semibold text-slate-900 mt-0.5">{tender.delivery_period ?? '24 Weeks'}</dd>
                 </div>
@@ -486,16 +636,6 @@ export default function TenderDetail() {
                   Requirements and evaluation weights configured for this procurement package.
                 </p>
               </div>
-
-              <div
-                className={`rounded px-3 py-1 text-xs font-mono font-bold border ${
-                  isWeightValid
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-rose-50 text-rose-800 border-rose-300'
-                }`}
-              >
-                Weight Sum: {Math.round(totalWeight)} / 100% {isWeightValid ? '✓' : '⚠️'}
-              </div>
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -504,9 +644,7 @@ export default function TenderDetail() {
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
                     <TableHead className="py-2.5 px-3">Requirement</TableHead>
                     <TableHead className="py-2.5 px-3">Category</TableHead>
-                    <TableHead className="py-2.5 px-3">Rule Type</TableHead>
                     <TableHead className="py-2.5 px-3">Threshold / Criteria</TableHead>
-                    <TableHead className="py-2.5 px-3">Verification Source</TableHead>
                     <TableHead className="py-2.5 px-3 text-center">Mandatory</TableHead>
                     <TableHead className="py-2.5 px-3 text-right">Weight</TableHead>
                   </tr>
@@ -525,30 +663,18 @@ export default function TenderDetail() {
                       <TableCell className="py-2.5 px-3 text-xs text-slate-600">
                         {labelize(r.category)}
                       </TableCell>
-                      <TableCell className="py-2.5 px-3">
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10.5px] font-mono text-slate-700 border border-slate-200">
-                          {r.rule_type}
-                        </span>
-                      </TableCell>
                       <TableCell className="py-2.5 px-3 font-medium text-slate-800 text-xs">
-                        {r.threshold ?? '—'}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-xs font-mono text-slate-600">
-                        {r.verification_source ? (
-                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] text-blue-900 border border-blue-200">
-                            {r.verification_source}
-                          </span>
-                        ) : (
-                          'Document Extraction'
-                        )}
+                        {r.threshold && r.threshold.trim() ? r.threshold : '—'}
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-center">
                         {r.mandatory ? (
-                          <span className="rounded bg-rose-50 px-1.5 py-0.2 text-[10px] font-bold text-rose-700 border border-rose-200">
-                            MANDATORY
+                          <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                            Yes
                           </span>
                         ) : (
-                          <span className="text-[11px] text-slate-400">Scored</span>
+                          <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 border border-slate-200">
+                            No
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 text-xs">
@@ -575,15 +701,55 @@ export default function TenderDetail() {
                   Select a bidder to review extracted document evidence, verification checks, and record your qualification decision.
                 </p>
               </div>
-
-              <Button
-                size="sm"
-                onClick={() => setRegisterModalOpen(true)}
-                className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-semibold shrink-0 h-8 shadow-xs"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Register New Bidder
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+                  Sort by:
+                  <select
+                    value={sortDir}
+                    onChange={(e) => setSortDir(e.target.value as 'asc' | 'desc')}
+                    className="h-7 rounded border border-slate-300 bg-white px-1.5 text-[11px] font-medium text-slate-800 shadow-2xs"
+                    aria-label="Sort bidders by compliance score"
+                  >
+                    <option value="asc">Compliance Score — Low to High</option>
+                    <option value="desc">Compliance Score — High to Low</option>
+                  </select>
+                </label>
+                {isOfficer && !manageMode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setManageMode(true)}
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium h-7"
+                  >
+                    Manage Bidders
+                  </Button>
+                )}
+                {isOfficer && manageMode && (
+                  <>
+                    <span className="text-[11px] font-semibold text-slate-600">
+                      {selectedBidIds.length} selected
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setBulkDeleteOpen(true)}
+                      disabled={selectedBidIds.length === 0}
+                      className="border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-medium h-7 disabled:opacity-40"
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      Delete Selected
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => { setManageMode(false); setSelectedBidIds([]); }}
+                      className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium h-7"
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             {bidders.length === 0 ? (
@@ -596,19 +762,41 @@ export default function TenderDetail() {
                 <Table>
                   <TableHeader>
                     <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
+                      {isOfficer && manageMode && (
+                        <TableHead className="py-3 px-3 w-10">
+                          <input
+                            type="checkbox"
+                            checked={bidders.length > 0 && selectedBidIds.length === bidders.length}
+                            onChange={toggleSelectAllBids}
+                            className="h-3.5 w-3.5 rounded border-slate-300 accent-blue-800"
+                            title="Select all bidders"
+                            aria-label="Select all bidders"
+                          />
+                        </TableHead>
+                      )}
                       <TableHead className="py-3 px-3">Bidder Identity</TableHead>
                       <TableHead className="py-3 px-3">Statutory IDs</TableHead>
                       <TableHead className="py-3 px-3 text-center">Compliance Score</TableHead>
                       <TableHead className="py-3 px-3 text-center">Risk Level</TableHead>
                       <TableHead className="py-3 px-3 text-center">AI Recommendation</TableHead>
                       <TableHead className="py-3 px-3 text-center">Officer Decision</TableHead>
-                      <TableHead className="py-3 px-3 text-center">Submission Status</TableHead>
                       <TableHead className="py-3 px-3 text-right">Action</TableHead>
                     </tr>
                   </TableHeader>
                   <TableBody>
-                    {bidders.map((b: TenderBidderRow) => (
+                    {sortedBidders.map((b: TenderBidderRow) => (
                       <TableRow key={b.bid_id} className="hover:bg-blue-50/40 transition-colors">
+                        {isOfficer && manageMode && (
+                          <TableCell className="py-3 px-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedBidIds.includes(b.bid_id)}
+                              onChange={() => toggleSelectBid(b.bid_id)}
+                              className="h-3.5 w-3.5 rounded border-slate-300 accent-blue-800"
+                              aria-label={`Select ${b.legal_name}`}
+                            />
+                          </TableCell>
+                        )}
                         <TableCell className="py-3 px-3">
                           <p className="font-semibold text-slate-900 text-xs">{b.legal_name}</p>
                           {b.trade_name && (
@@ -651,7 +839,7 @@ export default function TenderDetail() {
                               </div>
                             </div>
                           ) : (
-                            <span className="text-[11px] text-slate-400">Pending</span>
+                            <span className="text-[11px] text-slate-400">Not Evaluated</span>
                           )}
                         </TableCell>
 
@@ -660,11 +848,13 @@ export default function TenderDetail() {
                           <RiskBadge level={b.risk_level} />
                         </TableCell>
 
-                        {/* AI Recommendation */}
+                        {/* AI Recommendation — evidence-backed, derived from stored
+                            compliance results + risk signals (see recommendation service).
+                            Advisory only; the Procurement Officer decides. */}
                         <TableCell className="py-3 px-3 text-center">
                           <div className="inline-flex flex-col items-center">
-                            {(b as any).recommendation ? (
-                              <RecommendationBadge rec={(b as any).recommendation} />
+                            {b.recommendation ? (
+                              <RecommendationBadge rec={b.recommendation} />
                             ) : (
                               <span className="text-[11px] text-slate-400 font-mono">—</span>
                             )}
@@ -677,22 +867,19 @@ export default function TenderDetail() {
                           <DecisionBadge decision={b.officer_decision} />
                         </TableCell>
 
-                        {/* Submission Status */}
-                        <TableCell className="py-3 px-3 text-center">
-                          <BidStatusBadge status={b.bid_status} />
-                        </TableCell>
-
                         {/* Action */}
                         <TableCell className="py-3 px-3 text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/app/bids/${b.bid_id}`)}
-                            className="border-slate-300 text-blue-900 hover:bg-blue-50 text-xs font-medium h-7 px-2.5 shadow-2xs"
-                          >
-                            Open Dossier
-                            <ChevronRight className="ml-1 h-3 w-3" />
-                          </Button>
+                          <div className="inline-flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => navigate(`/app/bids/${b.bid_id}`)}
+                              className="border-slate-300 text-blue-900 hover:bg-blue-50 text-xs font-medium h-7 px-2.5 shadow-2xs"
+                            >
+                              View Bid
+                              <ChevronRight className="ml-1 h-3 w-3" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -902,6 +1089,171 @@ export default function TenderDetail() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Tender confirmation (Procurement Officer only) */}
+      <Dialog open={deleteTenderOpen} onOpenChange={setDeleteTenderOpen}>
+        <DialogContent className="max-w-md bg-white border border-slate-300">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+              Delete Tender #{tender.tender_number}?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              This permanently removes the tender, its requirements, all {bidders.length} participating
+              bidder{bidders.length === 1 ? '' : 's'}, and every derived record (documents, verification
+              checks, compliance results, risk assessments). The audit trail is preserved. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            <Button variant="outline" size="sm" onClick={() => setDeleteTenderOpen(false)} className="border-slate-300">
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmDeleteTender}
+              loading={deletingTender}
+              className="bg-rose-700 hover:bg-rose-800 text-white font-medium text-xs"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Delete Tender
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Bidders confirmation (Procurement Officer only) */}
+      <Dialog open={bulkDeleteOpen} onOpenChange={(open) => { if (!open) setBulkDeleteOpen(false); }}>
+        <DialogContent className="max-w-md bg-white border border-slate-300">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+              Remove {selectedBidIds.length} selected bidder{selectedBidIds.length === 1 ? '' : 's'}?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              This permanently removes the selected bids and their documents, extracted fields,
+              verification checks, compliance results, and risk assessments. The audit trail is
+              preserved. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <ul className="max-h-40 overflow-y-auto space-y-1 text-xs text-slate-700">
+              {selectedBidIds.map((bidId) => {
+                const b = bidders.find((x: TenderBidderRow) => x.bid_id === bidId);
+                return (
+                  <li key={bidId} className="flex items-center gap-2 rounded border border-slate-100 bg-slate-50 px-2 py-1.5">
+                    <Trash2 className="h-3 w-3 text-rose-500 shrink-0" />
+                    <span className="font-medium truncate">{b?.legal_name ?? `Bid #${bidId}`}</span>
+                    <span className="ml-auto font-mono text-[10px] text-slate-400 shrink-0">#{bidId}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </DialogBody>
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            <Button variant="outline" size="sm" onClick={() => setBulkDeleteOpen(false)} className="border-slate-300">
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmBulkDeleteBids}
+              loading={bulkDeleting}
+              className="bg-rose-700 hover:bg-rose-800 text-white font-medium text-xs"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Delete Selected ({selectedBidIds.length})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Intelligent evaluation status modal */}
+      <Dialog open={evalModalOpen} onOpenChange={(open) => { if (!open && !evaluating) setEvalModalOpen(false); }}>
+        <DialogContent className="max-w-md bg-white border border-slate-300">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+              Bidder Evaluation Status
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              {pendingBids.length === 0 ? (
+                <>All {bidders.length} bidder{bidders.length === 1 ? '' : 's'} have compliance scores from the deterministic rules engine. Re-running evaluation replaces stored results (audit history is preserved).</>
+              ) : (
+                <>{evaluatedBids.length} of {bidders.length} bidders evaluated. {pendingBids.length} still require evaluation.</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            {evaluating && evalProgress ? (
+              <div className="space-y-2 py-2">
+                <p className="text-xs font-medium text-slate-700">
+                  Evaluating {evalProgress.done + 1} of {evalProgress.total}: {evalProgress.name}
+                </p>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full bg-blue-700 transition-all"
+                    style={{ width: `${(evalProgress.done / evalProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <ul className="max-h-56 overflow-y-auto space-y-1">
+                {bidders.map((b: TenderBidderRow) => {
+                  const evaluated = b.compliance_score != null;
+                  return (
+                    <li key={b.bid_id} className="flex items-center gap-2 rounded border border-slate-100 bg-slate-50 px-2 py-1.5 text-xs">
+                      {evaluated ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      )}
+                      <span className="font-medium text-slate-800 truncate">{b.legal_name}</span>
+                      <span className="ml-auto shrink-0">
+                        {evaluated ? (
+                          <span className="font-mono font-bold text-emerald-700">{b.compliance_score!.toFixed(1)}%</span>
+                        ) : (
+                          <span className="font-medium text-amber-600">Not Evaluated</span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </DialogBody>
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={evaluating}
+              onClick={() => { setEvalModalOpen(false); setActiveTab('bidders'); }}
+              className="border-slate-300"
+            >
+              View Results
+            </Button>
+            {canVerify && pendingBids.length > 0 && (
+              <Button
+                size="sm"
+                disabled={evaluating}
+                loading={evaluating}
+                onClick={() => runEvaluation(pendingBids)}
+                className="bg-blue-800 hover:bg-blue-900 text-white font-medium text-xs"
+              >
+                <Users className="mr-1.5 h-3.5 w-3.5" />
+                Evaluate {pendingBids.length} Remaining
+              </Button>
+            )}
+            {canVerify && pendingBids.length === 0 && bidders.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={evaluating}
+                loading={evaluating}
+                onClick={() => runEvaluation(bidders)}
+                className="border-amber-300 text-amber-800 hover:bg-amber-50 font-medium text-xs"
+              >
+                Re-evaluate All
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
