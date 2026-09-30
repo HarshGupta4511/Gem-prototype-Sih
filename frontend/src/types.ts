@@ -375,6 +375,28 @@ export interface DashboardData {
     tender_bidder_comparison: { tender: string; avg_score: number }[];
     document_processing: { status: string; count: number }[];
   };
+  integrity_notices: {
+    id: number;
+    title: string;
+    signal_type: string;
+    severity: string;
+    status: string;
+    is_demo_history: boolean;
+  }[];
+  work_queue: {
+    priority: number;
+    category: string;
+    category_label: string;
+    title: string;
+    description: string;
+    severity: string;
+    bid_id: number | null;
+    bidder_name: string | null;
+    tender_number: string | null;
+    tender_id: number | null;
+    finding_id: number | null;
+    link: string;
+  }[];
 }
 
 export interface TenderListItem extends Tender {
@@ -531,6 +553,7 @@ export interface OfficerDecisionRequest {
   bid_id: number;
   decision: OfficerDecision;
   reason?: string;
+  confirm_change?: boolean;
 }
 
 export interface OverrideRequest {
@@ -543,9 +566,10 @@ export interface OverrideRequest {
 export type ReportStatus =
   | 'DRAFT'
   | 'GENERATED'
-  | 'SENT_TO_OFFICER'
+  | 'SENT'
+  | 'RECEIVED'
   | 'UNDER_REVIEW'
-  | 'DECISION_MADE';
+  | 'DECISION';
 
 export interface ReportObservation {
   text: string;
@@ -631,6 +655,33 @@ export interface VerificationReportData {
     decided_by: string | null;
     decided_at: string | null;
   } | null;
+  consistency: {
+    checks_run: number;
+    mismatches: number;
+    evaluated_at: string | null;
+    items: {
+      check: string;
+      field: string;
+      document_1: string | null;
+      value_1: string | null;
+      document_2: string | null;
+      value_2: string | null;
+      result: string;
+      reason: string;
+      severity: string;
+    }[];
+  } | null;
+  integrity: {
+    active_signals: number;
+    items: {
+      id: number;
+      signal_type: string;
+      severity: string;
+      title: string;
+      status: string;
+      is_demo_history: boolean;
+    }[];
+  } | null;
 }
 
 export interface ReportInboxItem {
@@ -642,4 +693,97 @@ export interface ReportInboxItem {
   sent_at: string | null;
   is_new: boolean;
   status: ReportStatus;
+}
+
+// ---------------------------------------------------- integrity / consistency
+
+export interface IntegrityEvidence {
+  label: string;
+  detail: string;
+  records?: number;
+  dedupe_key?: string;
+}
+
+export interface IntegrityTenderRef {
+  tender_id: number;
+  tender_number: string;
+  title: string;
+  is_demo_history?: boolean;
+}
+
+export interface IntegrityFinding {
+  id: number;
+  tender_id: number | null;
+  bidder_id: number | null;
+  signal_type: string;
+  severity: 'REVIEW_REQUIRED' | 'ELEVATED' | 'INFORMATIONAL' | string;
+  title: string;
+  description: string;
+  affected_bids: number[];
+  affected_tenders: IntegrityTenderRef[];
+  evidence: IntegrityEvidence[];
+  rule_logic: string;
+  recommended_action: string;
+  status: 'OPEN' | 'ACKNOWLEDGED' | 'UNDER_REVIEW' | 'INVESTIGATING' | 'CLOSED' | string;
+  is_demo_history: boolean;
+  created_at: string | null;
+  evaluated_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: number | null;
+  officer_note: string | null;
+}
+
+export interface IntegrityOverview {
+  tenders_analyzed: number;
+  bidders_analyzed: number;
+  bids_analyzed: number;
+  open_signals: number;
+  high_priority_signals: number;
+  last_analysis_at: string | null;
+}
+
+export interface IntegrityAnalysisResult {
+  signals_detected: number;
+  new_signals: number;
+  tenders_analyzed: number;
+  bidders_analyzed: number;
+  bids_analyzed: number;
+  evaluated_at: string;
+}
+
+export interface ConsistencyDocRef {
+  document_id: number | null;
+  name: string | null;
+  type: string | null;
+}
+
+export interface ConsistencyCheckItem {
+  id: number;
+  bid_id: number;
+  check_name: string;
+  check_label: string;
+  field_name: string;
+  doc1: ConsistencyDocRef;
+  doc2: ConsistencyDocRef;
+  value1: string | null;
+  value2: string | null;
+  result: 'MATCH' | 'MISMATCH' | 'REVIEW_REQUIRED' | string;
+  reason: string;
+  severity: 'REVIEW_REQUIRED' | 'INFORMATIONAL' | string;
+  evidence: Record<string, unknown>;
+  created_at: string | null;
+}
+
+export interface ConsistencyResult {
+  bid_id: number;
+  checks: ConsistencyCheckItem[];
+  mismatches: number;
+  evaluated_at: string | null;
+}
+
+export interface ConsistencyRunResult {
+  bid_id: number;
+  checks_run: number;
+  mismatches: number;
+  evaluated_at: string | null;
 }

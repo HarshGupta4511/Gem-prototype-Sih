@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   FileCheck2,
   Send,
@@ -34,12 +34,13 @@ import type { ReportStatus, OfficerDecision } from '../types';
 const STATUS_META: Record<ReportStatus, { label: string; classes: string }> = {
   DRAFT: { label: 'Draft', classes: 'bg-slate-100 text-slate-700 border-slate-300' },
   GENERATED: { label: 'Generated', classes: 'bg-blue-50 text-blue-800 border-blue-200' },
-  SENT_TO_OFFICER: { label: 'Sent to Procurement Officer', classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  SENT: { label: 'Sent to Procurement Officer', classes: 'bg-amber-50 text-amber-800 border-amber-200' },
+  RECEIVED: { label: 'Received by Officer', classes: 'bg-teal-50 text-teal-800 border-teal-200' },
   UNDER_REVIEW: { label: 'Under Officer Review', classes: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
-  DECISION_MADE: { label: 'Decision Made', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  DECISION: { label: 'Decision Made', classes: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
 };
 
-const LIFECYCLE_STEPS: ReportStatus[] = ['DRAFT', 'GENERATED', 'SENT_TO_OFFICER', 'UNDER_REVIEW', 'DECISION_MADE'];
+const LIFECYCLE_STEPS: ReportStatus[] = ['DRAFT', 'GENERATED', 'SENT', 'RECEIVED', 'UNDER_REVIEW', 'DECISION'];
 
 function formatDateTime(iso: string | null) {
   if (!iso) return '—';
@@ -104,9 +105,11 @@ export default function VerificationReport() {
     enabled: Number.isFinite(bid_id),
   });
 
-  // Officer opening the report marks it RECEIVED -> UNDER REVIEW (idempotent).
+  // Officer opening a RECEIVED report marks it RECEIVED -> UNDER REVIEW (idempotent).
+  // A SENT report stays at SENT until the officer explicitly acknowledges
+  // receipt — auto-open must never skip the RECEIVED stage.
   React.useEffect(() => {
-    if (isOfficer && report && !openedRef.current) {
+    if (isOfficer && report && report.status === 'RECEIVED' && !openedRef.current) {
       openedRef.current = true;
       reportsApi
         .markOpened(bid_id)
@@ -206,7 +209,7 @@ export default function VerificationReport() {
   const canSend = canReport && report.status === 'GENERATED';
   const canObserve = canReport && (report.status === 'DRAFT' || report.status === 'GENERATED');
   const showDecisionBar =
-    isOfficer && !report.decision && (report.status === 'SENT_TO_OFFICER' || report.status === 'UNDER_REVIEW');
+    isOfficer && !report.decision && (report.status === 'SENT' || report.status === 'RECEIVED' || report.status === 'UNDER_REVIEW');
 
   const decisionButtons: { decision: OfficerDecision; label: string; icon: React.ReactNode; classes: string }[] = [
     { decision: 'APPROVE', label: 'Approve Bid', icon: <CheckCircle2 className="mr-1.5 h-4 w-4" />, classes: 'bg-emerald-700 hover:bg-emerald-800 text-white' },
@@ -552,6 +555,76 @@ export default function VerificationReport() {
       </SectionCard>
 
       {/* AI summary */}
+      {/* Cross-document consistency (mismatches only) */}
+      <SectionCard
+        title="Cross-Document Consistency"
+        badge={<ProvenanceBadge kind="rule" />}
+        explainer={
+          <MethodExplainer kind="rule">
+            Deterministic comparison of extracted fields across this bid's documents —
+            entity names, GSTIN ↔ PAN structure, identifiers, dates and numeric values.
+            Only mismatches are listed here; the full check list is on the bid's Documents tab.
+          </MethodExplainer>
+        }
+      >
+        {!report.consistency || report.consistency.checks_run === 0 ? (
+          <p className="text-sm text-slate-500">
+            Consistency checks have not been run for this bid yet. They can be run from the bid's Documents tab.
+          </p>
+        ) : report.consistency.mismatches === 0 ? (
+          <p className="text-sm text-emerald-700">
+            {report.consistency.checks_run} check{report.consistency.checks_run === 1 ? '' : 's'} run — no mismatches detected.
+          </p>
+        ) : (
+          <ul className="space-y-2.5">
+            {report.consistency.items.map((m, i) => (
+              <li key={i} className="rounded-md border border-red-200 bg-red-50/50 px-3 py-2.5">
+                <p className="text-sm font-semibold text-red-900">{m.check}</p>
+                <p className="mt-0.5 text-xs text-slate-700">{m.reason}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {m.document_1 ?? '—'}: <span className="font-medium">{m.value_1 ?? '—'}</span>
+                  {m.document_2 && (
+                    <> · {m.document_2}: <span className="font-medium">{m.value_2 ?? '—'}</span></>
+                  )}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </SectionCard>
+
+      {/* Integrity signals */}
+      <SectionCard
+        title="Integrity Signals"
+        badge={<ProvenanceBadge kind="rule" />}
+        explainer={
+          <MethodExplainer kind="rule">
+            Deterministic, evidence-backed patterns detected from tender, bid and audit data.
+            Signals require officer review — they are never findings of misconduct and never
+            decide bidder qualification.
+          </MethodExplainer>
+        }
+      >
+        {!report.integrity || report.integrity.active_signals === 0 ? (
+          <p className="text-sm text-slate-500">
+            No active integrity signals touch this bid.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {report.integrity.items.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-2 rounded-md border border-amber-200 bg-amber-50/60 px-3 py-2.5">
+                <span className="min-w-0 flex-1 text-sm font-medium text-slate-900">{s.title}</span>
+                <Badge variant="outline" className="bg-white text-[11px]">{labelize(s.severity)}</Badge>
+                <Badge variant="outline" className="bg-white text-[11px]">{labelize(s.status)}</Badge>
+                <Link to="/app/integrity" className="text-xs font-medium text-brand-700 hover:text-brand-800">
+                  Review →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </SectionCard>
+
       <SectionCard
         title="AI Summary"
         badge={<ProvenanceBadge kind="ai" />}
@@ -580,9 +653,10 @@ export default function VerificationReport() {
           <p className="mt-1 text-xs text-slate-500">
             {report.status === 'DRAFT' && 'Finalise the report from the current evidence, then send it to the Procurement Officer.'}
             {report.status === 'GENERATED' && 'The report is ready. Send it to the Procurement Officer for review and decision.'}
-            {report.status === 'SENT_TO_OFFICER' && 'Report sent. It is now with the Procurement Officer — the verifier’s responsibility ends here.'}
+            {report.status === 'SENT' && 'Report sent. It is now with the Procurement Officer — the verifier’s responsibility ends here.'}
+            {report.status === 'RECEIVED' && 'Receipt acknowledged. Open the report to begin the officer review.'}
             {report.status === 'UNDER_REVIEW' && 'The Procurement Officer has opened the report and is reviewing it.'}
-            {report.status === 'DECISION_MADE' && 'The Procurement Officer has recorded a final decision.'}
+            {report.status === 'DECISION' && 'The Procurement Officer has recorded a final decision.'}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {canGenerate && (
@@ -610,6 +684,32 @@ export default function VerificationReport() {
             <Button size="sm" variant="outline" onClick={() => navigate(`/app/bids/${bid_id}`)} className="border-slate-300 text-slate-700">
               <Eye className="mr-1.5 h-4 w-4" />
               Open Bid Detail
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Officer receipt acknowledgement */}
+      {isOfficer && report.status === 'SENT' && (
+        <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-5">
+          <h2 className="text-sm font-bold text-slate-900">Acknowledge Receipt</h2>
+          <p className="mt-1 text-xs text-slate-600">
+            Confirm you have received this verification report. This moves it from Sent to Received in the report lifecycle.
+          </p>
+          <div className="mt-3">
+            <Button
+              size="sm"
+              disabled={busy}
+              onClick={() =>
+                runAction('Acknowledge receipt', async () => {
+                  await reportsApi.markReceived(bid_id);
+                  toast('success', 'Receipt acknowledged');
+                })
+              }
+              className="bg-teal-700 hover:bg-teal-800 text-white"
+            >
+              <CheckCircle2 className="mr-1.5 h-4 w-4" />
+              Acknowledge Receipt
             </Button>
           </div>
         </div>
