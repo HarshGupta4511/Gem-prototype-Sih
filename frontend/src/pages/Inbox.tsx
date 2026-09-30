@@ -13,9 +13,10 @@ import type { ReportStatus } from '../types';
 const STATUS_STYLES: Record<ReportStatus, string> = {
   DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
   GENERATED: 'bg-blue-50 text-blue-800 border-blue-200',
-  SENT_TO_OFFICER: 'bg-amber-50 text-amber-800 border-amber-200',
+  SENT: 'bg-amber-50 text-amber-800 border-amber-200',
+  RECEIVED: 'bg-teal-50 text-teal-800 border-teal-200',
   UNDER_REVIEW: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-  DECISION_MADE: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  DECISION: 'bg-emerald-50 text-emerald-800 border-emerald-200',
 };
 
 function formatDateTime(iso: string | null) {
@@ -44,6 +45,8 @@ export default function Inbox() {
     if (error) toast('error', 'Could not load inbox', getErrorMessage(error));
   }, [error, toast]);
 
+  const [receivingId, setReceivingId] = React.useState<number | null>(null);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -54,6 +57,19 @@ export default function Inbox() {
 
   const items = data ?? [];
   const newCount = items.filter((i) => i.is_new).length;
+
+  async function acknowledgeReceipt(bidId: number) {
+    setReceivingId(bidId);
+    try {
+      await reportsApi.markReceived(bidId);
+      toast('success', 'Receipt acknowledged', 'The report is now marked as received.');
+      refetch();
+    } catch (e) {
+      toast('error', 'Could not acknowledge receipt', getErrorMessage(e));
+    } finally {
+      setReceivingId(null);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -94,10 +110,10 @@ export default function Inbox() {
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs">
           <ul className="divide-y divide-slate-100">
             {items.map((item) => (
-              <li key={item.bid_id}>
+              <li key={item.bid_id} className="flex items-center gap-3 px-4 py-4">
                 <button
                   onClick={() => navigate(`/app/bids/${item.bid_id}/report`)}
-                  className="flex w-full items-center gap-4 px-4 py-4 text-left transition-colors hover:bg-slate-50"
+                  className="flex min-w-0 flex-1 items-center gap-4 text-left transition-colors hover:bg-slate-50 rounded-md px-2 py-1 -mx-2"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
                     <FileCheck2 className="h-5 w-5" />
@@ -125,6 +141,17 @@ export default function Inbox() {
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
                 </button>
+                {item.is_new && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 border-teal-300 text-teal-800 hover:bg-teal-50 text-xs"
+                    disabled={receivingId === item.bid_id}
+                    onClick={() => acknowledgeReceipt(item.bid_id)}
+                  >
+                    {receivingId === item.bid_id ? 'Acknowledging…' : 'Acknowledge receipt'}
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
