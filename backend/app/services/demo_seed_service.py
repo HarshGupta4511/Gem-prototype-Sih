@@ -33,30 +33,66 @@ working because every stage replaces its previous rows.
 from __future__ import annotations
 
 import hashlib
+import logging
 
 from sqlalchemy.orm import Session
 
+from app.api.bidder_logos import logo_path
 from app.core.config import ensure_upload_dir
 from app.models.models import BidSubmission, Bidder, Document, Tender
 from app.seed.demo_bidder_profiles import PROFILES, build_dossier_sections, demo_banner
-from app.seed.demo_docs import dossier_section_title, generate_dossier_pdf
+from app.seed.demo_docs import (
+    dossier_section_title,
+    generate_demo_logo,
+    generate_dossier_pdf,
+)
 from app.services import audit_service
 from app.services.pipeline_service import process_document
 
+log = logging.getLogger(__name__)
+
+def write_demo_logo_if_missing(bidder_id: int, legal_name: str) -> bool:
+    """Write a fictional demo logo for a bidder unless one already exists.
+
+    Returns True when a logo file was written. Never overwrites an
+    officer-uploaded logo. Display-only: no engine reads this file.
+    """
+    path = logo_path(bidder_id)
+    if path.exists():
+        return False
+    try:
+        path.write_bytes(generate_demo_logo(legal_name))
+    except Exception:
+        log.exception("Demo logo generation failed for bidder %s; continuing", bidder_id)
+        return False
+    return True
+
+
 _DEMO_FILENAME = "demo_{profile_key}_dossier.pdf"
 _DEMO_SECTION_FILENAME = "demo_{profile_key}_{template}.pdf"
+_DEMO_SCENARIO_SECTION_FILENAME = "demo_{profile_key}_{scenario}_{seed}_{template}.pdf"
 
 
 def seed_demo_bidder_evidence(
-    db: Session, bid_id: int, profile_key: str, user_id: int | None = None
+    db: Session, bid_id: int, profile_key: str, user_id: int | None = None,
+    scenario_id: str | None = None, seed: int | None = None,
 ) -> dict:
-    """Attach a profile's demo evidence dossier to an existing bid."""
+    """Attach a profile's demo evidence dossier to an existing bid.
+
+    ``scenario_id`` selects a mismatch-focused scenario from
+    :mod:`app.seed.demo_scenarios` (e.g. ``"gst_name_mismatch"``); ``seed``
+    makes the generated dataset reproducible (``None`` picks a fresh seed,
+    which is returned). When ``scenario_id`` is None the historic fixed
+    profile behaviour is used.
+    """
     if profile_key not in PROFILES:
         raise ValueError(
             f"Unknown demo profile '{profile_key}'; "
             f"expected one of {sorted(PROFILES)}"
         )
     profile = PROFILES[profile_key]
+    use_scenario = scenario_id is not None
+    scenario_seed = seed  # resolved after the plan is built
 
     bid = db.get(BidSubmission, bid_id)
     if bid is None:
@@ -71,12 +107,15 @@ def seed_demo_bidder_evidence(
     # Idempotency: if this bid already carries this profile's demo evidence
     # (consolidated dossier, per-section documents, or the retired
     # single-file name — all share the "demo_{profile}_" filename prefix),
-    # never create duplicate bidder/document rows.
+    # never create duplicate bidder/document rows. Scenario runs use a
+    # longer prefix that also pins the scenario and seed.
+    idem_prefix = (f"demo_{profile_key}_{scenario_id}_{scenario_seed}_"
+                   if use_scenario else f"demo_{profile_key}_")
     already = (
         db.query(Document)
         .filter(
             Document.bid_id == bid.id,
-            Document.filename.startswith(f"demo_{profile_key}_"),
+            Document.filename.startswith(idem_prefix),
         )
         .all()
     )
@@ -92,8 +131,21 @@ def seed_demo_bidder_evidence(
             "profile_key": profile_key,
         }
 
+    # 0. Scenario plan + mock fixtures (scenario mode only).
+    plan = None
+    if use_scenario:
+        from app.seed import demo_scenarios
+        plan = demo_scenarios.plan_scenario(
+            profile_key, scenario_id, scenario_seed,
+            bidder.legal_name or profile["legal_name"])
+        scenario_seed = plan.seed
+        idem_prefix = f"demo_{profile_key}_{scenario_id}_{scenario_seed}_"
+        demo_scenarios.ensure_scenario_fixtures(plan)
+
     # 1. Authoritative fictional identifiers onto the normal Bidder row.
-    identifiers = profile["identifiers"]
+    identifiers = dict(profile["identifiers"])
+    if plan is not None:
+        identifiers.update(plan.identifiers)
     bidder.pan = identifiers.get("pan")
     bidder.gstin = identifiers.get("gstin")
     bidder.udyam = identifiers.get("udyam")
@@ -105,11 +157,17 @@ def seed_demo_bidder_evidence(
     bidder.contact_phone = profile["contact_phone"]
     db.flush()
 
+    # 1b. Fictional demo logo (display-only avatar). Written only when the
+    # bidder has no logo yet — never overwrites an officer-uploaded logo,
+    # and no engine ever reads it.
+    write_demo_logo_if_missing(bidder.id, profile["legal_name"])
+
     # 2. Requirement-driven dossier section(s).
     sections = build_dossier_sections(
         tender.requirements,
         profile_key,
         emd_beneficiary=tender.organization or "Demo Tendering Authority",
+        plan=plan,
     )
     # Most profiles seed ONE consolidated dossier PDF. Profiles with the
     # "split_dossier_sections" scenario flag (Nova: cross-document identity
@@ -131,9 +189,16 @@ def seed_demo_bidder_evidence(
             )
             jobs.append(
                 {
-                    "filename": _DEMO_SECTION_FILENAME.format(
-                        profile_key=profile_key,
-                        template=template_type.lower(),
+                    "filename": (
+                        _DEMO_SCENARIO_SECTION_FILENAME.format(
+                            profile_key=profile_key, scenario=scenario_id,
+                            seed=scenario_seed,
+                            template=template_type.lower(),
+                        ) if use_scenario else
+                        _DEMO_SECTION_FILENAME.format(
+                            profile_key=profile_key,
+                            template=template_type.lower(),
+                        )
                     ),
                     "pdf": pdf,
                     "template_type": template_type,
@@ -199,6 +264,8 @@ def seed_demo_bidder_evidence(
         entity_id=str(bid.id),
         metadata={
             "profile_key": profile_key,
+            "scenario_id": scenario_id,
+            "seed": scenario_seed,
             "document_ids": [d["document_id"] for d in seeded_docs],
             "sections": len(sections),
             "split_documents": bool(profile.get("split_dossier_sections")),
@@ -216,6 +283,8 @@ def seed_demo_bidder_evidence(
         "document_ids": [d["document_id"] for d in seeded_docs],
         "documents": seeded_docs,
         "profile_key": profile_key,
+        "scenario_id": scenario_id,
+        "seed": scenario_seed,
         "sections": len(sections),
         "processing_status": (
             seeded_docs[0]["processing_status"]

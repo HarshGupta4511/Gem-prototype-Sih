@@ -156,9 +156,9 @@ def test_t4_banner_rendered_in_dossier_pdf():
 def test_t4_expected_compliance_outcomes(db):
     _tender, bids = _seed_t4(db)
     expected = {
-        "Apex MediSupply Pvt Ltd": ("PROCEED", 100.0, "LOW"),
-        "BrightCare Traders Pvt Ltd": ("REVIEW_REQUIRED", 70.0, "MEDIUM"),
-        "CareWell Enterprises Pvt Ltd": ("NOT_RECOMMENDED", 0.0, "CRITICAL"),
+        "Apex MediSupply Pvt Ltd": ("APPROVE", 100.0, "LOW"),
+        "BrightCare Traders Pvt Ltd": ("REVIEW_REQUIRED", 70.0, "HIGH"),
+        "CareWell Enterprises Pvt Ltd": ("REJECT", 0.0, "HIGH"),
     }
     for name, (rec, score, risk) in expected.items():
         bid = bids[name]

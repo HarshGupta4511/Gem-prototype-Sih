@@ -42,7 +42,11 @@ REQUIREMENTS = [
      {"source": "GSTN", "identifier_field": "gstin", "require_status": "ACTIVE"},
      "GSTN", True, 40),
     ("Consolidated Bid Dossier", "DOCUMENT_REQUIRED",
-     {"document_types": ["BID_DOSSIER"]}, None, True, 60),
+     {"document_types": ["BID_DOSSIER", "PAN_CERTIFICATE", "GST_CERTIFICATE",
+                         "TURNOVER_CERTIFICATE", "EXPERIENCE_CERTIFICATE",
+                         "PAST_PERFORMANCE_CERTIFICATE", "OEM_AUTHORIZATION",
+                         "MII_DECLARATION", "EMD_PAYMENT",
+                         "NON_DEBARMENT_DECLARATION"]}, None, True, 60),
 ]
 
 
@@ -75,14 +79,16 @@ def _full_bid(db, tender_id, profile_key):
     bid = _make_bid(db, tender_id, PROFILES[profile_key]["legal_name"])
     res = seed_demo_bidder_evidence(db, bid.id, profile_key)
     assert res["seeded"] is True
-    doc = db.query(Document).filter_by(bid_id=bid.id).one()
+    docs = db.query(Document).filter_by(bid_id=bid.id).all()
+    # Split profiles on a tender with no generatable sections honestly seed
+    # zero documents (e.g. vertex here); the consolidated path always made one.
     run_verification(db, bid.id)
     evaluate_bid(db, bid.id)
     generate_recommendation(db, bid.id)
     # One manual officer override + one clarification on this bid.
     db.add(Override(bid_id=bid.id, target_type="compliance_result", target_id=1,
                     original_status="PASS", officer_comment="recheck requested",
-                    supporting_document_id=doc.id))
+                    supporting_document_id=docs[0].id if docs else None))
     db.add(Clarification(bid_id=bid.id, subject="EMD receipt",
                          body="Please re-upload the EMD receipt."))
     db.commit()
@@ -116,7 +122,7 @@ def test_delete_bid_removes_everything_and_preserves_audit(db, isolated_uploads)
     bid2 = _make_bid(db, tender.id, "Second Bidder Pvt Ltd")
 
     before = _bid_counts(db, bid1.id)
-    assert before["documents"] == 1
+    assert before["documents"] > 1  # apex seeds one standalone doc per section
     assert before["fields"] > 0
     assert before["checks"] > 0
     assert before["compliance"] > 0
@@ -126,8 +132,9 @@ def test_delete_bid_removes_everything_and_preserves_audit(db, isolated_uploads)
     db.refresh(bid1)
     assert bid1.recommendation is not None
 
-    dossier = db.query(Document).filter_by(bid_id=bid1.id).one()
-    assert Path(dossier.file_path).exists()
+    dossiers = db.query(Document).filter_by(bid_id=bid1.id).all()
+    assert dossiers, "expected seeded documents"
+    assert all(Path(d.file_path).exists() for d in dossiers)
 
     # Existing audit events for this bid (seed/verify/compliance wrote some).
     pre_events = db.query(AuditLog).filter(
@@ -142,7 +149,7 @@ def test_delete_bid_removes_everything_and_preserves_audit(db, isolated_uploads)
     assert db.get(BidSubmission, bid1.id) is None
     assert db.get(Bidder, bid1.bidder_id) is None
     assert _bid_counts(db, bid1.id) == {k: 0 for k in before}
-    assert not Path(dossier.file_path).exists()
+    assert all(not Path(d.file_path).exists() for d in dossiers)
 
     # The other bid on the same tender is untouched.
     assert db.get(BidSubmission, bid2.id) is not None

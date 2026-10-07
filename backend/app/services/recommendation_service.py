@@ -1,8 +1,18 @@
-"""AI-assisted recommendation (§12 of CONTRACT.md).
+"""AI-assisted recommendation.
 
-Deterministic mapping over STORED compliance + risk results — this service
-NEVER recomputes pass/fail. Template text + RAG policy quotes; the human
-officer always decides.
+Comparative, per-tender evaluation over STORED compliance + risk results —
+this service NEVER recomputes pass/fail. Bidders are compared only within
+the same tender using real persisted data:
+
+- Disqualified (blacklisted/debarred, or a mandatory FAIL) → REJECT
+- Strongest eligible bidder → APPROVE
+- Everyone else (middle, ambiguous, or close cases) → REVIEW_REQUIRED
+
+A mandatory FAIL or MISSING always prevents APPROVE. Serious risk or
+integrity issues are never ignored because of a high compliance score.
+
+Template text + RAG policy quotes; the human officer always decides.
+Risk Level, AI Recommendation and Officer Decision remain separate.
 """
 
 from __future__ import annotations
@@ -156,51 +166,253 @@ def _policy_citation(hit: dict) -> dict:
     }
 
 
-def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
-    """Generate a recommendation from stored compliance/risk results.
+def _risk_rank(level: str | None) -> int:
+    """Order risk levels for comparison (lower is better). Legacy CRITICAL
+    stored values rank as HIGH."""
+    return {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 2}.get(
+        (level or "").upper(), 3
+    )
 
-    Returns {"recommendation", "reason", "evidence", "policy_context", "provider"}.
+
+def _bid_assessment(db, bid) -> dict | None:
+    """Build the comparative assessment for one bid from stored data.
+
+    Returns None when the bid has no stored compliance results (cannot be
+    evaluated). Never raises on missing/null fields.
     """
-    from app.models.models import BidSubmission, ComplianceResult, RiskAssessment, VerificationCheck
-    from app.services import rag_service
-    from app.services.audit_service import append_audit
+    from app.models.models import ComplianceResult, RiskAssessment
 
     results = (
         db.query(ComplianceResult)
-        .filter(ComplianceResult.bid_id == bid_id)
+        .filter(ComplianceResult.bid_id == bid.id)
         .order_by(ComplianceResult.id)
         .all()
     )
     if not results:
-        raise ValueError(
-            f"No compliance results stored for bid {bid_id}; "
-            "run compliance evaluation first."
-        )
-    risk = db.query(RiskAssessment).filter(RiskAssessment.bid_id == bid_id).one_or_none()
+        return None
+    risk = (
+        db.query(RiskAssessment).filter(RiskAssessment.bid_id == bid.id).one_or_none()
+    )
+    signals = list(risk.signals or []) if risk else []
+    risk_level = (risk.risk_level if risk else "LOW") or "LOW"
 
     items = _load_items(db, results)
-    signals = list(risk.signals or []) if risk else []
-    risk_level = risk.risk_level if risk else "LOW"
-
-    # Deterministic mapping (§12).
     blacklisted = any(s.get("code") in ("BLACKLISTED", "DEBARRED") for s in signals)
     fail_mandatory = any(i["status"] == "FAIL" and i["mandatory"] for i in items)
+    missing_mandatory = any(i["status"] == "MISSING" and i["mandatory"] for i in items)
     non_pass = [i for i in items if i["status"] in NON_PASS]
-    medium_plus = any((s.get("severity") or "") in ("medium", "high") for s in signals)
+    score = bid.compliance_score
+    score = float(score) if score is not None else 0.0
 
-    if risk_level == "CRITICAL" or blacklisted:
-        recommendation = "NOT_RECOMMENDED"
-    elif fail_mandatory:
-        recommendation = "NOT_RECOMMENDED"
-    elif non_pass:
-        recommendation = "REVIEW_REQUIRED"
-    elif medium_plus:
-        recommendation = "PROCEED_WITH_CONDITIONS"
-    else:
-        recommendation = "PROCEED"
+    return {
+        "bid": bid,
+        "items": items,
+        "signals": signals,
+        "risk_level": risk_level,
+        "score": score,
+        "blacklisted": blacklisted,
+        "fail_mandatory": fail_mandatory,
+        "missing_mandatory": missing_mandatory,
+        "non_pass": non_pass,
+        "non_pass_count": len(non_pass),
+        # Disqualified: blacklist/debarment or a failed mandatory requirement.
+        "disqualified": blacklisted or fail_mandatory,
+        # Eligible for APPROVE: not disqualified, no mandatory evidence
+        # missing, and no serious unresolved risk.
+        "approve_eligible": (
+            not blacklisted
+            and not fail_mandatory
+            and not missing_mandatory
+            and _risk_rank(risk_level) < 2
+        ),
+    }
 
-    # Evidence-backed reason bullets.
-    bullets = []
+
+def _rank_key(a: dict) -> tuple:
+    """Strongest first: compliance score, then lower risk, then fewer
+    non-PASS items, then bid id for determinism."""
+    return (-a["score"], _risk_rank(a["risk_level"]), a["non_pass_count"], a["bid"].id)
+
+
+def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
+    """Generate a comparative per-tender recommendation.
+
+    Evaluates every bid in the tender with stored compliance results and
+    assigns APPROVE / REJECT / REVIEW_REQUIRED. The requested bid's result
+    is returned; all evaluated bids in the tender are persisted so the
+    ranking stays consistent. Returns {"recommendation", "reason",
+    "evidence", "policy_context", "provider"}.
+    """
+    from app.models.models import BidSubmission, VerificationCheck
+    from app.services.audit_service import append_audit
+
+    bid = db.get(BidSubmission, bid_id)
+    if bid is None:
+        raise ValueError(f"BidSubmission {bid_id} not found")
+
+    # All bids in the same tender — evaluation is strictly per-tender.
+    tender_bids = (
+        db.query(BidSubmission)
+        .filter(BidSubmission.tender_id == bid.tender_id)
+        .order_by(BidSubmission.id)
+        .all()
+    )
+    assessments = []
+    for b in tender_bids:
+        a = _bid_assessment(db, b)
+        if a is not None:
+            assessments.append(a)
+    if not assessments:
+        raise ValueError(
+            f"No compliance results stored for tender {bid.tender_id}; "
+            "run compliance evaluation first."
+        )
+
+    # Rank the approve-eligible bids; the strongest takes APPROVE.
+    eligible = sorted(
+        [a for a in assessments if a["approve_eligible"]], key=_rank_key
+    )
+    approved_id = eligible[0]["bid"].id if eligible else None
+
+    by_bid_id: dict[int, str] = {}
+    for a in assessments:
+        if a["disqualified"]:
+            by_bid_id[a["bid"].id] = "REJECT"
+        elif a["bid"].id == approved_id:
+            by_bid_id[a["bid"].id] = "APPROVE"
+        else:
+            by_bid_id[a["bid"].id] = "REVIEW_REQUIRED"
+
+    # Persist every evaluated bid so the tender ranking is consistent and
+    # updates dynamically the next time any bid is (re)evaluated. Each bid
+    # gets its own evidence-backed reason; RAG policy context is built for
+    # the requested bid only.
+    for a in assessments:
+        b = a["bid"]
+        b.recommendation = by_bid_id[b.id]
+        b.recommendation_reason = _build_reason(
+            a, assessments, approved_id, by_bid_id[b.id]
+        )
+
+    # Full per-bid detail (evidence, policy context) for the requested bid.
+    target = next(a for a in assessments if a["bid"].id == bid_id)
+    recommendation = by_bid_id[bid_id]
+    reason = bid.recommendation_reason
+
+    check_ids = [
+        row[0]
+        for row in db.query(VerificationCheck.id)
+        .filter(VerificationCheck.bid_id == bid_id)
+        .all()
+    ]
+    evidence = {
+        "requirement_ids": [i["requirement_id"] for i in target["non_pass"]],
+        "check_ids": check_ids,
+    }
+    evidence_refs = [{"type": "requirement", "id": rid} for rid in evidence["requirement_ids"]]
+    evidence_refs += [{"type": "verification_check", "id": cid} for cid in evidence["check_ids"]]
+
+    policy_context = _build_policy_context(db, target)
+
+    bid.recommendation_reason = reason
+    bid.recommendation_evidence = evidence_refs
+    # Persist citable policy context alongside the recommendation so Bid
+    # Detail shows the same citations when the bid is reopened. Stored as
+    # plain data — never influences scores, risk, or the officer decision.
+    bid.policy_context = policy_context
+
+    append_audit(
+        db,
+        user_id=user_id,
+        action="RECOMMENDATION_GENERATED",
+        entity_type="bid_submission",
+        entity_id=str(bid_id),
+        metadata={
+            "recommendation": recommendation,
+            "tender_id": bid.tender_id,
+            "bids_evaluated": len(assessments),
+            "non_pass_count": target["non_pass_count"],
+        },
+    )
+    db.commit()
+
+    return {
+        "recommendation": recommendation,
+        "reason": reason,
+        "evidence": evidence_refs,
+        "policy_context": policy_context,
+        "provider": PROVIDER,
+    }
+
+
+def _build_reason(
+    target: dict,
+    assessments: list[dict],
+    approved_id: int | None,
+    recommendation: str,
+) -> str:
+    """Evidence-backed reason for the requested bid's recommendation,
+    including its comparative position within the tender."""
+    items = target["items"]
+    signals = target["signals"]
+    bullets: list[str] = []
+
+    # Comparative position within the tender.
+    ranked = sorted(assessments, key=_rank_key)
+    position = next(
+        (i + 1 for i, a in enumerate(ranked) if a["bid"].id == target["bid"].id),
+        None,
+    )
+    tender_size = len(assessments)
+    if recommendation == "APPROVE":
+        bullets.append(
+            f"• Strongest eligible bid in this tender (rank {position} of "
+            f"{tender_size}): compliance score {target['score']:.1f}, risk "
+            f"level {target['risk_level']}."
+        )
+    elif recommendation == "REJECT":
+        if target["blacklisted"]:
+            bullets.append(
+                "• Disqualified: blacklist/debarment signal present — the bid "
+                "cannot proceed without officer review of the listing."
+            )
+        if target["fail_mandatory"]:
+            failed = [
+                i["requirement_name"]
+                for i in items
+                if i["status"] == "FAIL" and i["mandatory"]
+            ]
+            bullets.append(
+                "• Disqualified: mandatory requirement(s) failed: "
+                + "; ".join(failed)
+                + "."
+            )
+    else:  # REVIEW_REQUIRED
+        if target["missing_mandatory"]:
+            missing = [
+                i["requirement_name"]
+                for i in items
+                if i["status"] == "MISSING" and i["mandatory"]
+            ]
+            bullets.append(
+                "• Mandatory evidence missing (cannot approve until resolved): "
+                + "; ".join(missing)
+                + "."
+            )
+        if _risk_rank(target["risk_level"]) >= 2:
+            bullets.append(
+                "• Serious unresolved risk indicators (risk level "
+                f"{target['risk_level']}) require officer review despite a "
+                f"compliance score of {target['score']:.1f}."
+            )
+        if target["bid"].id != approved_id and not target["disqualified"]:
+            bullets.append(
+                f"• Eligible but not the strongest bid in this tender "
+                f"(rank {position} of {tender_size}); officer review required "
+                f"before any award decision."
+            )
+
+    # Per-finding evidence.
     for i in items:
         if i["status"] != "PASS":
             expl = i["explanation"]
@@ -219,28 +431,20 @@ def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
             for st in ("PASS", "FAIL", "MISSING", "EXPIRED", "MISMATCH", "REVIEW_REQUIRED"):
                 msg = msg.replace(f": {st} — ", ": ")
             bullets.append(f"• Risk signal {s.get('code')}: {msg}")
-    if recommendation == "PROCEED":
-        bullets.append(
-            f"• All {len(items)} requirements evaluated PASS with no blocking risk signals."
-        )
-    elif recommendation == "PROCEED_WITH_CONDITIONS":
-        bullets.append(
-            "• All requirements PASS; medium-severity risk signals require "
-            "officer attention before award."
-        )
-    elif recommendation == "NOT_RECOMMENDED" and blacklisted:
-        bullets.append(
-            "• Blacklist/debarment signal present — the bid cannot proceed "
-            "without officer review of the listing."
-        )
 
-    # RAG policy context: retrieve citable authoritative provisions for each
-    # non-PASS finding. The recommendation itself stays fully deterministic —
-    # retrieval only adds policy context and the official source.
-    # A hit is cited only when it clears the relevance gate AND comes from an
-    # authoritative document; otherwise no citation is produced for that
-    # finding ("No relevant authoritative policy guidance was retrieved").
-    policy_context = []
+    return "\n".join(bullets) + "\n\n" + FINAL_LINE
+
+
+def _build_policy_context(db, target: dict) -> list[dict]:
+    """RAG policy citations for the target bid's non-PASS findings.
+
+    The recommendation itself stays fully deterministic — retrieval only
+    adds policy context and the official source. A hit is cited only when
+    it clears the relevance gate AND comes from an authoritative document.
+    """
+    from app.services import rag_service
+
+    policy_context: list[dict] = []
     seen = set()
 
     def _retrieve(query: str, doc_titles: tuple[str, ...] | None) -> None:
@@ -263,6 +467,8 @@ def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
             seen.add(key)
             policy_context.append(_policy_citation(hit))
 
+    items = target["items"]
+    signals = target["signals"]
     flagged = [i for i in items if i["status"] in RETRIEVAL_STATUSES]
     for i in flagged:
         _retrieve(_retrieval_query(i), _retrieval_topic(i))
@@ -275,48 +481,4 @@ def generate_recommendation(db, bid_id: int, *, user_id=None) -> dict:
             "high",
         ):
             _retrieve(f"{s.get('code')} {s.get('message', '')}".strip(), debar_titles)
-
-    check_ids = [
-        row[0]
-        for row in db.query(VerificationCheck.id)
-        .filter(VerificationCheck.bid_id == bid_id)
-        .all()
-    ]
-    evidence = {
-        "requirement_ids": [i["requirement_id"] for i in non_pass],
-        "check_ids": check_ids,
-    }
-    # API-facing shape (contract §5: evidence is a list): flat reference list.
-    evidence_refs = [{"type": "requirement", "id": rid} for rid in evidence["requirement_ids"]]
-    evidence_refs += [{"type": "verification_check", "id": cid} for cid in evidence["check_ids"]]
-
-    reason = "\n".join(bullets) + "\n\n" + FINAL_LINE
-
-    bid = db.get(BidSubmission, bid_id)
-    if bid is None:
-        raise ValueError(f"BidSubmission {bid_id} not found")
-    bid.recommendation = recommendation
-    bid.recommendation_reason = reason
-    bid.recommendation_evidence = evidence_refs
-    # Persist citable policy context alongside the recommendation so Bid
-    # Detail shows the same citations when the bid is reopened. Stored as
-    # plain data — never influences scores, risk, or the officer decision.
-    bid.policy_context = policy_context
-
-    append_audit(
-        db,
-        user_id=user_id,
-        action="RECOMMENDATION_GENERATED",
-        entity_type="bid_submission",
-        entity_id=str(bid_id),
-        metadata={"recommendation": recommendation, "non_pass_count": len(non_pass)},
-    )
-    db.commit()
-
-    return {
-        "recommendation": recommendation,
-        "reason": reason,
-        "evidence": evidence_refs,
-        "policy_context": policy_context,
-        "provider": PROVIDER,
-    }
+    return policy_context

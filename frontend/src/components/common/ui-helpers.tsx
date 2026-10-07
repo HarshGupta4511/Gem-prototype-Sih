@@ -33,8 +33,8 @@ export function PageHeader({
       {back && <div className="mb-2">{back}</div>}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
-          {description && <p className="mt-1 max-w-3xl text-sm text-slate-500">{description}</p>}
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{title}</h1>
+          {description && <p className="mt-1 max-w-3xl text-sm text-slate-500 dark:text-slate-400">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
@@ -54,12 +54,12 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-      <div className="mb-3 rounded-full bg-slate-100 p-3 text-slate-400">
+    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-14 text-center">
+      <div className="mb-3 rounded-full bg-slate-100 dark:bg-slate-800 p-3 text-slate-400 dark:text-slate-500">
         {icon ?? <FileSearch className="h-6 w-6" />}
       </div>
-      <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-      {description && <p className="mt-1 max-w-md text-sm text-slate-500">{description}</p>}
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
+      {description && <p className="mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -77,7 +77,7 @@ export function LoadingBlock({ rows = 4, className }: { rows?: number; className
 
 export function LoadingOverlay({ label = 'Working…' }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 py-10 text-sm text-slate-500">
+    <div className="flex items-center justify-center gap-2 py-10 text-sm text-slate-500 dark:text-slate-400">
       <Loader2 className="h-5 w-5 animate-spin text-brand-700" />
       {label}
     </div>
@@ -116,8 +116,8 @@ export function ScoreRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-slate-900 tnum">{score === null || score === undefined ? '—' : Math.round(v)}</span>
-        {label && <span className="text-[10px] font-medium uppercase tracking-wide text-slate-500">{label}</span>}
+        <span className="text-xl font-bold text-slate-900 dark:text-slate-100 tnum">{score === null || score === undefined ? '—' : Math.round(v)}</span>
+        {label && <span className="text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>}
       </div>
     </div>
   );
@@ -127,8 +127,8 @@ export function ScoreRing({
 export function DetailRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
-      <dt className="shrink-0 text-sm text-slate-500">{label}</dt>
-      <dd className={cn('text-right text-sm font-medium text-slate-900', mono && 'font-mono text-[13px]')}>{value}</dd>
+      <dt className="shrink-0 text-sm text-slate-500 dark:text-slate-400">{label}</dt>
+      <dd className={cn('text-right text-sm font-medium text-slate-900 dark:text-slate-100', mono && 'font-mono text-[13px]')}>{value}</dd>
     </div>
   );
 }

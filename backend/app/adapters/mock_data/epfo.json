@@ -624,5 +624,135 @@
     "epfo_code": "MH/468030/300",
     "employer_name": "Kongu Pumps Fabricators Pvt. Ltd.",
     "status": "ACTIVE"
+  },
+  "MH/570399/722": {
+    "epfo_code": "MH/570399/722",
+    "employer_name": "Apex Flow Systems Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/500720/901": {
+    "epfo_code": "MH/500720/901",
+    "employer_name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/212741/514": {
+    "epfo_code": "MH/212741/514",
+    "employer_name": "Scenario Clean Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/470635/919": {
+    "epfo_code": "MH/470635/919",
+    "employer_name": "Scenario GST Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/302565/563": {
+    "epfo_code": "MH/302565/563",
+    "employer_name": "Scenario PAN Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/716439/637": {
+    "epfo_code": "MH/716439/637",
+    "employer_name": "Scenario ITR Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/373026/162": {
+    "epfo_code": "MH/373026/162",
+    "employer_name": "Scenario Turnover Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/802863/350": {
+    "epfo_code": "MH/802863/350",
+    "employer_name": "Scenario ISO Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/964199/782": {
+    "epfo_code": "MH/964199/782",
+    "employer_name": "Scenario EMD Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/473593/594": {
+    "epfo_code": "MH/473593/594",
+    "employer_name": "Scenario Debarred Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/793070/377": {
+    "epfo_code": "MH/793070/377",
+    "employer_name": "Scenario Missing Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/900101/001": {
+    "epfo_code": "MH/900101/001",
+    "employer_name": "Aarohan Industries",
+    "status": "ACTIVE"
+  },
+  "MH/900202/002": {
+    "epfo_code": "MH/900202/002",
+    "employer_name": "Meridian Systems",
+    "status": "ACTIVE"
+  },
+  "MH/900303/003": {
+    "epfo_code": "MH/900303/003",
+    "employer_name": "Kestrel Enterprises",
+    "status": "ACTIVE"
+  },
+  "MH/900404/004": {
+    "epfo_code": "MH/900404/004",
+    "employer_name": "Vardaan Technologies",
+    "status": "ACTIVE"
+  },
+  "MH/900505/005": {
+    "epfo_code": "MH/900505/005",
+    "employer_name": "Nimbus Heavy Fab Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/900506/006": {
+    "epfo_code": "MH/900506/006",
+    "employer_name": "Nimbus Fabrication Works",
+    "status": "ACTIVE"
+  },
+  "MH/900606/007": {
+    "epfo_code": "MH/900606/007",
+    "employer_name": "Brightline Tools Co.",
+    "status": "SUSPENDED"
+  },
+  "MH/900707/008": {
+    "epfo_code": "MH/900707/008",
+    "employer_name": "Crestline Valves Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/900909/009": {
+    "epfo_code": "MH/900909/009",
+    "employer_name": "Godavari Forge Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/901010/010": {
+    "epfo_code": "MH/901010/010",
+    "employer_name": "Kaveri Pumps Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/902020/011": {
+    "epfo_code": "MH/902020/011",
+    "employer_name": "Narmada Systems Pvt. Ltd.",
+    "status": "ACTIVE"
+  },
+  "MH/903030/012": {
+    "epfo_code": "MH/903030/012",
+    "employer_name": "Tapi Engineering Works",
+    "status": "ACTIVE"
+  },
+  "MH/904040/013": {
+    "epfo_code": "MH/904040/013",
+    "employer_name": "Sabarmati Industrial Co.",
+    "status": "ACTIVE"
+  },
+  "MH/905050/014": {
+    "epfo_code": "MH/905050/014",
+    "employer_name": "Mahanadi Equipments Pvt. Ltd.",
+    "status": "SUSPENDED"
+  },
+  "MH/906060/015": {
+    "epfo_code": "MH/906060/015",
+    "employer_name": "Brahmani Traders",
+    "status": "ACTIVE"
   }
 }

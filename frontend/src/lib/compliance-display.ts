@@ -19,7 +19,7 @@ function inrWords(n: number): string {
 /**
  * Raw evidence value → officer-readable finding.
  * Examples: "124000000" → "₹12.4 Crore", "58" (+local-content field) → "58% local content",
- * "ACTIVE" → "Active / Verified", null/None → "Not Available".
+ * "ACTIVE" → "Active (mock check)", null/None → "Not Available".
  */
 export function displayActualValue(
   raw: string | null | undefined,
@@ -31,7 +31,7 @@ export function displayActualValue(
     return 'Not Available';
   }
   const upper = v.toUpperCase();
-  if (upper === 'ACTIVE') return 'Active / Verified';
+  if (upper === 'ACTIVE') return 'Active (mock check)';
   if (upper === 'INACTIVE') return 'Inactive';
   if (upper === 'VERIFIED') return 'Verified';
   if (upper === 'MISSING') return 'Evidence Not Found';

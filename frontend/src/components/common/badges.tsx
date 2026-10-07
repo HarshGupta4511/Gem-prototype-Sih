@@ -35,9 +35,9 @@ export function StatusBadge({ status, className }: { status: RequirementStatus |
 export function RiskBadge({ level, className }: { level: RiskLevel | null | undefined; className?: string }) {
   if (!level) return <Badge variant="muted" className={className}>—</Badge>;
   const cls: Record<RiskLevel, string> = {
-    LOW: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-    MEDIUM: 'bg-amber-100 text-amber-900 border border-amber-200',
-    HIGH: 'bg-orange-100 text-orange-800 border border-orange-300',
+    LOW: 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+    MEDIUM: 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+    HIGH: 'bg-orange-100 dark:bg-orange-900/60 text-orange-800 dark:text-orange-300 border border-orange-300',
     CRITICAL: 'bg-red-800 text-white border border-red-900',
   };
   return (
@@ -93,10 +93,9 @@ export function BidStatusBadge({ status, className }: { status: BidStatus | null
 export function RecommendationBadge({ rec, className }: { rec: Recommendation | null | undefined; className?: string }) {
   if (!rec) return <Badge variant="muted" className={className}>Not generated</Badge>;
   const variant: Record<Recommendation, 'success' | 'warning' | 'destructive' | 'info'> = {
-    PROCEED: 'success',
-    PROCEED_WITH_CONDITIONS: 'info',
+    APPROVE: 'success',
     REVIEW_REQUIRED: 'warning',
-    NOT_RECOMMENDED: 'destructive',
+    REJECT: 'destructive',
   };
   return (
     <Badge variant={variant[rec]} className={className}>

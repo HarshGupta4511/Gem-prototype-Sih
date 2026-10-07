@@ -295,7 +295,8 @@ def seed_demo_evidence(
 
     try:
         return demo_seed_service.seed_demo_bidder_evidence(
-            db, bid_id, payload.profile_key, user_id=user.id
+            db, bid_id, payload.profile_key, user_id=user.id,
+            scenario_id=payload.scenario_id, seed=payload.seed,
         )
     except ValueError as exc:
         raise HTTPException(

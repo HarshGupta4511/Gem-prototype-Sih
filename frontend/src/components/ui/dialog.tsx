@@ -53,14 +53,14 @@ export function DialogContent({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl',
+          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl',
           wide ? 'max-w-3xl' : 'max-w-lg',
           className,
         )}
       >
         <button
           onClick={() => setOpen(false)}
-          className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className="absolute right-3 top-3 rounded-md p-1 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-400"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" />
@@ -75,14 +75,14 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
   return <div className={cn('flex flex-col gap-1.5 p-6 pb-4', className)} {...props} />;
 }
 export function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn('text-lg font-semibold text-slate-900', className)} {...props} />;
+  return <h2 className={cn('text-lg font-semibold text-slate-900 dark:text-slate-100', className)} {...props} />;
 }
 export function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-sm text-slate-500', className)} {...props} />;
+  return <p className={cn('text-sm text-slate-500 dark:text-slate-400', className)} {...props} />;
 }
 export function DialogBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('px-6 pb-4', className)} {...props} />;
 }
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex items-center justify-end gap-2 border-t border-slate-100 p-6 pt-4', className)} {...props} />;
+  return <div className={cn('flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 p-6 pt-4', className)} {...props} />;
 }

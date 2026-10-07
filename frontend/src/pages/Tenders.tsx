@@ -146,19 +146,19 @@ export default function Tenders() {
   return (
     <div className="space-y-5">
       {/* Header section */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-800 font-mono">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 font-mono">
                 Procurement Registry
               </span>
               <SystemLayerTag layer="RULE_ENGINE" size="sm" />
             </div>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 font-serif">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-serif">
               Tenders
             </h1>
-            <p className="mt-0.5 text-xs text-slate-600">
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
               Manage procurement tenders and evaluate participating bidders against statutory &amp; technical requirements.
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function Tenders() {
               size="sm"
               onClick={() => refetch()}
               disabled={isFetching}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800/70 text-xs"
             >
               <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
               Refresh
@@ -181,8 +181,8 @@ export default function Tenders() {
                 onClick={toggleManageMode}
                 className={`text-xs font-semibold ${
                   manageMode
-                    ? 'border-blue-800 bg-blue-800 text-white hover:bg-blue-900'
-                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-800 bg-blue-800 text-white hover:bg-blue-900 dark:border-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800/70'
                 }`}
               >
                 Manage
@@ -192,7 +192,7 @@ export default function Tenders() {
               <Button
                 size="sm"
                 onClick={() => navigate('/app/tenders/create')}
-                className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-semibold shadow-xs"
+                className="bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-600 text-white text-xs font-semibold shadow-xs"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 Create Tender
@@ -203,20 +203,20 @@ export default function Tenders() {
       </div>
 
       {/* Search and Filter Panel */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="relative flex-1 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tender reference, package title, or department…"
-              className="pl-9 text-xs border-slate-300 focus:border-blue-600"
+              className="pl-9 text-xs border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 focus:border-blue-600"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
               <Filter className="h-3.5 w-3.5" />
               <span>Status:</span>
             </div>
@@ -226,8 +226,8 @@ export default function Tenders() {
                 onClick={() => setStatusFilter(st)}
                 className={`rounded px-2.5 py-1 text-xs font-medium border transition-colors ${
                   statusFilter === st
-                    ? 'bg-blue-900 text-white border-blue-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    ? 'bg-blue-900 text-white border-blue-900 shadow-2xs dark:bg-blue-700 dark:border-blue-700'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-800'
                 }`}
               >
                 {st === 'ALL' ? 'All Tenders' : st}
@@ -238,8 +238,8 @@ export default function Tenders() {
 
         {/* Bulk actions bar (Manage mode, officer only) */}
         {isOfficer && manageMode && (
-          <div className="mt-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50/60 px-3 py-2">
-            <span className="text-xs font-medium text-slate-700">
+          <div className="mt-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50/60 px-3 py-2 dark:border-blue-900/60 dark:bg-blue-950/40">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
               {selectedIds.length === 0
                 ? 'Select tenders using the checkboxes.'
                 : `${selectedIds.length} tender${selectedIds.length > 1 ? 's' : ''} selected`}
@@ -249,7 +249,7 @@ export default function Tenders() {
                 size="sm"
                 variant="outline"
                 onClick={toggleManageMode}
-                className="border-slate-300 text-xs"
+                className="border-slate-300 text-xs dark:border-slate-700"
               >
                 Cancel
               </Button>
@@ -268,7 +268,7 @@ export default function Tenders() {
       </div>
 
       {/* Official Registry Table */}
-      <div className="rounded-lg border border-slate-200 bg-white shadow-xs overflow-hidden">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
         {isLoading ? (
           <div className="p-6">
             <LoadingBlock rows={6} />
@@ -308,33 +308,33 @@ export default function Tenders() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                   {isOfficer && manageMode && (
                     <TableHead className="py-3 px-4 w-10">
                       <input
                         type="checkbox"
                         checked={filtered.length > 0 && selectedIds.length === filtered.length}
                         onChange={toggleSelectAll}
-                        className="h-4 w-4 rounded border-slate-300 accent-blue-800"
+                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-blue-800"
                         aria-label="Select all tenders"
                       />
                     </TableHead>
                   )}
-                  <TableHead className="py-3 px-4 font-bold text-slate-700">Tender Reference</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700">Title &amp; Department</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700 text-right">Estimated Value</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700 text-center">Bidders</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700 text-center">Risk Alerts</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700">Closing Date</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700">Status</TableHead>
-                  <TableHead className="py-3 px-4 font-bold text-slate-700 text-right">Action</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200">Tender Reference</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200">Title &amp; Department</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200 text-right">Estimated Value</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200 text-center">Bidders</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200 text-center">Risk Alerts</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200">Closing Date</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200">Status</TableHead>
+                  <TableHead className="py-3 px-4 font-bold text-slate-700 dark:text-slate-200 text-right">Action</TableHead>
                 </tr>
               </TableHeader>
               <TableBody>
                 {filtered.map((t) => (
                   <TableRow
                     key={t.id}
-                    className="hover:bg-blue-50/40 transition-colors border-b border-slate-100 group"
+                    className="hover:bg-blue-50/40 transition-colors border-b border-slate-100 group dark:hover:bg-slate-800/60 dark:border-slate-800"
                   >
                     {isOfficer && manageMode && (
                       <TableCell className="py-3 px-4">
@@ -342,7 +342,7 @@ export default function Tenders() {
                           type="checkbox"
                           checked={selectedIds.includes(t.id)}
                           onChange={() => toggleSelect(t.id)}
-                          className="h-4 w-4 rounded border-slate-300 accent-blue-800"
+                          className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-blue-800"
                           aria-label={`Select tender ${t.tender_number}`}
                         />
                       </TableCell>
@@ -354,11 +354,11 @@ export default function Tenders() {
                         <div>
                           <span
                             onClick={() => navigate(`/app/tenders/${t.id}`)}
-                            className="font-mono text-xs font-bold text-blue-900 hover:text-blue-700 hover:underline cursor-pointer"
+                            className="font-mono text-xs font-bold text-blue-900 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 hover:underline cursor-pointer"
                           >
                             {t.tender_number}
                           </span>
-                          <span className="block text-[10px] text-slate-500 font-mono">
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                             {t.tender_type || 'OPEN'}
                           </span>
                         </div>
@@ -367,24 +367,24 @@ export default function Tenders() {
 
                     {/* Title & Department */}
                     <TableCell className="py-3 px-4 max-w-sm">
-                      <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-blue-950">
+                      <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-950 dark:group-hover:text-blue-200">
                         {t.title}
                       </p>
-                      <p className="truncate text-[10.5px] text-slate-500 flex items-center gap-1 mt-0.5">
-                        <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
+                      <p className="truncate text-[10.5px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Building2 className="h-3 w-3 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span>{t.department}</span>
                       </p>
                     </TableCell>
 
                     {/* Estimated Value */}
-                    <TableCell className="py-3 px-4 text-right font-mono text-xs font-semibold text-slate-800">
+                    <TableCell className="py-3 px-4 text-right font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
                       {formatCurrencyINR(t.estimated_value_inr)}
                     </TableCell>
 
                     {/* Bidders */}
                     <TableCell className="py-3 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 font-mono text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                        <Layers className="h-3 w-3 text-slate-500" />
+                      <span className="inline-flex items-center gap-1 font-mono text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                        <Layers className="h-3 w-3 text-slate-500 dark:text-slate-400" />
                         {t.bidder_count}
                       </span>
                     </TableCell>
@@ -392,22 +392,22 @@ export default function Tenders() {
                     {/* Risk Alerts */}
                     <TableCell className="py-3 px-4 text-center">
                       {t.high_risk_count > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded bg-rose-50 px-2 py-0.5 text-[10.5px] font-bold text-rose-700 border border-rose-200">
+                        <span className="inline-flex items-center gap-1 rounded bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 text-[10.5px] font-bold text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
                           <ShieldAlert className="h-3 w-3" />
                           {t.high_risk_count} High Risk
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
                           <ShieldCheck className="h-3 w-3" />
-                          No Risk
+                          No High-Risk Bidders
                         </span>
                       )}
                     </TableCell>
 
                     {/* Closing Date */}
-                    <TableCell className="py-3 px-4 whitespace-nowrap text-xs text-slate-600">
+                    <TableCell className="py-3 px-4 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3 w-3 text-slate-400" />
+                        <Calendar className="h-3 w-3 text-slate-400 dark:text-slate-500" />
                         <span className="font-mono text-[11px]">{formatDate(t.closing_date)}</span>
                       </div>
                     </TableCell>
@@ -417,10 +417,10 @@ export default function Tenders() {
                       <span
                         className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border ${
                           t.status === 'OPEN'
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900'
                             : t.status === 'DRAFT'
-                            ? 'bg-slate-100 text-slate-700 border-slate-300'
-                            : 'bg-slate-100 text-slate-500 border-slate-200'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                         }`}
                       >
                         {t.status}
@@ -433,9 +433,9 @@ export default function Tenders() {
                         size="sm"
                         variant="outline"
                         onClick={() => navigate(`/app/tenders/${t.id}`)}
-                        className="border-slate-300 text-blue-900 hover:bg-blue-50 text-xs font-medium py-1 px-2.5 h-7 shadow-2xs"
+                        className="border-slate-300 dark:border-slate-700 text-blue-900 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-800/70 text-xs font-medium py-1 px-2.5 h-7 shadow-2xs"
                       >
-                        <Eye className="mr-1 h-3 w-3 text-blue-700" />
+                        <Eye className="mr-1 h-3 w-3 text-blue-700 dark:text-blue-400" />
                         View
                       </Button>
                     </TableCell>
@@ -452,30 +452,30 @@ export default function Tenders() {
 
       {/* Bulk delete confirmation (Procurement Officer only) */}
       <Dialog open={bulkDeleteOpen} onOpenChange={(open) => { if (!open) setBulkDeleteOpen(false); }}>
-        <DialogContent className="max-w-md bg-white border border-slate-300">
+        <DialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-slate-900 font-serif">
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100 font-serif">
               Delete {selectedTenders.length} Tender{selectedTenders.length > 1 ? 's' : ''}?
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-600">
+            <DialogDescription className="text-xs text-slate-600 dark:text-slate-400">
               This permanently removes the following tenders, their requirements,
               all participating bidders, and every derived record (documents,
               verification checks, compliance results, risk assessments). The
               audit trail is preserved. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="max-h-40 overflow-y-auto rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-3 py-2">
             <ul className="space-y-1">
               {selectedTenders.map((t) => (
-                <li key={t.id} className="font-mono text-xs font-semibold text-slate-800">
+                <li key={t.id} className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
                   #{t.tender_number}
-                  <span className="ml-2 font-sans font-normal text-slate-500">{t.title}</span>
+                  <span className="ml-2 font-sans font-normal text-slate-500 dark:text-slate-400">{t.title}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
-            <Button variant="outline" size="sm" onClick={() => setBulkDeleteOpen(false)} className="border-slate-300">
+          <DialogFooter className="flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <Button variant="outline" size="sm" onClick={() => setBulkDeleteOpen(false)} className="border-slate-300 dark:border-slate-700">
               Cancel
             </Button>
             <Button

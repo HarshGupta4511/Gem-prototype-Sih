@@ -59,6 +59,7 @@ def _fail(db, doc, *, error: str, user_id, pages: int, ocr_used: bool) -> dict:
 
     doc.processing_status = "FAILED"
     doc.error = error
+    doc.extraction_warning = None
     doc.ocr_used = ocr_used
     db.commit()
     append_audit(
@@ -89,76 +90,82 @@ def _fail(db, doc, *, error: str, user_id, pages: int, ocr_used: bool) -> dict:
     }
 
 
-def process_document(db, document_id: int, *, user_id: int | None = None) -> dict:
-    from app.models.models import Document, DocumentType, ExtractedField
+def _extract_from_bytes(content: bytes, filename: str) -> dict:
+    """Run pipeline steps 1–5 on raw file bytes without any DB writes.
+
+    Returns {"ok", "error", "page_count", "ocr_used", "document_type",
+    "classification_confidence", "type_detected", "fields", "llm_error",
+    "provider"}. ``fields`` are deduped candidate dicts with keys
+    field_name/field_value/normalized_value/confidence/method/page_number.
+    Shared by process_document (persisted flow) and the bidder-registration
+    preview (no document row is created).
+    """
+    import tempfile
+
+    from app.models.models import DocumentType
     from app.services import (
         classification_service,
         extraction_service,
-        llm_service,
         regex_service,
     )
-    from app.services.audit_service import append_audit
     from app.services.llm_service import LLMError, get_llm_provider
 
-    doc = db.get(Document, document_id)
-    if doc is None:
-        raise ValueError(f"Document {document_id} not found")
+    # ---- step 1: text via PyMuPDF ---------------------------------------
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
+        tmp.write(content)
+        tmp.flush()
+        try:
+            full_text, page_count = extraction_service.extract_text_pymupdf(tmp.name)
+        except Exception as exc:
+            # Corrupt/unreadable PDF — report cleanly instead of crashing.
+            log.warning("Registration preview: could not read PDF: %s", exc)
+            return {
+                "ok": False,
+                "error": "Could not read this PDF — the file may be corrupt.",
+                "page_count": 0,
+                "ocr_used": False,
+            }
 
-    # ---- step 1: read, hash, open with PyMuPDF ---------------------------
-    doc.processing_status = "PROCESSING"
-    doc.error = None
-    db.commit()
-
-    path = Path(doc.file_path)
-    content = path.read_bytes()
-    doc.file_hash = hashlib.sha256(content).hexdigest()
-    doc.file_size = len(content)
-
-    full_text, page_count = extraction_service.extract_text_pymupdf(str(path))
-    doc.page_count = page_count
-
-    # ---- step 2: OCR fallback for scanned documents ----------------------
-    ocr_used = False
-    page_texts = _split_pages(full_text)
-    total_chars = sum(len(t.strip()) for _, t in page_texts)
-    if total_chars < MIN_TEXT_CHARS:
-        if extraction_service.ocr_available():
-            ocr_used = True
-            ocr_text, ocr_error = extraction_service.run_ocr(str(path))
-            if ocr_error or not ocr_text or len(ocr_text.strip()) < MIN_TEXT_CHARS:
-                return _fail(
-                    db, doc,
-                    error=ocr_error or "OCR produced no usable text",
-                    user_id=user_id, pages=page_count, ocr_used=True,
-                )
-            full_text = ocr_text
-            page_texts = _split_pages(full_text)
-            doc.page_count = len(page_texts)
-            page_count = len(page_texts)
-            doc.ocr_used = True
-        else:
-            return _fail(
-                db, doc,
-                error=OCR_UNAVAILABLE_ERROR,
-                user_id=user_id, pages=page_count, ocr_used=False,
-            )
+        # ---- step 2: OCR fallback for scanned documents ------------------
+        ocr_used = False
+        page_texts = _split_pages(full_text)
+        total_chars = sum(len(t.strip()) for _, t in page_texts)
+        if total_chars < MIN_TEXT_CHARS:
+            if extraction_service.ocr_available():
+                ocr_used = True
+                ocr_text, ocr_error = extraction_service.run_ocr(tmp.name)
+                if ocr_error or not ocr_text or len(ocr_text.strip()) < MIN_TEXT_CHARS:
+                    return {
+                        "ok": False,
+                        "error": ocr_error or "OCR produced no usable text",
+                        "page_count": page_count,
+                        "ocr_used": True,
+                    }
+                full_text = ocr_text
+                page_texts = _split_pages(full_text)
+                page_count = len(page_texts)
+            else:
+                return {
+                    "ok": False,
+                    "error": OCR_UNAVAILABLE_ERROR,
+                    "page_count": page_count,
+                    "ocr_used": False,
+                }
 
     # ---- step 3: classification (auto-detect) -----------------------------
-    # Content-driven: filename is supporting context only. Below the
-    # confidence threshold the system must NOT invent a type — the document
-    # is stored as UNCLASSIFIED and flagged REVIEW_REQUIRED so the officer
-    # classifies it manually (exception case only).
     doc_type, class_conf = classification_service.classify_document(
-        doc.filename or "", full_text
+        filename or "", full_text
     )
     type_detected = class_conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
     stored_type = doc_type if type_detected else DocumentType.UNCLASSIFIED.value
-    doc.document_type = stored_type
 
     # ---- step 4: regex extraction per page --------------------------------
+    # Document-aware: the classified type scopes ambiguous values (a bare
+    # date on an EMD receipt is not the same field as a bare date on a
+    # GST certificate).
     candidates: list[dict] = []
     for page_number, page_text in page_texts:
-        candidates.extend(regex_service.extract_all(page_text, page_number))
+        candidates.extend(regex_service.extract_all(page_text, page_number, stored_type))
 
     # ---- step 5: LLM extraction -------------------------------------------
     provider = get_llm_provider()
@@ -167,7 +174,7 @@ def process_document(db, document_id: int, *, user_id: int | None = None) -> dic
         llm_data = provider.extract_fields(
             doc_type if type_detected else "generic",
             full_text,
-            doc.filename or "",
+            filename or "",
         )
         overall_conf = float(llm_data.get("confidence") or 0.9)
         for key, value in llm_data.items():
@@ -186,10 +193,113 @@ def process_document(db, document_id: int, *, user_id: int | None = None) -> dic
             )
     except LLMError as exc:
         llm_error = str(exc)
-        log.warning("LLM extraction failed for document %s: %s", doc.id, exc)
+        log.warning("Registration preview: LLM extraction failed: %s", exc)
+
+    return {
+        "ok": True,
+        "error": None,
+        "page_count": page_count,
+        "ocr_used": ocr_used,
+        "document_type": stored_type,
+        "classification_confidence": class_conf,
+        "type_detected": type_detected,
+        "fields": _dedupe(candidates),
+        "llm_error": llm_error,
+        "provider": provider.name,
+    }
+
+
+def preview_registration_document(content: bytes, filename: str) -> dict:
+    """Extract bidder-registration details from an uploaded PDF without
+    creating any Document row. Uses the exact same pipeline steps as
+    process_document (text → OCR fallback → classification → regex + LLM).
+    """
+    res = _extract_from_bytes(content, filename)
+    if not res["ok"]:
+        return {
+            "status": "FAILED",
+            "error": res["error"],
+            "filename": filename,
+            "document_type": None,
+            "classification_confidence": None,
+            "pages": res["page_count"],
+            "ocr_used": res["ocr_used"],
+            "extracted_fields": [],
+        }
+    out: dict = {
+        "status": "PROCESSED",
+        "filename": filename,
+        "document_type": res["document_type"],
+        "classification_confidence": res["classification_confidence"],
+        "type_detected": res["type_detected"],
+        "pages": res["page_count"],
+        "ocr_used": res["ocr_used"],
+        "provider": res["provider"],
+        "extracted_fields": [
+            {
+                "field_name": f["field_name"],
+                "field_value": f["field_value"],
+                "normalized_value": f["normalized_value"],
+                "confidence": f["confidence"],
+                "extraction_method": f["method"],
+                "page_number": f["page_number"],
+            }
+            for f in sorted(res["fields"], key=lambda x: x["field_name"])
+        ],
+    }
+    if res["llm_error"]:
+        out["extraction_warning"] = (
+            f"AI field extraction was unavailable ({res['llm_error']}). Only "
+            "rule-based fields were extracted."
+        )
+    return out
+
+
+def process_document(db, document_id: int, *, user_id: int | None = None) -> dict:
+    from app.models.models import Document, ExtractedField
+    from app.services.audit_service import append_audit
+
+    doc = db.get(Document, document_id)
+    if doc is None:
+        raise ValueError(f"Document {document_id} not found")
+
+    doc.processing_status = "PROCESSING"
+    doc.error = None
+    db.commit()
+
+    path = Path(doc.file_path)
+    content = path.read_bytes()
+    doc.file_hash = hashlib.sha256(content).hexdigest()
+    doc.file_size = len(content)
+
+    # Steps 1–5 (text → OCR fallback → classification → regex + LLM) run
+    # through the shared extractor; step 6 below persists the results.
+    res = _extract_from_bytes(content, doc.filename or "")
+    if not res["ok"]:
+        return _fail(
+            db, doc,
+            error=res["error"],
+            user_id=user_id, pages=res["page_count"], ocr_used=res["ocr_used"],
+        )
+
+    page_count = res["page_count"]
+    ocr_used = res["ocr_used"]
+    doc.page_count = page_count
+    doc.ocr_used = ocr_used
+    stored_type = res["document_type"]
+    class_conf = res["classification_confidence"]
+    type_detected = res["type_detected"]
+    # Content-driven: filename is supporting context only. Below the
+    # confidence threshold the system must NOT invent a type — the document
+    # is stored as UNCLASSIFIED and flagged REVIEW_REQUIRED so the officer
+    # classifies it manually (exception case only).
+    doc.document_type = stored_type
+    fields = res["fields"]
+    llm_error = res["llm_error"]
+    provider_name = res["provider"]
 
     # ---- step 6: dedupe, persist, finalize --------------------------------
-    fields = _dedupe(candidates)
+    # (fields are already deduped by _extract_from_bytes)
     # Re-processing replaces the previous extraction — delete old rows first
     # so repeated runs never stack duplicate fields.
     db.query(ExtractedField).filter(ExtractedField.document_id == doc.id).delete()
@@ -215,6 +325,18 @@ def process_document(db, document_id: int, *, user_id: int | None = None) -> dic
         "REVIEW_REQUIRED" if not type_detected else "PROCESSED"
     )
     doc.error = None
+    # Honest degradation signal: if the LLM provider failed, the document is
+    # still processed (classification + regex fields are real), but the
+    # officer must see WHY some fields may be missing instead of a silent
+    # "0 structured fields extracted". Cleared on the next clean run.
+    if llm_error:
+        doc.extraction_warning = (
+            f"AI field extraction was unavailable ({llm_error}). Only "
+            "rule-based fields were extracted; re-process the document once "
+            "the AI provider is reachable."
+        )
+    else:
+        doc.extraction_warning = None
     db.commit()
 
     final_status = doc.processing_status
@@ -228,7 +350,7 @@ def process_document(db, document_id: int, *, user_id: int | None = None) -> dic
         "classification": stored_type,
         "classification_confidence": class_conf,
         "type_detected": type_detected,
-        "provider": provider.name,
+        "provider": provider_name,
     }
     if llm_error:
         metadata["llm_error"] = llm_error

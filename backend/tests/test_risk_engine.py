@@ -16,22 +16,23 @@ def _ctx(**kw):
     return base
 
 
-def test_blacklist_critical_despite_high_score():
-    # Seed scenario D: debarred -> CRITICAL regardless of compliance score.
+def test_blacklist_high_despite_high_score():
+    # Seed scenario D: debarred -> HIGH regardless of compliance score.
+    # Serious risk is never suppressed by a high score.
     ctx = _ctx(verification={"BLACKLIST": {
         "data": {"blacklisted": False, "debarred": True,
                  "authority": "CPCL", "reason": "fraud", "period": "2024-2027"}}})
     out = risk_engine.assess(ctx, [], None)
-    assert out["risk_level"] == "CRITICAL"
+    assert out["risk_level"] == "HIGH"
     assert any(s["code"] == "DEBARRED" and s["severity"] == "critical"
                for s in out["signals"])
 
 
-def test_blacklisted_also_critical():
+def test_blacklisted_also_high():
     ctx = _ctx(verification={"BLACKLIST": {
         "data": {"blacklisted": True, "debarred": False,
                  "authority": "GeM", "reason": "x", "period": "y"}}})
-    assert risk_engine.assess(ctx, [], None)["risk_level"] == "CRITICAL"
+    assert risk_engine.assess(ctx, [], None)["risk_level"] == "HIGH"
 
 
 def test_mismatch_weights_reach_high():
@@ -46,11 +47,11 @@ def test_mismatch_weights_reach_high():
 
 
 def test_level_thresholds():
-    # 15 -> LOW
+    # A medium-severity signal (unverified source) is moderate risk -> MEDIUM.
     out = risk_engine.assess(
         _ctx(), [_res("ESIC Registration", "REVIEW_REQUIRED",
                       rule_type="REGISTRATION_STATUS", vsrc="ESIC")], None)
-    assert out["risk_level"] == "LOW"
+    assert out["risk_level"] == "MEDIUM"
     # 15 + 10 = 25 -> MEDIUM
     out = risk_engine.assess(
         _ctx(), [_res("ESIC Registration", "REVIEW_REQUIRED",
@@ -85,3 +86,56 @@ def test_unverified_source_medium_signal():
         _ctx(), [_res("ESIC Registration", "REVIEW_REQUIRED",
                       rule_type="REGISTRATION_STATUS", vsrc="ESIC")], None)
     assert any(s["code"] == "UNVERIFIED_SOURCE" for s in out["signals"])
+
+
+def test_integrity_review_required_forces_high():
+    # A review-grade integrity pattern is a serious risk indicator even
+    # with a perfect compliance record.
+    sigs = [{"signal_type": "RECURRING_BIDDER_COHORT",
+             "severity": "REVIEW_REQUIRED", "title": "cohort"}]
+    out = risk_engine.assess(
+        _ctx(), [_res("GST Registration", "PASS")], None,
+        integrity_signals=sigs)
+    assert out["risk_level"] == "HIGH"
+    assert any(s["code"] == "INTEGRITY_REVIEW_REQUIRED" for s in out["signals"])
+
+
+def test_integrity_elevated_is_medium():
+    sigs = [{"signal_type": "REPEATED_PARTICIPATION",
+             "severity": "ELEVATED", "title": "repeat"}]
+    out = risk_engine.assess(
+        _ctx(), [_res("GST Registration", "PASS")], None,
+        integrity_signals=sigs)
+    assert out["risk_level"] == "MEDIUM"
+
+
+def test_mandatory_fail_forces_high():
+    out = risk_engine.assess(
+        _ctx(), [_res("GST Registration", "FAIL", rule_type="MINIMUM")], None)
+    assert out["risk_level"] == "HIGH"
+
+
+def test_ambiguous_compliance_is_at_least_medium():
+    # A MISMATCH with no dedicated identity signal is still ambiguous.
+    out = risk_engine.assess(
+        _ctx(), [_res("Turnover", "MISMATCH", rule_type="MINIMUM")], None)
+    assert out["risk_level"] == "MEDIUM"
+
+
+def test_only_low_medium_high_levels():
+    # The engine never emits CRITICAL or any other level, across a range
+    # of inputs.
+    cases = [
+        (_ctx(), [], None, None),
+        (_ctx(verification={"BLACKLIST": {
+            "data": {"blacklisted": True, "authority": "GeM",
+                     "reason": "x", "period": "y"}}}), [], None, None),
+        (_ctx(), [_res("GST Registration", "MISMATCH", vsrc="GSTN",
+                       rule_type="REGISTRATION_STATUS")], None, None),
+        (_ctx(), [_res("GST Registration", "PASS")], None,
+         [{"signal_type": "X", "severity": "REVIEW_REQUIRED", "title": "t"}]),
+    ]
+    for ctx, results, ver, sigs in cases:
+        assert risk_engine.assess(ctx, results, ver,
+                                  integrity_signals=sigs)["risk_level"] in (
+            "LOW", "MEDIUM", "HIGH")

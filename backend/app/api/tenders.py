@@ -104,7 +104,12 @@ def create_tender(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Tender number '{payload.tender_number}' already exists",
         )
-    if payload.requirements:
+    if payload.requirements is not None:
+        if len(payload.requirements) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="A tender must have at least one requirement.",
+            )
         _validate_wizard_weights(payload.requirements)
     issue_date = date.today()  # server-side source of truth; never trust the client
     if payload.closing_date is not None and payload.closing_date <= issue_date:

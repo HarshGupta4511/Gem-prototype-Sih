@@ -213,7 +213,7 @@ def test_debarment_fail_citation(db):
     assert {c["title"] for c in cites} <= {GFR_TITLE, DEBAR_TITLE}
     assert any("Rule 151" in c["section"] for c in cites), [c["section"] for c in cites]
     assert all("Department of Expenditure" in c["authority"] for c in cites)
-    assert result["recommendation"] == "NOT_RECOMMENDED"
+    assert result["recommendation"] == "REJECT"
     _assert_citable(cites)
     _assert_engines_untouched(db, bid_id, snap)
 
@@ -291,7 +291,7 @@ def test_policy_context_persisted_and_returned_on_reopen(db):
     _assert_citable(out.policy_context)
 
 
-# All-PASS bid: deterministic PROCEED, no citations, no provider claim ------
+# All-PASS bid: single eligible bidder -> APPROVE, no citations ----------
 def test_all_pass_no_citations(db):
     bid_id, result, snap = _recommend(db, [{
         "name": "GST Registration Status",
@@ -301,6 +301,6 @@ def test_all_pass_no_citations(db):
         "explanation": "PASS — GSTIN active on portal.",
         "source": "GSTN",
     }])
-    assert result["recommendation"] == "PROCEED"
+    assert result["recommendation"] == "APPROVE"
     assert result["policy_context"] == []
     _assert_engines_untouched(db, bid_id, snap)

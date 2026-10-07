@@ -116,7 +116,7 @@ def analyze_tender_text(text: str) -> dict:
                 "Bidder should hold an active Udyam/MSME registration.",
                 True,
                 "REGISTRATION_STATUS",
-                {"source": "UDYAM", "identifier_field": "udyam", "require_status": "ACTIVE"},
+                {"source": "UDYAM", "identifier_field": "udyam_number", "require_status": "ACTIVE"},
                 "Active Udyam registration",
                 "ACTIVE",
                 "UDYAM",
@@ -282,8 +282,11 @@ def analyze_tender_text(text: str) -> dict:
                 True,
                 "CUSTOM_RULE",
                 {
-                    "expression": "ctx.get('verification', {}).get('BLACKLIST', {})"
-                    ".get('data', {}).get('blacklisted', False) == False"
+                    # Never fabricate a clean chit: when no BLACKLIST check
+                    # ran for the bid, the rule asks for officer review.
+                    "expression": "('REVIEW_REQUIRED' if ctx.get('verification', {}).get('BLACKLIST') is None "
+                    "else ('FAIL' if ctx['verification']['BLACKLIST'].get('data', {})"
+                    ".get('blacklisted', False) else 'PASS'))"
                 },
                 "Not blacklisted/debarred",
                 "blacklisted == False",
@@ -407,26 +410,32 @@ def infer_requirement_metadata(name: str, threshold: str | None = None) -> dict:
     if re.search(r"\bpan\b", n):
         return _registration("PAN_IT", "pan")
     if re.search(r"udyam|msme", n):
-        return _registration("UDYAM", "udyam", "REGISTRATION")
+        return _registration("UDYAM", "udyam_number", "REGISTRATION")
     if re.search(r"epfo|provident fund", n):
         return _registration("EPFO", "epfo_code")
     if re.search(r"esic|state insurance", n):
         return _registration("ESIC", "esic_code")
-    if re.search(r"\bitr\b|income[-\s]?tax", n):
+    if re.search(r"\bitr\b|income[-\s]?tax\s+return", n):
         return {
-            "rule_type": "EXISTENCE",
-            "verification_source": "PAN_IT",
+            "rule_type": "MATCH",
+            "verification_source": None,
             "category": "STATUTORY",
-            "rule_config": {"value_source": "verification.PAN_IT.itr_filed_upto"},
+            "rule_config": {
+                "value_source": "extracted.itr_financial_year",
+                "pattern": "2023-24",
+            },
         }
     if re.search(r"blacklist|debar", n):
+        # Never fabricate a clean chit: when no BLACKLIST check ran for the
+        # bid, the rule must ask for officer review, not PASS.
         return {
             "rule_type": "CUSTOM_RULE",
             "verification_source": "BLACKLIST",
             "category": "INTEGRITY",
             "rule_config": {
-                "expression": "ctx.get('verification', {}).get('BLACKLIST', {})"
-                              ".get('data', {}).get('blacklisted', False) == False"
+                "expression": "('REVIEW_REQUIRED' if ctx.get('verification', {}).get('BLACKLIST') is None "
+                              "else ('FAIL' if ctx['verification']['BLACKLIST'].get('data', {})"
+                              ".get('blacklisted', False) else 'PASS'))"
             },
         }
     if re.search(r"\boem\b", n):
@@ -439,6 +448,23 @@ def infer_requirement_metadata(name: str, threshold: str | None = None) -> dict:
                 "expected": True,
             },
         }
+    if re.search(r"balance sheet", n):
+        return _minimum("extracted.turnover_inr", "FINANCIAL", threshold)
+    if re.search(r"work experience|experience certificate", n):
+        return {
+            "rule_type": "DOCUMENT_REQUIRED",
+            "verification_source": None,
+            "category": "EXPERIENCE",
+            "rule_config": {"document_types": ["EXPERIENCE_CERTIFICATE"]},
+        }
+    if re.search(r"iso\s*9001|\biso\b", n):
+        return {
+            "rule_type": "DATE_VALIDITY",
+            "verification_source": None,
+            "category": "TECHNICAL",
+            "rule_config": {"value_source": "extracted.iso_valid_until",
+                            "document_type": "ISO_9001_CERTIFICATE"},
+        }
     if re.search(r"turnover", n):
         return _minimum("extracted.turnover_inr", "FINANCIAL", threshold)
     if re.search(r"past performance", n):
@@ -449,6 +475,10 @@ def infer_requirement_metadata(name: str, threshold: str | None = None) -> dict:
         return _minimum("extracted.local_content_pct", "LOCAL_CONTENT", threshold)
     if re.search(r"\bemd\b|earnest", n):
         return _minimum("extracted.emd_amount_inr", "FINANCIAL", threshold)
+    if re.search(r"\bcin\b|mca21|incorporation|certificate of incorporation", n):
+        return _registration("MCA21", "cin")
+    if re.search(r"\bnsic\b", n):
+        return _registration("NSIC", "nsic_number", "REGISTRATION")
     if re.search(r"startup", n):
         return {
             "rule_type": "DOCUMENT_REQUIRED",

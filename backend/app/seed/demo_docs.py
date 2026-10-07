@@ -25,7 +25,7 @@ from reportlab.platypus import (
     Spacer,
 )
 
-FOOTER_TEXT = "DEMO DOCUMENT \u2014 generated for prototype demonstration"
+FOOTER_TEXT = "SAMPLE \u2014 FOR DEMONSTRATION ONLY \u2014 fictional data, not a government-issued certificate"
 
 # document_type -> centered bold title (also carries classification keywords)
 _TITLES = {
@@ -43,6 +43,11 @@ _TITLES = {
     "EMD_PAYMENT": "Earnest Money Deposit (EMD) \u2014 Payment Proof",
     "PAST_PERFORMANCE_CERTIFICATE": "Past Performance Certificate",
     "NON_DEBARMENT_DECLARATION": "Non-Debarment Declaration",
+    "BALANCE_SHEET": "Balance Sheet Summary \u2014 Financial Year",
+    "ISO_9001_CERTIFICATE": "ISO 9001:2015 \u2014 Quality Management System Certificate",
+    "MCA21_CERTIFICATE": "MCA21 \u2014 Certificate of Incorporation",
+    "ITR_DOCUMENT": "Income Tax Return \u2014 Financial Year",
+    "EMD_RECEIPT": "EMD Receipt \u2014 Deposit Confirmation",
 }
 
 
@@ -252,6 +257,88 @@ def _paragraphs(document_type: str, data: dict) -> tuple[str, list[tuple[str, st
                 "authority would render this declaration false."
             ],
         )
+    if document_type == "BALANCE_SHEET":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("Balance Sheet Year", d.get("financial_year", "")),
+                ("Turnover", d.get("turnover", "")),
+                ("Auditor Name", d.get("auditor_name", "")),
+            ],
+            [
+                "This balance sheet summary for the financial year stated above "
+                "has been audited by the statutory auditor named above. The "
+                "statutory auditor certifies that the turnover and financial "
+                "position are as per the audited books of account."
+            ],
+        )
+    if document_type == "ISO_9001_CERTIFICATE":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("ISO Certificate Number", d.get("iso_certificate_number", "")),
+                ("ISO Valid From", d.get("iso_valid_from", "")),
+                ("ISO Valid Until", d.get("iso_valid_until", "")),
+                ("Certification Scope", d.get("iso_scope", "")),
+            ],
+            [
+                "This ISO 9001 certificate is issued to the organization named "
+                "above. The quality management system has been assessed and "
+                "found to conform to ISO 9001:2015 requirements for the scope "
+                "stated in the annexure to this certificate."
+            ],
+        )
+    if document_type == "MCA21_CERTIFICATE":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("CIN", d.get("cin", "")),
+                ("Incorporation Date", d.get("incorporation_date", "")),
+                ("Company Status", d.get("company_status", "")),
+            ],
+            [
+                "This certificate of incorporation is issued through the MCA21 "
+                "portal of the Ministry of Corporate Affairs. The Corporate "
+                "Identity Number (CIN) shown above is recorded as active in "
+                "the MCA21 registry."
+            ],
+        )
+    if document_type == "ITR_DOCUMENT":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("PAN", d.get("pan", "")),
+                ("Financial Year", d.get("itr_financial_year", "")),
+                ("Assessment Year", d.get("assessment_year", "")),
+                ("Total Income", d.get("total_income", "")),
+            ],
+            [
+                "This income tax return was filed for the financial year stated "
+                "above, corresponding to the assessment year shown. The total "
+                "income declared is as given above."
+            ],
+        )
+    if document_type == "EMD_RECEIPT":
+        return (
+            _TITLES[document_type],
+            [
+                ("Legal Name", name),
+                ("EMD Amount", d.get("emd_amount", "")),
+                ("Payment Reference", d.get("emd_reference", "")),
+                ("Payment Date", d.get("emd_date", "")),
+                ("Beneficiary", d.get("emd_beneficiary", "")),
+            ],
+            [
+                "This receipt confirms the deposit of the amount shown above "
+                "towards the bid security requirement. This deposit "
+                "confirmation is issued in favour of the beneficiary named "
+                "above and the amount is held as per the bid document."
+            ],
+        )
     raise ValueError(f"Unsupported document_type: {document_type}")
 
 
@@ -403,4 +490,56 @@ def generate_dossier_pdf(legal_name: str, sections: list[tuple[str, dict]],
     story.append(HRFlowable(width="100%", thickness=0.5))
     story.append(Paragraph(FOOTER_TEXT, footer_style))
     doc.build(story)
+    return buf.getvalue()
+
+
+# ---------------------------------------------------------------- demo logos
+def generate_demo_logo(legal_name: str) -> bytes:
+    """Generate a small fictional demo logo: company initials on a neutral
+    background, returned as PNG bytes.
+
+    This is clearly fictional demo art for the bidder's display avatar. It
+    is display-only — no verification, compliance, risk or recommendation
+    code path ever reads it. Deterministic per legal name (fixed-seed
+    palette choice) so replays reproduce the same image.
+    """
+    import hashlib
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    words = [w for w in (legal_name or "").split() if w and w[0].isalpha()]
+    initials = "".join(w[0] for w in words[:2]).upper() or "CO"
+    # Neutral slate palettes; deterministic per legal name.
+    palettes = [
+        ("#334155", "#f1f5f9"),  # slate
+        ("#1e3a5f", "#e8eef5"),  # navy
+        ("#3f3f46", "#f4f4f5"),  # zinc
+        ("#44403c", "#f5f5f4"),  # stone
+        ("#4a3728", "#faf6f0"),  # warm brown
+    ]
+    digest = hashlib.sha256(legal_name.encode("utf-8")).digest()
+    bg, fg = palettes[digest[0] % len(palettes)]
+
+    size = 256
+    img = Image.new("RGB", (size, size), bg)
+    draw = ImageDraw.Draw(img)
+    # Subtle inner ring for a badge feel.
+    draw.ellipse([14, 14, size - 14, size - 14], outline=fg, width=6)
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 96)
+    except OSError:
+        try:
+            font = ImageFont.load_default(size=96)
+        except TypeError:  # very old Pillow without size support
+            font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), initials, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text(
+        ((size - tw) / 2 - bbox[0], (size - th) / 2 - bbox[1]),
+        initials,
+        font=font,
+        fill=fg,
+    )
+    buf = BytesIO()
+    img.save(buf, format="PNG")
     return buf.getvalue()

@@ -25,7 +25,7 @@ const METHOD_META: Record<
   rule: {
     label: 'Rule Engine',
     icon: Cog,
-    classes: 'bg-slate-100 text-slate-700 border-slate-300',
+    classes: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700',
   },
   verified: {
     label: 'System Verified',
@@ -84,19 +84,19 @@ export function MethodExplainer({
 }) {
   const [open, setOpen] = React.useState(defaultOpen);
   return (
-    <div className={cn('rounded-lg border border-slate-200 bg-slate-50/60', className)}>
+    <div className={cn('rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950', className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-slate-600 hover:text-slate-900"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
         aria-expanded={open}
       >
-        <Info className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+        <Info className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
         <span className="flex-1">{title}</span>
         <ProvenanceBadge kind={kind} />
-        <ChevronDown className={cn('h-3.5 w-3.5 text-slate-400 transition-transform', open && 'rotate-180')} />
+        <ChevronDown className={cn('h-3.5 w-3.5 text-slate-400 dark:text-slate-500 transition-transform', open && 'rotate-180')} />
       </button>
-      {open && <div className="border-t border-slate-200 px-3 py-2.5 text-xs leading-relaxed text-slate-600">{children}</div>}
+      {open && <div className="border-t border-slate-200 dark:border-slate-800 px-3 py-2.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{children}</div>}
     </div>
   );
 }

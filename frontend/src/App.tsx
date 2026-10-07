@@ -2,6 +2,7 @@ import * as React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/ui/toaster';
 import { AppLayout, ProtectedRoute } from './components/layout/AppLayout';
 import Login from './pages/Login';
@@ -46,6 +47,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
+        <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
             <React.Suspense fallback={<PageFallback />}>
@@ -81,6 +83,7 @@ export default function App() {
             </React.Suspense>
           </BrowserRouter>
         </AuthProvider>
+        </ThemeProvider>
       </ToastProvider>
     </QueryClientProvider>
   );

@@ -137,6 +137,78 @@ def test_classify_dossier_marker():
     assert conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
 
 
+def test_classify_emd_payment():
+    text = (
+        "Earnest Money Deposit (EMD) — Payment Proof. "
+        "EMD Amount: Rs. 5,00,000. Payment Reference: NEFT/2026/001234. "
+        "This evidences payment of the Earnest Money Deposit for the bid."
+    )
+    doc_type, conf = classification_service.classify_document("emd_receipt.pdf", text)
+    assert doc_type == "EMD_PAYMENT"
+    assert conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
+
+
+def test_classify_past_performance_certificate():
+    text = (
+        "Past Performance Certificate. "
+        "Past Performance: 87% of bid quantity. Client: CPCL. "
+        "This certificate confirms the supply performance of the entity "
+        "against earlier government orders."
+    )
+    doc_type, conf = classification_service.classify_document("performance.pdf", text)
+    assert doc_type == "PAST_PERFORMANCE_CERTIFICATE"
+    assert conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
+
+
+def test_classify_non_debarment_declaration():
+    text = (
+        "Non-Debarment Declaration. "
+        "Debarment Declaration: Not debarred or blacklisted by any "
+        "government authority. The bidder declares the debarment status "
+        "stated above as on the date of this bid."
+    )
+    doc_type, conf = classification_service.classify_document("declaration.pdf", text)
+    assert doc_type == "NON_DEBARMENT_DECLARATION"
+    assert conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
+
+
+def test_classify_ambiguous_document_picks_most_keyword_hits():
+    # Mentions EMD once but is really a turnover certificate — the type with
+    # the most keyword hits wins deterministically.
+    text = (
+        "Turnover Certificate. The annual turnover of the firm for FY 2023-24 "
+        "is Rs. 45,00,000. Turnover certified by the statutory auditor. "
+        "(EMD amount field left blank.)"
+    )
+    doc_type, conf = classification_service.classify_document("mixed.pdf", text)
+    assert doc_type == "TURNOVER_CERTIFICATE"
+    assert conf >= classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
+
+
+def test_classify_blacklist_mention_without_declaration_stays_unclassified():
+    # "blacklisted" alone is not a declaration — without a debarment keyword
+    # the system must not invent NON_DEBARMENT_DECLARATION.
+    text = (
+        "We confirm the firm was never blacklisted by any authority. "
+        "Additional neutral filler text to avoid accidental keyword matches "
+        "with any other document type in the classifier rules."
+    )
+    doc_type, conf = classification_service.classify_document("affidavit.pdf", text)
+    assert doc_type == "UNCLASSIFIED"
+    assert conf < classification_service.CLASSIFICATION_CONFIDENCE_THRESHOLD
+
+
+def test_classify_debarment_doc_not_confused_with_dossier():
+    # A standalone declaration must not be swallowed by the dossier marker.
+    text = (
+        "Standalone demo evidence document. Non-Debarment Declaration: "
+        "Not debarred or blacklisted by any government authority."
+    )
+    doc_type, conf = classification_service.classify_document("declaration.pdf", text)
+    assert doc_type == "NON_DEBARMENT_DECLARATION"
+    assert doc_type != "BID_DOSSIER"
+
+
 # ---------------------------------------------------------------------------
 # Pipeline: detected type stored, review-required on low confidence
 # ---------------------------------------------------------------------------
@@ -263,3 +335,58 @@ def test_correction_allowed_only_for_unclassified(db):
             db=db, user=user,
         )
     assert exc_info2.value.status_code == 400
+
+
+# ---------------------------------------------------------------------------
+# New document types: pipeline storage + officer correction path
+# ---------------------------------------------------------------------------
+
+def test_pipeline_detects_emd_payment_type(db, tmp_path):
+    bid = _make_bid(db)
+    text = (
+        "Earnest Money Deposit (EMD) — Payment Proof. "
+        "Legal Name: Test Bidder Pvt Ltd. EMD Amount: Rs. 5,00,000. "
+        "Payment Reference: NEFT/2026/001234. "
+        "This evidences payment of the Earnest Money Deposit for the bid."
+    )
+    path = _pdf_with_text(tmp_path, "emd_receipt.pdf", text)
+    doc = _insert_doc(db, bid, path)
+
+    result = pipeline_service.process_document(db, doc.id)
+
+    db.refresh(doc)
+    assert doc.document_type == "EMD_PAYMENT"
+    assert doc.processing_status == "PROCESSED"
+    assert result["status"] == "PROCESSED"
+    assert result["document_type"] == "EMD_PAYMENT"
+
+
+def test_correction_to_new_document_types_allowed_for_unclassified(db):
+    user = _make_officer(db)
+    bid = _make_bid(db)
+
+    unknown = Document(
+        bid_id=bid.id, document_type="UNCLASSIFIED", filename="d.pdf",
+        file_path="/tmp/d.pdf", file_hash="0" * 64, file_size=1,
+        mime_type="application/pdf", processing_status="REVIEW_REQUIRED",
+    )
+    db.add(unknown)
+    db.commit()
+
+    # The officer can assign the newly added types in the exception case.
+    for new_type in (
+        "EMD_PAYMENT",
+        "PAST_PERFORMANCE_CERTIFICATE",
+        "NON_DEBARMENT_DECLARATION",
+    ):
+        updated = documents_mod.correct_classification(
+            unknown.id,
+            DocumentTypeUpdate(document_type=new_type),
+            db=db, user=user,
+        )
+        assert updated.document_type == new_type
+        # Reset to UNCLASSIFIED for the next iteration via direct update
+        # (the API only corrects FROM unclassified).
+        unknown.document_type = "UNCLASSIFIED"
+        unknown.processing_status = "REVIEW_REQUIRED"
+        db.commit()

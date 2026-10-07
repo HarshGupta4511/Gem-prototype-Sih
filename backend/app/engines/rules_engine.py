@@ -114,6 +114,10 @@ def resolve_value_source(value_source: str, context: dict):
         check = verification.get(source)
         if not check:
             return None, []
+        if str(check.get("status") or "").upper() == "UNAVAILABLE":
+            # Portal unreachable / errored: never masquerade as missing
+            # evidence — the engine turns this into REVIEW_REQUIRED.
+            raise _SourceUnavailable(source)
         value = check.get("data") or {}
         # Tolerate an explicit leading "data." segment: the path is into response data.
         if path and path[0] == "data":
@@ -130,6 +134,18 @@ def resolve_value_source(value_source: str, context: dict):
 
 def _present_doc_types(documents) -> set:
     return {d.get("document_type") if isinstance(d, dict) else d for d in documents or []}
+
+
+class _SourceUnavailable(Exception):
+    """Raised when a rule needs a verification source that is UNAVAILABLE.
+
+    Lets ``RulesEngine.evaluate`` return REVIEW_REQUIRED instead of letting
+    value-based rules collapse a portal outage into MISSING evidence.
+    """
+
+    def __init__(self, source: str):
+        super().__init__(source)
+        self.source = source
 
 
 class RulesEngine:
@@ -150,10 +166,17 @@ class RulesEngine:
             weight = 0.0
 
         handler = getattr(self, f"_rule_{rule_type.lower()}", None)
-        raw = handler(config, context) if handler else (
-            "REVIEW_REQUIRED",
-            f"REVIEW_REQUIRED — unknown rule type '{rule_type}'; officer review required.",
-            f"unknown rule type {rule_type}", [])
+        try:
+            raw = handler(config, context) if handler else (
+                "REVIEW_REQUIRED",
+                f"REVIEW_REQUIRED — unknown rule type '{rule_type}'; officer review required.",
+                f"unknown rule type {rule_type}", [])
+        except _SourceUnavailable as exc:
+            raw = (
+                "REVIEW_REQUIRED",
+                f"REVIEW_REQUIRED — verification source {exc.source} is UNAVAILABLE; "
+                "cannot evaluate this requirement until the source can be reached.",
+                f"source unavailable: {exc.source}", [])
         # REGISTRATION_STATUS appends a reg_check dict as a 5th element.
         reg_check = raw[4] if len(raw) == 5 else None
         status, explanation, rule_applied, evidence = raw[0], raw[1], raw[2], raw[3]
@@ -260,6 +283,13 @@ class RulesEngine:
     def _minmax(self, config, context, operator):
         vs = config.get("value_source")
         target, field = config.get("value"), _short_field(vs)
+        if target is None:
+            # Misconfigured requirement (no threshold value): never crash the
+            # evaluation — flag for officer review instead.
+            return ("REVIEW_REQUIRED",
+                    f"REVIEW_REQUIRED — requirement misconfigured: no threshold "
+                    f"value for '{field}'; officer review required.",
+                    f"{field} {operator} ?", [])
         value, evidence = resolve_value_source(vs, context)
         actual = _to_number(value)
         applied = f"{field} {_fmt_num(actual) if actual is not None else '?'} {operator} " \
@@ -281,6 +311,22 @@ class RulesEngine:
         applied = f"{field} must be after {today.isoformat()}"
         d = _parse_date(value)
         if d is None:
+            # Distinguish "document not submitted" from "document present but
+            # the date could not be extracted". The latter needs officer review,
+            # not a MISSING flag.
+            doc_type = config.get("document_type")
+            if doc_type:
+                present_types = context.get("documents") or []
+                if doc_type not in present_types:
+                    return ("MISSING",
+                            f"MISSING — {doc_type} document not submitted; "
+                            f"cannot verify {field}.",
+                            applied, evidence)
+                return ("REVIEW_REQUIRED",
+                        f"REVIEW_REQUIRED — {doc_type} is submitted but no usable "
+                        f"{field} date could be extracted ('{value}'). Officer "
+                        f"should verify the expiry manually.",
+                        applied, evidence)
             return ("MISSING", f"MISSING — no usable date found for {field} ('{value}').", applied, evidence)
         if d < today:
             return ("EXPIRED", f"EXPIRED — {field} date {d.isoformat()} is before {today.isoformat()}.",

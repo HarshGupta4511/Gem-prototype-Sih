@@ -4,8 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Activity,
   AlertOctagon,
-  AlertTriangle,
-  ArrowRight,
   BarChart3,
   CheckCircle2,
   ChevronRight,
@@ -19,7 +17,6 @@ import {
   RefreshCw,
   ShieldCheck,
   Users,
-  X,
 } from 'lucide-react';
 import {
   Bar,
@@ -33,11 +30,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { dashboardApi, tendersApi, auditApi } from '../lib/api';
+import { dashboardApi, tendersApi, auditApi, verificationApi } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { useMemo } from 'react';
 import { formatDateTime, labelize } from '../lib/utils';
 import { SystemLayerTag } from '../components/common/SystemLayerTag';
+import { useTheme } from '../context/ThemeContext';
 
 const RISK_COLOR_MAP: Record<string, string> = {
   LOW: '#059669',
@@ -46,27 +44,17 @@ const RISK_COLOR_MAP: Record<string, string> = {
   CRITICAL: '#dc2626',
 };
 
-const VERIF_SOURCES = [
-  { id: 'GSTN', name: 'Goods & Services Tax Network (GSTN)', mode: 'Mock Adapter', code: 'GST_ACTIVE' },
-  { id: 'UDYAM', name: 'MSME Udyam Portal', mode: 'Mock Adapter', code: 'MSME_VALID' },
-  { id: 'PAN', name: 'Income Tax Department (NSDL/PAN)', mode: 'Mock Adapter', code: 'PAN_VERIFIED' },
-  { id: 'MCA', name: 'Ministry of Corporate Affairs (MCA21)', mode: 'Mock Adapter', code: 'CIN_ACTIVE' },
-  { id: 'EPFO', name: 'Employees Provident Fund Org (EPFO)', mode: 'Mock Adapter', code: 'TRRN_CLEAR' },
-  { id: 'ESIC', name: 'Employees State Insurance (ESIC)', mode: 'Mock Adapter', code: 'CONTRIB_OK' },
-  { id: 'BLACKLIST', name: 'CPSE & GeM Debarment Registry', mode: 'Mock Adapter', code: 'NO_DEBARMENT' },
-];
-
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   // Filter states
   const [selectedTenderForBids, setSelectedTenderForBids] = React.useState<string>('ALL');
-  const [attentionFilter, setAttentionFilter] = React.useState<string>('ALL');
-  const [attentionModalOpen, setAttentionModalOpen] = React.useState(false);
 
-  // Officer notifications are derived from the backend work queue
-  // (rendered in the "Needs attention" section below). There is no
-  // report-inbox notification flow anymore.
+  // Officer notifications live on the dedicated Notifications page; the
+  // backend work queue remains available there. There is no report-inbox
+  // notification flow anymore.
 
   // Queries
   const { data, isLoading, isError, isFetching: metricsFetching, refetch: refetchMetrics } = useQuery({
@@ -87,6 +75,14 @@ export default function Dashboard() {
     staleTime: 30000,
   });
 
+  // Verification adapters, read live from the backend registry so the
+  // dashboard never shows an outdated hardcoded list. All are mock adapters.
+  const { data: verifAdapters = [], isLoading: adaptersLoading } = useQuery({
+    queryKey: ['verification-adapters'],
+    queryFn: verificationApi.adapters,
+    staleTime: 300000,
+  });
+
   const metrics = data?.metrics;
   const charts = data?.charts;
 
@@ -97,159 +93,6 @@ export default function Dashboard() {
     refetchTenders();
     refetchAudits();
   };
-
-  // Officer work queue — backend-driven (six priorities). The backend derives
-  // every item from stored tables; the frontend only renders and filters.
-  const QUEUE_TYPE: Record<string, string> = {    HIGH_RISK_BIDDER: 'HIGH_RISK',
-    STATUTORY_MISMATCH: 'HIGH_RISK',
-    MISSING_MANDATORY_REQUIREMENT: 'PENDING',
-    INTEGRITY_SIGNAL: 'INTEGRITY',
-    PENDING_SUMMARY: 'PENDING',
-    PENDING_OFFICER_DECISION: 'PENDING',
-  };
-  const QUEUE_LINK_TEXT: Record<string, string> = {
-    HIGH_RISK_BIDDER: 'Review Bid',
-    STATUTORY_MISMATCH: 'Review Mismatches',
-    MISSING_MANDATORY_REQUIREMENT: 'Review Compliance',
-    INTEGRITY_SIGNAL: 'Review Integrity Signals',
-    PENDING_SUMMARY: 'Open Summary',
-    PENDING_OFFICER_DECISION: 'Record Decision',
-  };
-  const QUEUE_CATEGORIES = [
-    { value: 'HIGH_RISK_BIDDER', label: 'High-risk bidder' },
-    { value: 'STATUTORY_MISMATCH', label: 'Statutory mismatch' },
-    { value: 'MISSING_MANDATORY_REQUIREMENT', label: 'Missing mandatory requirement' },
-    { value: 'INTEGRITY_SIGNAL', label: 'Integrity signal' },
-    { value: 'PENDING_SUMMARY', label: 'Verification summary not generated' },
-    { value: 'PENDING_OFFICER_DECISION', label: 'Pending officer decision' },
-  ];
-  const queueSeverity = (s: string) =>
-    s === 'REVIEW_REQUIRED' ? 'CRITICAL' : s === 'ELEVATED' ? 'HIGH' : 'LOW';
-
-  // Build items requiring officer attention
-  const attentionItems = React.useMemo(() => {
-    const backendQueue = data?.work_queue;
-    if (backendQueue && backendQueue.length > 0) {
-      return backendQueue.map((q) => ({
-        id: `queue-${q.category}-${q.finding_id ?? q.bid_id ?? q.title}`,
-        severity: queueSeverity(q.severity),
-        type: QUEUE_TYPE[q.category] ?? 'PENDING',
-        category: q.category_label ?? q.category,
-        rawCategory: q.category,
-        title: q.title,
-        description: q.description,
-        tenderId: q.tender_id ?? null,
-        tenderNumber: q.tender_number ?? null,
-        linkText: QUEUE_LINK_TEXT[q.category] ?? 'Review',
-        to: q.link,
-      }));
-    }
-
-    // Legacy fallback (older backend): tender-level derived items.
-    const items = [];
-
-    for (const tender of tenders) {
-      if (tender.high_risk_count > 0) {
-        items.push({
-          id: `tender-risk-${tender.id}`,
-          severity: 'CRITICAL',
-          type: 'HIGH_RISK',
-          category: 'Statutory Mismatch / High Risk',
-          title: `${tender.tender_number}: ${tender.high_risk_count} High-Risk Bidder(s) Flagged`,
-          description: `Discrepancy detected in statutory cross-referencing (Debarment/PAN/GSTN mismatch).`,
-          tenderId: tender.id,
-          tenderNumber: tender.tender_number,
-          linkText: 'Inspect Tender Dossier',
-          to: `/app/tenders/${tender.id}`,
-        });
-      }
-      if (tender.pending_reviews > 0) {
-        items.push({
-          id: `tender-pending-${tender.id}`,
-          severity: 'HIGH',
-          type: 'PENDING',
-          category: 'Evaluation Pending',
-          title: `${tender.tender_number}: ${tender.pending_reviews} Pending Officer Decisions`,
-          description: `Bids have passed rule checks but require formal Procurement Officer qualification decision.`,
-          tenderId: tender.id,
-          tenderNumber: tender.tender_number,
-          linkText: 'Review Submissions',
-          to: `/app/tenders/${tender.id}`,
-        });
-      }
-    }
-
-    // Integrity signals (from the backend — real findings, never frontend-only).
-    const notices = data?.integrity_notices ?? [];
-    for (const n of notices) {
-      items.push({
-        id: `integrity-${n.id}`,
-        severity: n.severity === 'REVIEW_REQUIRED' ? 'CRITICAL' : 'HIGH',
-        type: 'INTEGRITY',
-        category: 'Integrity Signal',
-        title: n.title,
-        description: `Deterministic integrity signal requires officer review.${n.is_demo_history ? ' Sourced from clearly-labelled DEMO procurement history.' : ''}`,
-        tenderId: null,
-        tenderNumber: null,
-        linkText: 'Review Integrity Signals',
-        to: '/app/integrity',
-      });
-    }
-
-    if (items.length === 0) {
-      items.push({
-        id: 'no-critical',
-        severity: 'LOW',
-        type: 'SYSTEM',
-        category: 'System Status',
-        title: 'All active tender evaluations are up to date',
-        description: 'No unresolved high-risk alerts or debarment flags currently pending.',
-        tenderId: null,
-        tenderNumber: null,
-        linkText: 'View All Tenders',
-        to: '/app/tenders',
-      });
-    }
-
-    return items;
-  }, [tenders, data]);
-
-  // Unique tenders with attention items for the attention dropdown
-  const tendersWithAlerts = React.useMemo(() => {
-    const map = new Map<number, { id: number; tender_number: string; count: number }>();
-    for (const item of attentionItems) {
-      if (item.tenderId && item.tenderNumber) {
-        const cur = map.get(item.tenderId) ?? { id: item.tenderId, tender_number: item.tenderNumber, count: 0 };
-        cur.count++;
-        map.set(item.tenderId, cur);
-      }
-    }
-    return Array.from(map.values());
-  }, [attentionItems]);
-
-  // Filtered attention items based on selected dropdown value
-  const filteredAttentionItems = React.useMemo(() => {
-    if (attentionFilter === 'ALL') return attentionItems;
-    if (attentionFilter === 'HIGH_RISK') return attentionItems.filter((i) => i.type === 'HIGH_RISK');
-    if (attentionFilter === 'PENDING') return attentionItems.filter((i) => i.type === 'PENDING');
-    if (attentionFilter === 'INTEGRITY') return attentionItems.filter((i) => i.type === 'INTEGRITY');
-    if (attentionFilter.startsWith('cat-')) {
-      const cat = attentionFilter.replace('cat-', '');
-      return attentionItems.filter((i) => (i as { rawCategory?: string }).rawCategory === cat);
-    }
-    if (attentionFilter.startsWith('tender-')) {
-      const tId = Number(attentionFilter.replace('tender-', ''));
-      return attentionItems.filter((i) => i.tenderId === tId);
-    }
-    return attentionItems;
-  }, [attentionItems, attentionFilter]);
-
-  // Compact dashboard view: top 5 notices, High Risk / Statutory Mismatch first,
-  // then Pending Officer Decisions. Full list lives in the "View All" modal.
-  const topAttentionItems = React.useMemo(() => {
-    const rank = (severity: string) => (severity === 'CRITICAL' ? 0 : severity === 'HIGH' ? 1 : 2);
-    return [...attentionItems].sort((a, b) => rank(a.severity) - rank(b.severity)).slice(0, 5);
-  }, [attentionItems]);
 
   // Selected tender for "Bids Evaluated" card
   const selectedTenderObj = React.useMemo(() => {
@@ -275,18 +118,18 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-3">
-        <RefreshCw className="h-7 w-7 animate-spin text-blue-800" />
-        <p className="text-sm font-medium text-slate-600">Loading procurement intelligence metrics...</p>
+        <RefreshCw className="h-7 w-7 animate-spin text-blue-800 dark:text-blue-400" />
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading procurement intelligence metrics...</p>
       </div>
     );
   }
 
   if (isError || !metrics) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-800">
-        <AlertOctagon className="mx-auto h-8 w-8 text-red-600" />
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-800 dark:border-red-900 dark:bg-red-950/60 dark:text-red-300">
+        <AlertOctagon className="mx-auto h-8 w-8 text-red-600 dark:text-red-400" />
         <p className="mt-2 text-base font-semibold">Failed to load procurement dashboard</p>
-        <p className="text-xs text-red-600">Please verify API connection or try again.</p>
+        <p className="text-xs text-red-600 dark:text-red-400">Please verify API connection or try again.</p>
         <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
           Retry
         </Button>
@@ -297,21 +140,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* 1. Procurement Command Center Header */}
-      <div className="border-b border-slate-200 bg-white p-5 rounded-lg border shadow-xs">
+      <div className="border-b border-slate-200 bg-white p-5 rounded-lg border shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-800 font-mono">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-800 font-mono dark:text-blue-400">
                 CPCL / GeM Operational Portal
               </span>
-              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200">
-                Live Session
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800">
+                Demo Session
               </span>
             </div>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 font-serif">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 font-serif dark:text-slate-100">
               Procurement Overview
             </h1>
-            <p className="mt-0.5 text-xs text-slate-600">
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
               Real-time bid compliance, verification status, and decision tracking.
             </p>
           </div>
@@ -322,7 +165,7 @@ export default function Dashboard() {
               size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800/70"
             >
               <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
@@ -331,9 +174,9 @@ export default function Dashboard() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/app/documents')}
-              className="border-blue-300 text-blue-900 hover:bg-blue-50 text-xs font-medium"
+              className="border-blue-300 text-blue-900 hover:bg-blue-50 text-xs font-medium dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/60"
             >
-              <FileCheck2 className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
+              <FileCheck2 className="mr-1.5 h-3.5 w-3.5 text-blue-700 dark:text-blue-400" />
               Test Document
             </Button>
             {/* Create Tender — officer action (single-role app: always available) */}
@@ -352,56 +195,56 @@ export default function Dashboard() {
       {/* 2. Top Metric Blocks (4-column grid: Total Tenders, Active Tenders, Bids Evaluated with Tender Dropdown, Pending Decisions) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Total Tenders */}
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Total Tenders</span>
-            <FileText className="h-4 w-4 text-slate-400" />
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Total Tenders</span>
+            <FileText className="h-4 w-4 text-slate-400 dark:text-slate-500" />
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-slate-900 font-mono">
+            <span className="text-3xl font-bold tracking-tight text-slate-900 font-mono dark:text-slate-100">
               {metrics.total_tenders}
             </span>
-            <span className="text-xs text-slate-500 font-medium">procurement dossiers</span>
+            <span className="text-xs text-slate-500 font-medium dark:text-slate-400">procurement dossiers</span>
           </div>
-          <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1.5">
+          <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1.5 dark:text-slate-400">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-600" />
             <span>{metrics.active_tenders} currently published &amp; open</span>
           </p>
         </div>
 
         {/* Metric 2: Active Tenders */}
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Active Tenders</span>
-            <Activity className="h-4 w-4 text-emerald-600" />
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Active Tenders</span>
+            <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-emerald-800 font-mono">
+            <span className="text-3xl font-bold tracking-tight text-emerald-800 font-mono dark:text-emerald-400">
               {metrics.active_tenders}
             </span>
-            <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
             </span>
           </div>
-          <p className="mt-1.5 text-xs text-slate-500 truncate">
+          <p className="mt-1.5 text-xs text-slate-500 truncate dark:text-slate-400">
             Open for electronic bid submissions
           </p>
         </div>
 
         {/* Metric 3: Bids Evaluated (With Tender Selector Dropdown) */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50/20 p-4 shadow-xs hover:border-blue-300 transition-colors">
-          <div className="flex items-center justify-between text-slate-500">
+        <div className="rounded-lg border border-blue-200 bg-blue-50/20 p-4 shadow-xs hover:border-blue-300 transition-colors dark:border-blue-900 dark:bg-blue-950/30 dark:hover:border-blue-800">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300">
                 Bids Evaluated
               </span>
-              <Users className="h-3.5 w-3.5 text-blue-700" />
+              <Users className="h-3.5 w-3.5 text-blue-700 dark:text-blue-400" />
             </div>
             {selectedTenderObj && (
               <Link
                 to={`/app/tenders/${selectedTenderObj.id}`}
-                className="text-[11px] font-medium text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center"
+                className="text-[11px] font-medium text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center dark:text-blue-400 dark:hover:text-blue-300"
                 title="Open tender details"
               >
                 <span>View Tender</span>
@@ -417,7 +260,7 @@ export default function Dashboard() {
               id="bids-tender-select"
               value={selectedTenderForBids}
               onChange={(e) => setSelectedTenderForBids(e.target.value)}
-              className="w-full text-[11px] font-medium border border-blue-200 rounded px-2 py-1 bg-white text-blue-950 focus:outline-none focus:ring-1 focus:ring-blue-600 shadow-2xs cursor-pointer truncate"
+              className="w-full text-[11px] font-medium border border-blue-200 rounded px-2 py-1 bg-white text-blue-950 focus:outline-none focus:ring-1 focus:ring-blue-600 shadow-2xs cursor-pointer truncate dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200"
             >
               <option value="ALL">All Tenders (Total: {metrics.total_bids} bids)</option>
               {tenders.map((t) => (
@@ -430,20 +273,20 @@ export default function Dashboard() {
 
           {/* Dynamic Metric Display based on dropdown selection */}
           <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-blue-950 font-mono">
+            <span className="text-3xl font-bold tracking-tight text-blue-950 font-mono dark:text-blue-200">
               {selectedTenderObj ? selectedTenderObj.bidder_count : metrics.total_bids}
             </span>
-            <span className="text-xs text-blue-900 font-medium">
+            <span className="text-xs text-blue-900 font-medium dark:text-blue-300">
               {selectedTenderObj ? 'bids in this package' : 'total participating bids'}
             </span>
           </div>
 
-          <p className="mt-1 text-[11px] text-slate-600 truncate">
+          <p className="mt-1 text-[11px] text-slate-600 truncate dark:text-slate-400">
             {selectedTenderObj ? (
               <span>
-                <span className="font-semibold text-slate-800">{selectedTenderObj.department}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedTenderObj.department}</span>
                 {' · '}
-                <span className="text-slate-500">{selectedTenderObj.pending_reviews} pending reviews</span>
+                <span className="text-slate-500 dark:text-slate-400">{selectedTenderObj.pending_reviews} pending reviews</span>
               </span>
             ) : (
               <span>{metrics.documents_processed} statutory documents indexed</span>
@@ -452,129 +295,39 @@ export default function Dashboard() {
         </div>
 
         {/* Metric 4: Pending Officer Decisions */}
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Pending Decisions</span>
-            <Clock className="h-4 w-4 text-amber-600" />
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Pending Decisions</span>
+            <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-slate-900 font-mono">
+            <span className="text-3xl font-bold tracking-tight text-slate-900 font-mono dark:text-slate-100">
               {metrics.pending_reviews}
             </span>
-            <span className="text-xs text-amber-700 font-medium">awaiting sign-off</span>
+            <span className="text-xs text-amber-700 font-medium dark:text-amber-400">awaiting sign-off</span>
           </div>
-          <p className="mt-1.5 text-xs text-slate-500 truncate">
+          <p className="mt-1.5 text-xs text-slate-500 truncate dark:text-slate-400">
             Procurement Officer qualification queue
           </p>
         </div>
       </div>
 
-      {/* 3. REQUIRES OFFICER ATTENTION (Compact: top 5 prioritized, full list in modal) */}
-      <div className="rounded-lg border border-amber-300 bg-amber-50/40 p-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-xs shrink-0">
-              <AlertTriangle className="h-4 w-4" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-amber-950 uppercase tracking-wide">
-                  Requires Officer Attention
-                </h2>
-                <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                  {attentionItems.length} Notice{attentionItems.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <p className="text-[11.5px] text-amber-900/80">
-                Statutory mismatches, verification anomalies, and bids awaiting formal officer sign-off.
-              </p>
-            </div>
-          </div>
-
-          {/* View All opens the full notice drawer with filters */}
-          {attentionItems.length > 5 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAttentionModalOpen(true)}
-              className="border-amber-400 text-amber-950 hover:bg-amber-100 text-xs font-semibold self-start sm:self-auto shrink-0"
-            >
-              View All {attentionItems.length} Notices
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-
-        {/* Compact Notices List (top 5 prioritized) */}
-        <div className="mt-3 divide-y divide-amber-200/60">
-          {topAttentionItems.length > 0 ? (
-            topAttentionItems.map((item) => (
-              <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 hover:bg-amber-100/30 rounded px-2 transition-colors">
-                <div className="flex items-start gap-3 min-w-0">
-                  <span
-                    className={`mt-1 inline-block h-2.5 w-2.5 rounded-full shrink-0 ${
-                      item.severity === 'CRITICAL'
-                        ? 'bg-rose-600 ring-2 ring-rose-400/40'
-                        : item.severity === 'HIGH'
-                        ? 'bg-amber-600 ring-2 ring-amber-400/40'
-                        : 'bg-emerald-600'
-                    }`}
-                  />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900">{item.title}</span>
-                      <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-2xs">
-                        {item.category}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">{item.description}</p>
-                  </div>
-                </div>
-
-                <Link
-                  to={item.to}
-                  className="inline-flex items-center gap-1.5 rounded bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-colors shrink-0 shadow-2xs self-start sm:self-auto"
-                >
-                  <span>{item.linkText}</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            ))
-          ) : (
-            <div className="py-6 text-center text-xs text-amber-800">
-              No attention notices at this time.
-            </div>
-          )}
-        </div>
-
-        {attentionItems.length > 5 && (
-          <div className="mt-1 border-t border-amber-200/80 pt-2.5 text-center">
-            <button
-              type="button"
-              onClick={() => setAttentionModalOpen(true)}
-              className="text-xs font-semibold text-amber-900 hover:text-amber-950 hover:underline"
-            >
-              Showing {topAttentionItems.length} of {attentionItems.length} notices — View All {attentionItems.length} Notices
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* 4. VISUALIZATIONS GRID (Tender Bid Volume & Bid Risk Profile) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Visual 1: Procurement Performance & Capacity Visualizer */}
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between dark:border-slate-800 dark:bg-slate-900">
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
               <div>
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-blue-700" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                  <BarChart3 className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                     Tender Bid Volume &amp; Capacity Matrix
                   </h3>
                   <SystemLayerTag layer="RULE_ENGINE" size="sm" />
                 </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                   Participating bidders and evaluation progress per tender package
                 </p>
               </div>
@@ -584,7 +337,7 @@ export default function Dashboard() {
             {/* By Tender bid volume chart */}
             <div className="mt-4">
               <div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2 px-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2 px-1 dark:text-slate-400">
                     <span>Tender Package &amp; Reference</span>
                     <div className="flex items-center gap-3">
                       <span className="flex items-center gap-1">
@@ -606,12 +359,12 @@ export default function Dashboard() {
                           layout="vertical"
                           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                          <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} allowDecimals={false} />
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#f1f5f9'} horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 10, fill: isDark ? '#cbd5e1' : '#64748b' }} allowDecimals={false} />
                           <YAxis
                             dataKey="name"
                             type="category"
-                            tick={{ fontSize: 10, fill: '#334155', fontWeight: 600 }}
+                            tick={{ fontSize: 10, fill: isDark ? '#cbd5e1' : '#334155', fontWeight: 600 }}
                             width={110}
                           />
                           <Tooltip
@@ -619,20 +372,20 @@ export default function Dashboard() {
                               if (active && payload && payload.length) {
                                 const d = payload[0].payload;
                                 return (
-                                  <div className="rounded-md border border-slate-300 bg-white p-2.5 shadow-md text-xs space-y-1">
-                                    <p className="font-bold text-slate-900">{d.name}</p>
-                                    <p className="text-[11px] text-slate-600 truncate max-w-[200px]">{d.title}</p>
-                                    <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-4">
-                                      <span className="text-slate-500">Total Bidders:</span>
-                                      <span className="font-mono font-bold text-blue-900">{d.bidders}</span>
+                                  <div className="rounded-md border border-slate-300 bg-white p-2.5 shadow-md text-xs space-y-1 dark:border-slate-700 dark:bg-slate-900">
+                                    <p className="font-bold text-slate-900 dark:text-slate-100">{d.name}</p>
+                                    <p className="text-[11px] text-slate-600 truncate max-w-[200px] dark:text-slate-400">{d.title}</p>
+                                    <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-4 dark:border-slate-800">
+                                      <span className="text-slate-500 dark:text-slate-400">Total Bidders:</span>
+                                      <span className="font-mono font-bold text-blue-900 dark:text-blue-300">{d.bidders}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-slate-500">Pending Reviews:</span>
-                                      <span className="font-mono font-bold text-amber-700">{d.pending}</span>
+                                      <span className="text-slate-500 dark:text-slate-400">Pending Reviews:</span>
+                                      <span className="font-mono font-bold text-amber-700 dark:text-amber-400">{d.pending}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-slate-500">Status:</span>
-                                      <span className="font-semibold text-slate-700">{labelize(d.status)}</span>
+                                      <span className="text-slate-500 dark:text-slate-400">Status:</span>
+                                      <span className="font-semibold text-slate-700 dark:text-slate-300">{labelize(d.status)}</span>
                                     </div>
                                   </div>
                                 );
@@ -645,7 +398,7 @@ export default function Dashboard() {
                         </BarChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                      <div className="flex h-full items-center justify-center text-xs text-slate-400 dark:text-slate-500">
                         No tender comparison data available
                       </div>
                     )}
@@ -654,27 +407,27 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <span>Aggregated across {tenders.length} active procurement contracts</span>
-            <Link to="/app/tenders" className="font-semibold text-blue-700 hover:underline">
+            <Link to="/app/tenders" className="font-semibold text-blue-700 hover:underline dark:text-blue-400">
               View All Tenders →
             </Link>
           </div>
         </div>
 
         {/* Visual 2: Bid Risk Profile */}
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between dark:border-slate-800 dark:bg-slate-900">
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
               <div>
                 <div className="flex items-center gap-2">
-                  <PieChartIcon className="h-4 w-4 text-emerald-700" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                  <PieChartIcon className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                     Bid Risk Profile
                   </h3>
                   <SystemLayerTag layer="AI_ASSISTED" size="sm" />
                 </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                   Independent AI advisory risk classifications across evaluated bids
                 </p>
               </div>
@@ -708,24 +461,38 @@ export default function Dashboard() {
                           </Pie>
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #cbd5e1',
+                              // Dark mode: slate-800 surface so the tooltip stands
+                              // out against the slate-900 card behind it.
+                              backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                              border: isDark ? '1px solid #475569' : '1px solid #cbd5e1',
                               borderRadius: '6px',
                               fontSize: '11px',
+                              color: isDark ? '#f1f5f9' : '#0f172a',
                             }}
+                            // Recharts paints each tooltip item in the hovered
+                            // segment's fill color by default (dark greens/reds
+                            // that are unreadable on a dark surface). Override
+                            // with theme text colors in dark mode only; light
+                            // mode keeps its existing appearance.
+                            labelStyle={
+                              isDark
+                                ? { color: '#f1f5f9', fontWeight: 600, margin: '0 0 4px' }
+                                : undefined
+                            }
+                            itemStyle={isDark ? { color: '#e2e8f0' } : undefined}
                             formatter={(val: number) => [`${val} submissions`, 'Bids']}
                           />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                      <div className="flex h-full items-center justify-center text-xs text-slate-400 dark:text-slate-500">
                         No risk data available
                       </div>
                     )}
                   </div>
 
                   {/* Structured Risk Legend */}
-                  <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
+                  <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4 dark:border-slate-800">
                     {charts?.risk_distribution?.map((item) => (
                       <div key={item.level} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
@@ -733,12 +500,12 @@ export default function Dashboard() {
                             className="h-2.5 w-2.5 rounded-full"
                             style={{ backgroundColor: RISK_COLOR_MAP[item.level] ?? '#94a3b8' }}
                           />
-                          <span className="font-medium text-slate-700">{labelize(item.level)}</span>
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{labelize(item.level)}</span>
                         </div>
-                        <span className="font-mono font-bold text-slate-900">{item.count} bids</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{item.count} bids</span>
                       </div>
                     ))}
-                    <div className="mt-3 rounded border border-slate-200 bg-slate-50 p-2 text-[10.5px] text-slate-500">
+                    <div className="mt-3 rounded border border-slate-200 bg-slate-50 p-2 text-[10.5px] text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
                       Advisory classifications are independent of technical compliance scores.
                     </div>
                   </div>
@@ -746,9 +513,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <span>Cryptographic provenance secured by SHA-256 ledger</span>
-            <Link to="/app/audit" className="font-semibold text-emerald-800 hover:underline">
+            <Link to="/app/audit" className="font-semibold text-emerald-800 hover:underline dark:text-emerald-400">
               Inspect Audit Ledger →
             </Link>
           </div>
@@ -756,81 +523,87 @@ export default function Dashboard() {
       </div>
 
       {/* 5. STATUTORY VERIFICATION OVERVIEW MATRIX */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                 Statutory Verification Integration Status
               </h3>
               <SystemLayerTag layer="VERIFICATION" size="sm" />
             </div>
-            <p className="mt-0.5 text-[11px] text-slate-500">
+            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
               Government portal cross-referencing adapters for taxpayer, registration, and blacklisting status
             </p>
           </div>
-          <span className="text-[11px] font-semibold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-            7 Government Sources Configured
+          <span className="text-[11px] font-semibold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 dark:text-blue-300 dark:bg-blue-950/60 dark:border-blue-800">
+            {verifAdapters.length} Government Sources Configured
           </span>
         </div>
 
         <div className="mt-3 overflow-x-auto">
+          {adaptersLoading ? (
+            <p className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              Loading verification adapters…
+            </p>
+          ) : (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                 <th className="py-2.5 px-3">Statutory Source</th>
                 <th className="py-2.5 px-3">Operational Mode</th>
-                <th className="py-2.5 px-3">Verification Scope</th>
+                <th className="py-2.5 px-3">Adapter Code</th>
                 <th className="py-2.5 px-3 text-right">Integrity Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {VERIF_SOURCES.map((source) => (
-                <tr key={source.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-2 px-3 font-semibold text-slate-900">
+            <tbody className="divide-y divide-slate-100 text-slate-700 dark:divide-slate-800 dark:text-slate-300">
+              {verifAdapters.map((source) => (
+                <tr key={source.source} className="hover:bg-slate-50/60 transition-colors dark:hover:bg-slate-800/70">
+                  <td className="py-2 px-3 font-semibold text-slate-900 dark:text-slate-100">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0" />
-                      <span>{source.name}</span>
+                      <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0 dark:text-blue-400" />
+                      <span>{source.display_name}</span>
                     </div>
                   </td>
                   <td className="py-2 px-3">
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+                    <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
                       {source.mode}
                     </span>
                   </td>
-                  <td className="py-2 px-3 font-mono text-[11px] text-slate-600">
-                    {source.code}
+                  <td className="py-2 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                    {source.source}
                   </td>
                   <td className="py-2 px-3 text-right">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                      Operational
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      Mocked
                     </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 
       {/* 6. RECENT ACTIVITY TIMELINE (FROM AUDIT TRAIL) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                 Statutory Audit Trail (Recent Activity)
               </h3>
               <SystemLayerTag layer="HUMAN_DECISION" size="sm" />
             </div>
-            <p className="mt-0.5 text-[11px] text-slate-500">
-              Tamper-evident SHA-256 hash-chain recorded by the Procurement Officer
+            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              SHA-256 hash-chained audit ledger — run “Verify Chain” on the Audit Trail page to re-check integrity.
             </p>
           </div>
           <Link
             to="/app/audit"
-            className="text-xs font-semibold text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center gap-1"
+            className="text-xs font-semibold text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center gap-1 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <span>Full Audit Trail</span>
             <ExternalLink className="h-3 w-3" />
@@ -841,7 +614,7 @@ export default function Dashboard() {
           {recentAudits.length > 0 ? (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
                   <th className="py-2 px-3">Timestamp</th>
                   <th className="py-2 px-3">Actor</th>
                   <th className="py-2 px-3">Action</th>
@@ -849,25 +622,25 @@ export default function Dashboard() {
                   <th className="py-2 px-3 text-right">Hash Signature</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-700 dark:divide-slate-800 dark:text-slate-300">
                 {recentAudits.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/60">
-                    <td className="py-2 px-3 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                  <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/70">
+                    <td className="py-2 px-3 font-mono text-[11px] text-slate-500 whitespace-nowrap dark:text-slate-400">
                       {formatDateTime(log.timestamp)}
                     </td>
-                    <td className="py-2 px-3 font-medium text-slate-900">
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">
                       {log.user_name || 'System Engine'}
                     </td>
-                    <td className="py-2 px-3 font-semibold text-blue-950">
-                      <span className="rounded bg-blue-50 px-2 py-0.5 text-[10.5px] border border-blue-200 text-blue-900">
+                    <td className="py-2 px-3 font-semibold text-blue-950 dark:text-blue-200">
+                      <span className="rounded bg-blue-50 px-2 py-0.5 text-[10.5px] border border-blue-200 text-blue-900 dark:bg-blue-950/60 dark:border-blue-800 dark:text-blue-300">
                         {labelize(log.action)}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-slate-600">
+                    <td className="py-2 px-3 text-slate-600 dark:text-slate-400">
                       <span className="font-mono text-[11px]">{log.entity_type}</span>{' '}
-                      <span className="text-slate-400">#{log.entity_id}</span>
+                      <span className="text-slate-400 dark:text-slate-500">#{log.entity_id}</span>
                     </td>
-                    <td className="py-2 px-3 text-right font-mono text-[10px] text-slate-400">
+                    <td className="py-2 px-3 text-right font-mono text-[10px] text-slate-400 dark:text-slate-500">
                       {log.current_hash ? `${log.current_hash.slice(0, 10)}...` : 'GENESIS'}
                     </td>
                   </tr>
@@ -875,131 +648,13 @@ export default function Dashboard() {
               </tbody>
             </table>
           ) : (
-            <div className="py-8 text-center text-xs text-slate-400">
+            <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">
               No audit logs recorded yet.
             </div>
           )}
         </div>
       </div>
 
-      {/* ALL NOTICES MODAL (full list with filters; opened from "View All N Notices") */}
-      {attentionModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-          onClick={() => setAttentionModalOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="All attention notices"
-        >
-          <div
-            className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-amber-300 bg-white shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50/60 px-4 py-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shrink-0">
-                  <AlertTriangle className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-sm font-bold text-amber-950 uppercase tracking-wide">
-                      All Attention Notices
-                    </h2>
-                    <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                      {filteredAttentionItems.length} of {attentionItems.length}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <label htmlFor="attention-filter-modal" className="text-xs font-semibold text-amber-900 flex items-center gap-1">
-                  <Filter className="h-3.5 w-3.5 text-amber-700" />
-                  <span className="hidden sm:inline">Filter:</span>
-                </label>
-                <select
-                  id="attention-filter-modal"
-                  value={attentionFilter}
-                  onChange={(e) => setAttentionFilter(e.target.value)}
-                  className="text-xs font-medium border border-amber-300 rounded px-2 py-1.5 bg-white text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer max-w-[180px]"
-                >
-                  <option value="ALL">All Notices ({attentionItems.length})</option>
-                  <option value="HIGH_RISK">Statutory &amp; High Risk Flags</option>
-                  <option value="INTEGRITY">Integrity Signals</option>
-                  <option value="PENDING">Pending Decisions Awaiting Review</option>
-                  <optgroup label="By Work-Queue Priority">
-                    {QUEUE_CATEGORIES.filter((c) =>
-                      attentionItems.some((i) => (i as { rawCategory?: string }).rawCategory === c.value),
-                    ).map((c) => (
-                      <option key={c.value} value={`cat-${c.value}`}>
-                        {c.label} ({attentionItems.filter((i) => (i as { rawCategory?: string }).rawCategory === c.value).length})
-                      </option>
-                    ))}
-                  </optgroup>
-                  {tendersWithAlerts.length > 0 && (
-                    <optgroup label="By Specific Tender">
-                      {tendersWithAlerts.map((t) => (
-                        <option key={t.id} value={`tender-${t.id}`}>
-                          {t.tender_number} ({t.count} notice{t.count !== 1 ? 's' : ''})
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => setAttentionModalOpen(false)}
-                  className="rounded p-1.5 text-amber-900 hover:bg-amber-100"
-                  aria-label="Close notices"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto px-4 py-2">
-              {filteredAttentionItems.length > 0 ? (
-                <div className="divide-y divide-amber-200/60">
-                  {filteredAttentionItems.map((item) => (
-                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <span
-                          className={`mt-1 inline-block h-2.5 w-2.5 rounded-full shrink-0 ${
-                            item.severity === 'CRITICAL'
-                              ? 'bg-rose-600 ring-2 ring-rose-400/40'
-                              : item.severity === 'HIGH'
-                              ? 'bg-amber-600 ring-2 ring-amber-400/40'
-                              : 'bg-emerald-600'
-                          }`}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-bold text-slate-900">{item.title}</span>
-                            <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200">
-                              {item.category}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">{item.description}</p>
-                        </div>
-                      </div>
-                      <Link
-                        to={item.to}
-                        className="inline-flex items-center gap-1.5 rounded bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-colors shrink-0 self-start sm:self-auto"
-                      >
-                        <span>{item.linkText}</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-10 text-center text-xs text-amber-800">
-                  No attention notices match the selected filter.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

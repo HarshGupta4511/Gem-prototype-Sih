@@ -37,7 +37,7 @@ export function TabsList({ className, ...props }: React.HTMLAttributes<HTMLDivEl
   return (
     <div
       className={cn(
-        'inline-flex h-10 items-center justify-start gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1',
+        'inline-flex h-10 items-center justify-start gap-1 overflow-x-auto rounded-lg bg-slate-100 dark:bg-slate-800 p-1',
         className,
       )}
       role="tablist"
@@ -69,7 +69,7 @@ export function TabsTrigger({
         'inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium',
         'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
         'disabled:pointer-events-none disabled:opacity-50',
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800',
+        active ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200',
         className,
       )}
     >

@@ -43,6 +43,9 @@ PROFILES: dict[str, dict] = {
         "contact_name": "R. Ramanathan, Director",
         "contact_email": "contracts@apexflow-demo.in",
         "contact_phone": "+91 98400 10001",
+        # Multi-document evidence: one standalone PDF per certificate, like a
+        # real multi-upload bid (Nova already used this path).
+        "split_dossier_sections": True,
     },
     "vertex": {
         "legal_name": "Vertex Industrial Solutions Pvt. Ltd.",
@@ -52,6 +55,9 @@ PROFILES: dict[str, dict] = {
         "contact_name": "S. Iyer, Partner",
         "contact_email": "tenders@vertex-demo.in",
         "contact_phone": "+91 98410 20002",
+        # Multi-document evidence (only turnover + experience sections exist
+        # for this missing-evidence profile).
+        "split_dossier_sections": True,
     },
     "nova": {
         "legal_name": "Nova Engineering Works Pvt. Ltd.",
@@ -103,6 +109,9 @@ PROFILES: dict[str, dict] = {
         "debarment_declaration": (
             "Not debarred or blacklisted by any government authority."
         ),
+        # Multi-document evidence: one standalone PDF per certificate, like a
+        # real multi-upload bid (Nova already used this path).
+        "split_dossier_sections": True,
     },
 }
 
@@ -111,8 +120,8 @@ PROFILES: dict[str, dict] = {
 _VERTEX_ALLOWED_SOURCES = {"extracted.turnover_inr", "extracted.experience_years"}
 
 _DEMO_BANNER = (
-    "DEMO DATA \u2014 fictional bidder evidence generated for prototype "
-    "demonstration only"
+    "SAMPLE \u2014 FOR DEMONSTRATION ONLY \u2014 fictional bidder evidence; "
+    "not a government-issued certificate"
 )
 
 
@@ -177,6 +186,13 @@ def _add_registration(add, source: str, identifiers: dict, legal_name: str,
             udyam=identifiers["udyam"],
             valid_until="31-12-2030",
         )
+    elif source == "MCA21" and identifiers.get("cin"):
+        add(
+            "MCA21_CERTIFICATE",
+            cin=identifiers["cin"],
+            incorporation_date="12-03-2015",
+            company_status="Active",
+        )
     elif source == "EPFO" and identifiers.get("epfo_code"):
         add(
             "EPFO_CERTIFICATE",
@@ -193,17 +209,24 @@ def _add_registration(add, source: str, identifiers: dict, legal_name: str,
 
 
 def _add_minimum(add, profile_key: str, field: str, threshold, mandatory: bool,
-                 emd_beneficiary: str) -> None:
+                 emd_beneficiary: str, below_threshold: bool = False) -> None:
     value = _evidence_value(profile_key, field, threshold, mandatory)
     if value is None:
         return
+    if below_threshold:
+        # Scenario mutation: a genuine below-threshold value (the engine will
+        # FAIL it honestly — nothing is hardcoded).
+        t = threshold if isinstance(threshold, (int, float)) and threshold > 0 else value
+        value = int(t * 0.6)
     if field == "turnover_inr":
         lakh = value / 100000
         lakh_str = str(int(lakh)) if float(lakh).is_integer() else f"{lakh:.1f}"
         add(
-            "TURNOVER_CERTIFICATE",
+            "BALANCE_SHEET",
             turnover=f"Rs {lakh_str} lakh",
-            turnover_period="FY 2021-22 to FY 2023-24",
+            financial_year="2023-24",
+            turnover_period="FY 2023-24",
+            auditor_name="Shah & Associates, Chartered Accountants (demo)",
         )
     elif field == "experience_years":
         add("EXPERIENCE_CERTIFICATE", experience=f"{value} years")
@@ -217,7 +240,7 @@ def _add_minimum(add, profile_key: str, field: str, threshold, mandatory: bool,
         add("MII_DECLARATION", local_content=f"{value}%")
     elif field == "emd_amount_inr":
         add(
-            "EMD_PAYMENT",
+            "EMD_RECEIPT",
             emd_amount=f"Rs {value:,}",
             emd_reference="DEMO-UTR-20260920",
             emd_date="20-09-2026",
@@ -228,6 +251,7 @@ def _add_minimum(add, profile_key: str, field: str, threshold, mandatory: bool,
 
 def build_dossier_sections(requirements, profile_key: str,
                             emd_beneficiary: str = "Demo Tendering Authority",
+                            plan=None,
                             ) -> list[tuple[str, dict]]:
     """Build ``(template_type, data)`` dossier sections for a tender.
 
@@ -235,12 +259,21 @@ def build_dossier_sections(requirements, profile_key: str,
     each requirement type needs. Unknown rule types / sources are skipped so
     the compliance engine reports them honestly (MISSING / REVIEW_REQUIRED)
     instead of the demo inventing evidence.
+
+    ``plan`` is an optional :class:`ScenarioPlan
+    <app.seed.demo_scenarios.ScenarioPlan>` carrying per-template field
+    mutations, name overrides and omit lists for mismatch-focused scenarios.
     """
     if profile_key not in PROFILES:
         raise ValueError(f"Unknown demo profile '{profile_key}'")
     profile = PROFILES[profile_key]
-    identifiers = profile["identifiers"]
+    identifiers = dict(profile["identifiers"])
     legal_name = profile["legal_name"]
+    if plan is not None:
+        # Scenario identities carry their own seeded identifiers; the plan's
+        # legal name is the bidder's declared name.
+        identifiers.update(plan.identifiers)
+        legal_name = plan.legal_name
     base = {
         "legal_name": legal_name,
         "address": profile["address"],
@@ -248,15 +281,26 @@ def build_dossier_sections(requirements, profile_key: str,
         "phone": profile["contact_phone"],
     }
     sections: dict[str, dict] = {}
+    omit_templates = set(getattr(plan, "omit_templates", None) or ())
 
     def add(template_type: str, **kw) -> None:
         if template_type in (profile.get("omit_sections") or ()):
             return  # scenario: this evidence section is deliberately missing
+        if template_type in omit_templates:
+            return  # scenario plan: deliberately missing evidence
         if template_type not in sections:  # first wins; dedupes EXPERIENCE etc.
-            sections[template_type] = {**base, **kw}
+            data = {**base, **kw}
+            if plan is not None:
+                data.update((plan.doc_mutations.get(template_type) or {}))
+                # drop sentinel keys used only for value computation
+                data.pop("_turnover_below_threshold", None)
+                data.pop("_emd_below_threshold", None)
+            sections[template_type] = data
             override = (profile.get("document_name_overrides") or {}).get(
                 template_type
             )
+            if plan is not None and template_type in plan.doc_name_overrides:
+                override = plan.doc_name_overrides[template_type]
             if override:
                 sections[template_type]["legal_name"] = override
 
@@ -276,6 +320,11 @@ def build_dossier_sections(requirements, profile_key: str,
         if omit_evidence and not (
             rule_type in ("MINIMUM", "EXISTENCE")
             and value_source in allowlist
+        ) and not (
+            # Missing-evidence profiles keep the experience certificate too
+            # (DOCUMENT_REQUIRED on the new template).
+            rule_type == "DOCUMENT_REQUIRED"
+            and "EXPERIENCE_CERTIFICATE" in (cfg.get("document_types") or [])
         ):
             continue  # deliberately omitted evidence
 
@@ -284,8 +333,35 @@ def build_dossier_sections(requirements, profile_key: str,
                               profile.get("trade_name", legal_name))
         elif rule_type in ("MINIMUM", "EXISTENCE") and value_source.startswith("extracted."):
             field = value_source.split(".", 1)[1]
+            mut = (plan.doc_mutations.get(
+                "BALANCE_SHEET" if field == "turnover_inr"
+                else "EMD_RECEIPT" if field == "emd_amount_inr" else ""
+            ) or {}) if plan else {}
+            below = bool(mut.get("_turnover_below_threshold") or
+                         mut.get("_emd_below_threshold"))
             _add_minimum(add, profile_key, field, cfg.get("value"), mandatory,
-                         emd_beneficiary)
+                         emd_beneficiary, below_threshold=below)
+        elif rule_type == "MATCH" and value_source == "extracted.itr_financial_year":
+            fy = "2023-24"
+            if plan and (plan.doc_mutations.get("ITR_DOCUMENT") or {}).get("itr_financial_year"):
+                fy = plan.doc_mutations["ITR_DOCUMENT"]["itr_financial_year"]
+            add(
+                "ITR_DOCUMENT",
+                pan=identifiers.get("pan", ""),
+                itr_financial_year=fy,
+                assessment_year="2024-25" if fy == "2023-24" else "2023-24",
+                total_income="Rs 42,50,000",
+            )
+        elif rule_type == "DATE_VALIDITY" and value_source == "extracted.iso_valid_until":
+            valid_until = "31-03-2028"
+            if plan and (plan.doc_mutations.get("ISO_9001_CERTIFICATE") or {}).get("iso_valid_until"):
+                valid_until = plan.doc_mutations["ISO_9001_CERTIFICATE"]["iso_valid_until"]
+            add(
+                "ISO_9001_CERTIFICATE",
+                iso_certificate_number="ISO-2024-88412",
+                iso_valid_from="01-04-2024",
+                iso_valid_until=valid_until,
+            )
         elif rule_type == "BOOLEAN" and value_source == "extracted.oem_authorization_valid":
             add(
                 "OEM_AUTHORIZATION",
@@ -301,6 +377,14 @@ def build_dossier_sections(requirements, profile_key: str,
                         certificate_number="DIPP-D-2026001234",
                         dpiit_recognition="Yes",
                     )
+                elif doc_type == "EXPERIENCE_CERTIFICATE":
+                    add(
+                        "EXPERIENCE_CERTIFICATE",
+                        experience="5 years",
+                        project_name="Demo Pumping Station Package (demo)",
+                        client_name="Demo Municipal Corp (demo)",
+                        completion_date="15-03-2024",
+                    )
                 # BID_DOSSIER is satisfied by this dossier itself; unknown
                 # document types are left MISSING honestly.
         # CUSTOM_RULE / IDENTITY_MATCH / verification-backed EXISTENCE need no
@@ -311,7 +395,7 @@ def build_dossier_sections(requirements, profile_key: str,
     # bidder's own claim; the consistency engine compares it against the
     # BLACKLIST verification source (a false declaration is the scenario the
     # check is built to catch).
-    if not omit_evidence:
+    if not omit_evidence and not omit_templates:
         add(
             "NON_DEBARMENT_DECLARATION",
             debarment_declaration=profile.get(
@@ -319,6 +403,8 @@ def build_dossier_sections(requirements, profile_key: str,
                 "Not debarred or blacklisted by any government authority.",
             ),
         )
+
+    return list(sections.items())
 
     return list(sections.items())
 

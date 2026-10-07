@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { getErrorMessage, tendersApi } from '../../lib/api';
 import { cn, formatDate, formatINR, labelize } from '../../lib/utils';
+import { defaultTemplate } from '../../lib/requirement-catalogue';
 import { useToast } from '../ui/toaster';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -95,107 +96,12 @@ interface DraftRow extends RequirementDraft {
   autoWeight: number | null;
 }
 
-const STANDARD_TEMPLATE: RequirementDraft[] = [
-  {
-    requirement_name: 'GST Registration Status',
-    category: 'STATUTORY',
-    description: 'Bidder must hold an active GST registration without cancellation.',
-    mandatory: true,
-    rule_type: 'REGISTRATION_STATUS',
-    rule_config: { source: 'GSTN', identifier_field: 'gstin', require_status: 'ACTIVE' },
-    threshold: 'Active GST registration',
-    verification_source: 'GSTN',
-    weight: 10,
-  },
-  {
-    requirement_name: 'PAN Statutory Verification',
-    category: 'STATUTORY',
-    description: 'Bidder PAN must be active and linked as per income tax database.',
-    mandatory: true,
-    rule_type: 'REGISTRATION_STATUS',
-    rule_config: { source: 'PAN_IT', identifier_field: 'pan', require_status: 'ACTIVE' },
-    threshold: 'Active PAN',
-    verification_source: 'PAN_IT',
-    weight: 5,
-  },
-  {
-    requirement_name: 'Average Annual Turnover',
-    category: 'FINANCIAL',
-    description: 'Minimum average annual turnover over the last 3 financial years.',
-    mandatory: true,
-    rule_type: 'MINIMUM',
-    rule_config: { value_source: 'extracted.turnover_inr', operator: '>=', value: 25000000 },
-    threshold: '₹2,50,00,000',
-    verification_source: null,
-    weight: 15,
-  },
-  {
-    requirement_name: 'Relevant Technical Experience',
-    category: 'EXPERIENCE',
-    description: 'Minimum years of experience in similar works or refinery supplies.',
-    mandatory: true,
-    rule_type: 'MINIMUM',
-    rule_config: { value_source: 'extracted.experience_years', operator: '>=', value: 3 },
-    threshold: '3 years',
-    verification_source: null,
-    weight: 15,
-  },
-  {
-    requirement_name: 'Past Contract Performance',
-    category: 'EXPERIENCE',
-    description: 'Satisfactory completion of single contract of at least 40% bid value.',
-    mandatory: true,
-    rule_type: 'MINIMUM',
-    rule_config: { value_source: 'extracted.past_performance_pct', operator: '>=', value: 40 },
-    threshold: '40% single order',
-    verification_source: null,
-    weight: 10,
-  },
-  {
-    requirement_name: 'OEM Authorization Undertaking',
-    category: 'OEM',
-    description: 'Manufacturer authorization form (MAF) signed by authorized signatory.',
-    mandatory: true,
-    rule_type: 'BOOLEAN',
-    rule_config: { value_source: 'extracted.oem_authorization_valid', expected: true },
-    threshold: 'Valid OEM MAF',
-    verification_source: null,
-    weight: 15,
-  },
-  {
-    requirement_name: 'Make In India (MII) Local Content',
-    category: 'LOCAL_CONTENT',
-    description: 'Minimum local content under Public Procurement Order (PPO).',
-    mandatory: false,
-    rule_type: 'MINIMUM',
-    rule_config: { value_source: 'extracted.local_content_pct', operator: '>=', value: 50 },
-    threshold: '50% local content',
-    verification_source: null,
-    weight: 10,
-  },
-  {
-    requirement_name: 'Earnest Money Deposit (EMD)',
-    category: 'FINANCIAL',
-    description: 'Submission of BG / Online payment receipt for EMD.',
-    mandatory: true,
-    rule_type: 'MINIMUM',
-    rule_config: { value_source: 'extracted.emd_amount_inr', operator: '>=', value: 500000 },
-    threshold: '₹5,00,000',
-    verification_source: null,
-    weight: 10,
-  },
-  {
-    requirement_name: 'Consolidated Bid Dossier',
-    category: 'DOCUMENT',
-    description: 'Complete signed technical packet and statutory annexures.',
-    mandatory: true,
-    rule_type: 'DOCUMENT_REQUIRED',
-    rule_config: { document_types: ['BID_DOSSIER'] },
-    threshold: 'Complete Bid Dossier',
-    verification_source: null,
-    weight: 10,
-  },
-];
+// Standard template — now sourced from the authoritative catalogue
+// (frontend/src/lib/requirement-catalogue.json) via defaultTemplate(), the
+// same source the Create Tender wizard uses. This dialog can no longer
+// silently produce different rule configurations for equivalent requirements.
+const STANDARD_TEMPLATE: RequirementDraft[] = defaultTemplate();
+
 
 let clientSeq = 0;
 function toDraftRow(d: RequirementDraft, autoWeight: number | null): DraftRow {
@@ -351,30 +257,30 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white border border-slate-300">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700">
         {/* Wizard Header */}
-        <DialogHeader className="border-b border-slate-200 bg-slate-50/80 px-6 py-4">
+        <DialogHeader className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 font-mono">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-400 font-mono">
                   CPCL / GeM Tender Configuration
                 </span>
-                <span className="rounded bg-blue-100 px-2 py-0.2 text-[10px] font-semibold text-blue-900 border border-blue-200">
+                <span className="rounded bg-blue-100 dark:bg-blue-950/60 px-2 py-0.2 text-[10px] font-semibold text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                   Step {step} of 3
                 </span>
               </div>
-              <DialogTitle className="mt-1 text-lg font-bold text-slate-900 font-serif">
+              <DialogTitle className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100 font-serif">
                 Create &amp; Publish Procurement Package
               </DialogTitle>
             </div>
             <div className="text-right hidden sm:block">
-              <span className="text-xs font-mono text-slate-500">Date: {todayStr()}</span>
+              <span className="text-xs font-mono text-slate-500 dark:text-slate-400">Date: {todayStr()}</span>
             </div>
           </div>
 
           {/* Stepper Progress Bar */}
-          <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-200 pt-3">
+          <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
             {WIZARD_STEPS.map((s) => {
               const Icon = s.icon;
               const isActive = s.n === step;
@@ -384,10 +290,10 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                   key={s.n}
                   className={`flex items-center gap-2.5 rounded border p-2 text-xs transition-colors ${
                     isActive
-                      ? 'border-blue-700 bg-blue-50/70 text-blue-950 font-semibold'
+                      ? 'border-blue-700 bg-blue-50/70 dark:bg-blue-950/60 text-blue-950 dark:text-blue-200 font-semibold'
                       : isPast
-                      ? 'border-emerald-300 bg-emerald-50/50 text-emerald-950'
-                      : 'border-slate-200 bg-white text-slate-400'
+                      ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   <div
@@ -396,14 +302,14 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                         ? 'bg-blue-800 text-white'
                         : isPast
                         ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-200 text-slate-600'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {isPast ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.n}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-xs font-bold leading-tight">{s.title}</p>
-                    <p className="truncate text-[10px] text-slate-500 font-normal">{s.desc}</p>
+                    <p className="truncate text-[10px] text-slate-500 dark:text-slate-400 font-normal">{s.desc}</p>
                   </div>
                 </div>
               );
@@ -412,149 +318,149 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
         </DialogHeader>
 
         {/* Wizard Step Body */}
-        <DialogBody className="flex-1 overflow-y-auto p-6 bg-slate-50/40">
+        <DialogBody className="flex-1 overflow-y-auto p-6 bg-slate-50/40 dark:bg-slate-900/40">
           {/* STEP 1: BASIC DETAILS */}
           {step === 1 && (
             <form id="wizard-step1" onSubmit={handleSubmit(onStep1Submit)} className="space-y-6">
               {/* Group 1: Tender Information */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-                <div className="border-b border-slate-100 pb-2 mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5 text-blue-700" />
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-2xs">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5 text-blue-700 dark:text-blue-400" />
                     Tender Package Identification
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="tender_number">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="tender_number">
                       Tender Reference Number *
                     </label>
                     <Input
                       id="tender_number"
                       placeholder="e.g. CPCL-2026-004"
-                      className="border-slate-300 font-mono text-xs"
+                      className="border-slate-300 font-mono text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('tender_number')}
                     />
-                    {errors.tender_number && <p className="mt-1 text-xs text-rose-600">{errors.tender_number.message}</p>}
+                    {errors.tender_number && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.tender_number.message}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="department">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="department">
                       Procuring Department *
                     </label>
                     <Input
                       id="department"
                       placeholder="e.g. Procurement - Mechanical"
-                      className="border-slate-300 text-xs"
+                      className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('department')}
                     />
-                    {errors.department && <p className="mt-1 text-xs text-rose-600">{errors.department.message}</p>}
+                    {errors.department && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.department.message}</p>}
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="title">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="title">
                       Tender Package Title *
                     </label>
                     <Input
                       id="title"
                       placeholder="e.g. Supply, Installation & Commissioning of High-Pressure Pumps"
-                      className="border-slate-300 text-xs"
+                      className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('title')}
                     />
-                    {errors.title && <p className="mt-1 text-xs text-rose-600">{errors.title.message}</p>}
+                    {errors.title && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.title.message}</p>}
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="organization">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="organization">
                       Procuring Entity / Organization *
                     </label>
                     <Input
                       id="organization"
                       placeholder="Chennai Petroleum Corporation Limited"
-                      className="border-slate-300 text-xs"
+                      className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('organization')}
                     />
-                    {errors.organization && <p className="mt-1 text-xs text-rose-600">{errors.organization.message}</p>}
+                    {errors.organization && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.organization.message}</p>}
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="description">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="description">
                       Technical Scope &amp; Objective *
                     </label>
                     <Textarea
                       id="description"
                       rows={3}
                       placeholder="Detail the technical specifications, standards (API/ISO), delivery requirements, and scope of work."
-                      className="border-slate-300 text-xs leading-relaxed"
+                      className="border-slate-300 text-xs leading-relaxed dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('description')}
                     />
-                    {errors.description && <p className="mt-1 text-xs text-rose-600">{errors.description.message}</p>}
+                    {errors.description && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.description.message}</p>}
                   </div>
                 </div>
               </div>
 
               {/* Group 2: Financial & Operational */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-                <div className="border-b border-slate-100 pb-2 mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                    <Scale className="h-3.5 w-3.5 text-blue-700" />
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-2xs">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Scale className="h-3.5 w-3.5 text-blue-700 dark:text-blue-400" />
                     Financial &amp; Commercial Terms
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="estimated_value_inr">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="estimated_value_inr">
                       Estimated Value (INR) *
                     </label>
                     <Input
                       id="estimated_value_inr"
                       type="number"
                       placeholder="50000000"
-                      className="border-slate-300 font-mono text-xs"
+                      className="border-slate-300 font-mono text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('estimated_value_inr')}
                     />
                     {errors.estimated_value_inr && (
-                      <p className="mt-1 text-xs text-rose-600">{errors.estimated_value_inr.message}</p>
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.estimated_value_inr.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="emd_amount_inr">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="emd_amount_inr">
                       EMD Amount (INR)
                     </label>
                     <Input
                       id="emd_amount_inr"
                       placeholder="1000000"
-                      className="border-slate-300 font-mono text-xs"
+                      className="border-slate-300 font-mono text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('emd_amount_inr')}
                     />
                     {errors.emd_amount_inr && (
-                      <p className="mt-1 text-xs text-rose-600">{errors.emd_amount_inr.message}</p>
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.emd_amount_inr.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="delivery_period">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="delivery_period">
                       Delivery / Contract Period
                     </label>
                     <Input
                       id="delivery_period"
                       placeholder="e.g. 24 Weeks"
-                      className="border-slate-300 text-xs"
+                      className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('delivery_period')}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="place_of_delivery">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="place_of_delivery">
                       Consignee / Delivery Location
                     </label>
                     <Input
                       id="place_of_delivery"
                       placeholder="CPCL Manali Refinery"
-                      className="border-slate-300 text-xs"
+                      className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('place_of_delivery')}
                     />
                   </div>
@@ -562,20 +468,20 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               </div>
 
               {/* Group 3: Configuration & Dates */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-                <div className="border-b border-slate-100 pb-2 mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-blue-700" />
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-2xs">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-blue-700 dark:text-blue-400" />
                     Bidding Mode &amp; Deadlines
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="tender_type">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="tender_type">
                       Tender Type
                     </label>
-                    <Select id="tender_type" className="border-slate-300 text-xs" {...register('tender_type')}>
+                    <Select id="tender_type" className="border-slate-300 text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500" {...register('tender_type')}>
                       <option value="OPEN">OPEN (Advertised)</option>
                       <option value="LIMITED">LIMITED (Empaneled)</option>
                       <option value="SINGLE">SINGLE TENDER</option>
@@ -583,28 +489,28 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
                       Issue Date (System Date)
                     </label>
                     <Input
                       value={todayStr()}
                       disabled
-                      className="bg-slate-100 border-slate-300 font-mono text-xs text-slate-500 cursor-not-allowed"
+                      className="bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 font-mono text-xs text-slate-500 dark:text-slate-500 cursor-not-allowed"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="closing_date">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1" htmlFor="closing_date">
                       Bid Closing Date *
                     </label>
                     <Input
                       id="closing_date"
                       type="date"
-                      className="border-slate-300 font-mono text-xs"
+                      className="border-slate-300 font-mono text-xs dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                       {...register('closing_date')}
                     />
                     {errors.closing_date && (
-                      <p className="mt-1 text-xs text-rose-600">{errors.closing_date.message}</p>
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.closing_date.message}</p>
                     )}
                   </div>
                 </div>
@@ -616,19 +522,19 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
           {step === 2 && (
             <div className="space-y-5">
               {/* REQUIREMENT TEMPLATE BLOCK */}
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
+              <div className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/60 p-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 dark:border-indigo-800 pb-3">
                   <div className="flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded bg-indigo-600 text-white">
                       <ListChecks className="h-4 w-4" />
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-indigo-950 font-serif">
+                        <span className="text-xs font-bold uppercase tracking-wider text-indigo-950 dark:text-indigo-200 font-serif">
                           Standard Requirement Template
                         </span>
                       </div>
-                      <p className="text-[11px] text-indigo-900/80">
+                      <p className="text-[11px] text-indigo-900/80 dark:text-indigo-300/80">
                         Start from the standard GeM qualification rules, then adjust criteria and weights.
                       </p>
                     </div>
@@ -640,19 +546,19 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                       variant="outline"
                       size="sm"
                       onClick={() => setDrafts(STANDARD_TEMPLATE.map((r) => toDraftRow(r, r.weight)))}
-                      className="border-indigo-300 bg-white hover:bg-indigo-50 text-indigo-900 text-xs"
+                      className="border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 text-xs"
                     >
                       Reset Standard GeM Rules
                     </Button>
                   </div>
                 </div>
 
-                <div className="mt-2.5 flex items-center justify-between text-xs text-indigo-900">
+                <div className="mt-2.5 flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-300">
                   <span>Procurement Officer retains full discretion to add, adjust weights, or remove criteria.</span>
                   <button
                     type="button"
                     onClick={addManualRow}
-                    className="inline-flex items-center gap-1 font-semibold text-indigo-800 hover:underline"
+                    className="inline-flex items-center gap-1 font-semibold text-indigo-800 dark:text-indigo-300 hover:underline"
                   >
                     <Plus className="h-3.5 w-3.5" /> Add Custom Rule
                   </button>
@@ -660,10 +566,10 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               </div>
 
               {/* Requirements Registry Table */}
-              <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-2xs">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
                 <Table>
                   <TableHeader>
-                    <tr className="border-b border-slate-200 bg-slate-50/80 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
+                    <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                       <TableHead className="py-2.5 px-3">Requirement &amp; Description</TableHead>
                       <TableHead className="py-2.5 px-3">Rule Type</TableHead>
                       <TableHead className="py-2.5 px-3">Threshold / Criteria</TableHead>
@@ -674,17 +580,17 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                   </TableHeader>
                   <TableBody>
                     {drafts.map((d) => (
-                      <TableRow key={d.clientId} className="hover:bg-slate-50/50">
+                      <TableRow key={d.clientId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/70">
                         <TableCell className="py-2.5 px-3">
                           <Input
                             value={d.requirement_name}
                             onChange={(e) => updateDraft(d.clientId, { requirement_name: e.target.value })}
                             placeholder="Requirement name"
-                            className="text-xs font-medium border-slate-300"
+                            className="text-xs font-medium border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                           />
                         </TableCell>
                         <TableCell className="py-2.5 px-3">
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-700 border border-slate-200">
+                          <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-mono text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {d.rule_type}
                           </span>
                         </TableCell>
@@ -693,7 +599,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                             value={d.threshold ?? ''}
                             onChange={(e) => updateDraft(d.clientId, { threshold: e.target.value })}
                             placeholder="e.g. Active GST or ₹2.5 Cr"
-                            className="text-xs border-slate-300"
+                            className="text-xs border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                           />
                         </TableCell>
                         <TableCell className="py-2.5 px-3 text-center">
@@ -713,14 +619,14 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                             max="100"
                             value={Number.isFinite(d.weight) ? d.weight : ''}
                             onChange={(e) => updateDraft(d.clientId, { weight: Number(e.target.value) || 0 })}
-                            className="w-16 text-right font-mono text-xs ml-auto border-slate-300"
+                            className="w-16 text-right font-mono text-xs ml-auto border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                           />
                         </TableCell>
                         <TableCell className="py-2.5 px-3 text-right">
                           <button
                             type="button"
                             onClick={() => removeDraft(d.clientId)}
-                            className="rounded p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="rounded p-1 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors"
                             title="Remove criteria"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -736,8 +642,8 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               <div
                 className={`rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                   isWeightValid
-                    ? 'border-emerald-300 bg-emerald-50/60 text-emerald-950'
-                    : 'border-rose-300 bg-rose-50/60 text-rose-950'
+                    ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200'
+                    : 'border-rose-300 dark:border-rose-700 bg-rose-50/60 dark:bg-rose-950/60 text-rose-950 dark:text-rose-200'
                 }`}
               >
                 <div>
@@ -749,11 +655,11 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                       {Math.round(totalWeight)} / 100%
                     </span>
                     {isWeightValid ? (
-                      <span className="inline-flex items-center gap-1 rounded bg-emerald-200/80 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
+                      <span className="inline-flex items-center gap-1 rounded bg-emerald-200/80 dark:bg-emerald-900/60 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-300">
                         <CheckCircle2 className="h-3 w-3" /> Exact 100%
                       </span>
                     ) : (
-                      <span className="rounded bg-rose-200/80 px-2 py-0.5 text-[10px] font-bold text-rose-900">
+                      <span className="rounded bg-rose-200/80 dark:bg-rose-900/60 px-2 py-0.5 text-[10px] font-bold text-rose-900 dark:text-rose-300">
                         Deviation: {Math.round(totalWeight) - 100}%
                       </span>
                     )}
@@ -764,7 +670,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                 </div>
 
                 {!isWeightValid && (
-                  <span className="text-xs font-semibold text-rose-800">
+                  <span className="text-xs font-semibold text-rose-800 dark:text-rose-400">
                     Requirement weights must total exactly 100%.
                   </span>
                 )}
@@ -776,83 +682,83 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
           {step === 3 && (
             <div className="space-y-5">
               {/* Government Dossier Summary Panel */}
-              <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-2xs">
-                <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-2xs">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide">
                       Tender Package Dossier Summary
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Final verification of commercial, statutory, and delivery specifications
                     </p>
                   </div>
-                  <span className="font-mono text-xs font-semibold text-blue-900 bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
+                  <span className="font-mono text-xs font-semibold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded border border-blue-200 dark:border-blue-800">
                     {step1Values.tender_number}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-xs">
                   <div>
-                    <span className="text-slate-500 block">Package Title:</span>
-                    <span className="font-semibold text-slate-900">{step1Values.title}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Package Title:</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">{step1Values.title}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Procuring Entity:</span>
-                    <span className="font-medium text-slate-800">{step1Values.organization}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Procuring Entity:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{step1Values.organization}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Department:</span>
-                    <span className="font-medium text-slate-800">{step1Values.department}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Department:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{step1Values.department}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Estimated Package Value:</span>
-                    <span className="font-mono font-bold text-slate-900">
+                    <span className="text-slate-500 dark:text-slate-400 block">Estimated Package Value:</span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                       {formatINR(Number(step1Values.estimated_value_inr))}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">EMD Amount:</span>
-                    <span className="font-mono font-medium text-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 block">EMD Amount:</span>
+                    <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {step1Values.emd_amount_inr ? formatINR(Number(step1Values.emd_amount_inr)) : 'Exempted / Zero'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Closing Date &amp; Time:</span>
-                    <span className="font-mono font-bold text-rose-800">
+                    <span className="text-slate-500 dark:text-slate-400 block">Closing Date &amp; Time:</span>
+                    <span className="font-mono font-bold text-rose-800 dark:text-rose-400">
                       {formatDate(step1Values.closing_date)} (17:30 IST)
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Tender Type:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 block">Tender Type:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">
                       {step1Values.tender_type}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Delivery Timeline:</span>
-                    <span className="font-medium text-slate-800">{step1Values.delivery_period}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Delivery Timeline:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{step1Values.delivery_period}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Consignee Location:</span>
-                    <span className="font-medium text-slate-800">{step1Values.place_of_delivery}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Consignee Location:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{step1Values.place_of_delivery}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-slate-100 pt-3">
-                  <span className="text-slate-500 block text-xs">Scope of Supply:</span>
-                  <p className="mt-1 text-xs text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded border border-slate-200">
+                <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <span className="text-slate-500 dark:text-slate-400 block text-xs">Scope of Supply:</span>
+                  <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded border border-slate-200 dark:border-slate-700">
                     {step1Values.description}
                   </p>
                 </div>
               </div>
 
               {/* Requirements Breakdown Table */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                     Active Evaluation Criteria ({drafts.length} rules)
                   </h4>
-                  <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                     Total Weight: 100%
                   </span>
                 </div>
@@ -860,25 +766,25 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
                 <div className="max-h-48 overflow-y-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 text-slate-500 font-semibold">
+                      <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
                         <th className="py-1.5 px-2">Rule Name</th>
                         <th className="py-1.5 px-2">Threshold</th>
                         <th className="py-1.5 px-2 text-center">Type</th>
                         <th className="py-1.5 px-2 text-right">Weight</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {drafts.map((d) => (
                         <tr key={d.clientId}>
-                          <td className="py-1.5 px-2 font-medium text-slate-900">{d.requirement_name}</td>
-                          <td className="py-1.5 px-2 text-slate-600">{d.threshold || '—'}</td>
+                          <td className="py-1.5 px-2 font-medium text-slate-900 dark:text-slate-100">{d.requirement_name}</td>
+                          <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400">{d.threshold || '—'}</td>
                           <td className="py-1.5 px-2 text-center">
                             {d.mandatory ? (
-                              <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                              <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-800">
                                 MANDATORY
                               </span>
                             ) : (
-                              <span className="text-[10px] text-slate-500">Scored</span>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400">Scored</span>
                             )}
                           </td>
                           <td className="py-1.5 px-2 text-right font-mono font-semibold">{d.weight}%</td>
@@ -890,16 +796,16 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               </div>
 
               {/* Official Declaration Checkbox */}
-              <div className="rounded-lg border border-blue-200 bg-blue-50/70 p-4">
+              <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/60 p-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={confirmedDeclaration}
                     onChange={(e) => setConfirmedDeclaration(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-blue-300 text-blue-800 focus:ring-blue-700"
+                    className="mt-0.5 h-4 w-4 rounded border-blue-300 dark:border-blue-700 text-blue-800 focus:ring-blue-700"
                   />
-                  <div className="text-xs text-blue-950 leading-relaxed">
-                    <strong className="block font-semibold text-blue-900 mb-0.5">
+                  <div className="text-xs text-blue-950 dark:text-blue-200 leading-relaxed">
+                    <strong className="block font-semibold text-blue-900 dark:text-blue-300 mb-0.5">
                       Statutory Procurement Officer Undertaking
                     </strong>
                     I confirm that these tender requirements, eligibility thresholds, and evaluation weights strictly adhere to CPCL procurement policy, GFR 2017 provisions, and GeM procurement guidelines.
@@ -908,7 +814,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               </div>
 
               {createError && (
-                <div className="rounded border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800">
+                <div className="rounded border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/60 p-3 text-xs text-rose-800 dark:text-rose-300">
                   {createError}
                 </div>
               )}
@@ -917,7 +823,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
         </DialogBody>
 
         {/* Wizard Footer Controls */}
-        <DialogFooter className="border-t border-slate-200 bg-white px-6 py-3.5 flex items-center justify-between">
+        <DialogFooter className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-3.5 flex items-center justify-between">
           <div>
             {step > 1 && (
               <Button
@@ -941,7 +847,7 @@ export default function TenderWizard({ open, onOpenChange, onCreated }: TenderWi
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={creating}
-              className="text-xs text-slate-600"
+              className="text-xs text-slate-600 dark:text-slate-400"
             >
               Cancel
             </Button>

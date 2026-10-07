@@ -18,8 +18,13 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '../../lib/api';
+import {
+  notificationKey,
+  useDismissedNotifications,
+} from '../../lib/dismissedNotifications';
 
 interface NavItem {
   to: string;
@@ -63,14 +68,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     navigate('/login');
   };
 
-  // Officer notifications unread count (work-queue items needing attention).
+  // Officer notifications unread count (work-queue items needing attention),
+  // excluding items the officer dismissed.
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardApi.get,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
-  const unreadCount = (dashboard?.work_queue ?? []).length;
+  const dismissed = useDismissedNotifications();
+  const unreadCount = (dashboard?.work_queue ?? []).filter(
+    (item) => !dismissed.has(notificationKey(item)),
+  ).length;
 
   const primaryItems = PRIMARY_NAV;
   const accountItems = ACCOUNT_NAV;
@@ -78,8 +87,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col justify-between bg-slate-900 text-slate-200">
       <div>
-        {/* Brand identity header */}
-        <div className="border-b border-slate-800/80 px-5 py-5">
+        {/* Brand identity header — clicking anywhere returns to the dashboard */}
+        <Link
+          to="/app/dashboard"
+          className="block border-b border-slate-800/80 px-5 py-5 transition-colors hover:bg-slate-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          aria-label="BIDWISE — go to dashboard"
+        >
           <div className="flex items-center gap-3">
             <img
               src="/bidwise-mark.png"
@@ -107,7 +120,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Primary Navigation */}
         <nav className="px-3 pt-4" aria-label="Primary">
@@ -210,7 +223,36 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function AppLayout() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Bell badge: same dismissed-aware unread count as the sidebar.
+  const { data: bellDashboard } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: dashboardApi.get,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const bellDismissed = useDismissedNotifications();
+  const bellUnread = (bellDashboard?.work_queue ?? []).filter(
+    (item) => !bellDismissed.has(notificationKey(item)),
+  ).length;
+
+  // Brief glow feedback when the bell is clicked.
+  const [bellGlow, setBellGlow] = React.useState(false);
+  const glowTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(
+    () => () => {
+      if (glowTimer.current) clearTimeout(glowTimer.current);
+    },
+    [],
+  );
+  const handleBellClick = () => {
+    setBellGlow(true);
+    if (glowTimer.current) clearTimeout(glowTimer.current);
+    glowTimer.current = setTimeout(() => setBellGlow(false), 700);
+    navigate('/app/inbox');
+  };
 
   // Compute breadcrumbs
   const path = location.pathname;
@@ -249,7 +291,7 @@ export function AppLayout() {
   const pageTitle = breadcrumbItems[breadcrumbItems.length - 1]?.label ?? 'Portal Workspace';
 
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-900 font-sans">
+    <div className="flex min-h-screen bg-slate-100 text-slate-900 font-sans dark:bg-slate-950 dark:text-slate-100">
       {/* Desktop Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 bg-slate-900 shadow-md lg:block z-40">
         <SidebarContent />
@@ -286,11 +328,11 @@ export function AppLayout() {
       {/* Main Content Column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Institutional Top Header */}
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs dark:border-slate-800 dark:bg-slate-900/95">
           <div className="flex items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden"
+                className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden dark:text-slate-400 dark:hover:bg-slate-800"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Open navigation"
               >
@@ -298,21 +340,21 @@ export function AppLayout() {
               </button>
 
               {/* Breadcrumb path */}
-              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-600 truncate">
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-600 truncate dark:text-slate-400">
                 {breadcrumbItems.map((crumb, idx) => {
                   const isLast = idx === breadcrumbItems.length - 1;
                   return (
                     <React.Fragment key={idx}>
-                      {idx > 0 && <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />}
+                      {idx > 0 && <ChevronRight className="h-3 w-3 text-slate-400 shrink-0 dark:text-slate-500" />}
                       {crumb.to && !isLast ? (
                         <Link
                           to={crumb.to}
-                          className="hover:text-blue-700 transition-colors font-medium hover:underline text-slate-600 truncate"
+                          className="hover:text-blue-700 transition-colors font-medium hover:underline text-slate-600 truncate dark:text-slate-400 dark:hover:text-blue-400"
                         >
                           {crumb.label}
                         </Link>
                       ) : (
-                        <span className={cn('truncate', isLast ? 'font-semibold text-slate-900' : 'text-slate-500')}>
+                        <span className={cn('truncate', isLast ? 'font-semibold text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400')}>
                           {crumb.label}
                         </span>
                       )}
@@ -324,7 +366,7 @@ export function AppLayout() {
 
             {/* Contextual institutional badges and officer indicators */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="hidden md:flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-[11px] font-medium text-blue-900">
+              <div className="hidden md:flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-[11px] font-medium text-blue-900 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>GeM Portal Sync: Connected</span>
               </div>
@@ -332,18 +374,30 @@ export function AppLayout() {
               <div className="relative">
                 <button
                   type="button"
-                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                  onClick={handleBellClick}
+                  aria-label="Open notifications"
+                  className={cn(
+                    'rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                    bellGlow &&
+                      'bg-amber-50 ring-2 ring-amber-400/70 dark:bg-amber-950/50 dark:ring-amber-400/50',
+                  )}
                   title="Notifications & System Alerts"
                 >
                   <Bell className="h-4 w-4" />
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
+                  {bellUnread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
+                      {bellUnread > 99 ? '99+' : bellUnread}
+                    </span>
+                  )}
                 </button>
               </div>
 
-              <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3">
+              <ThemeToggle />
+
+              <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3 dark:border-slate-800">
                 <div className="text-right">
-                  <p className="text-xs font-semibold text-slate-900 leading-tight">{user?.name}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">Procurement Officer</p>
+                  <p className="text-xs font-semibold text-slate-900 leading-tight dark:text-slate-100">{user?.name}</p>
+                  <p className="text-[10px] text-slate-500 font-medium dark:text-slate-400">Procurement Officer</p>
                 </div>
                 <div className="h-7 w-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
                   {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -354,23 +408,23 @@ export function AppLayout() {
         </header>
 
         {/* Page Content */}
-        <main id="main-content" className="flex-1 bg-slate-50/60">
+        <main id="main-content" className="flex-1 bg-slate-50/60 dark:bg-slate-950">
           <div className="mx-auto max-w-[1440px] p-4 sm:p-6 lg:p-7">
             <Outlet />
           </div>
         </main>
 
         {/* Institutional Footer */}
-        <footer className="border-t border-slate-200 bg-white py-3 px-4 sm:px-6">
-          <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+        <footer className="border-t border-slate-200 bg-white py-3 px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700">BIDWISE</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">BIDWISE</span>
               <span>— Smart &amp; Evidence-Based Bid Verification</span>
-              <span className="hidden md:inline text-slate-300">|</span>
-              <span className="hidden md:inline text-slate-500">Procurement Decision Support System</span>
+              <span className="hidden md:inline text-slate-300 dark:text-slate-600">|</span>
+              <span className="hidden md:inline text-slate-500 dark:text-slate-400">Procurement Decision Support System</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800">
                 Evidence-Backed Auditability
               </span>
               <span>CPCL Manali Refinery</span>

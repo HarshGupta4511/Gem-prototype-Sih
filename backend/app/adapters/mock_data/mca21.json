@@ -1,1 +1,218 @@
-{"U25200MH2022PTC890123":{"cin":"U25200MH2022PTC890123","company_name":"Harsh Safety Gear","incorporation_date":"2022-02-17","status":"ACTIVE"},"U28100MH2011PTC456789":{"cin":"U28100MH2011PTC456789","company_name":"Deccan Industrial Traders","incorporation_date":"2011-03-25","status":"ACTIVE"},"U28200MH2019PTC678901":{"cin":"U28200MH2019PTC678901","company_name":"Fusion Petro Equipment LLP","incorporation_date":"2019-11-20","status":"ACTIVE"},"U28999MH2015PTC123456":{"cin":"U28999MH2015PTC123456","company_name":"Apex Flow Systems Private Limited","incorporation_date":"2015-04-02","status":"ACTIVE"},"U29100MH2010PTC567890":{"cin":"U29100MH2010PTC567890","company_name":"Everest Engineering Co","incorporation_date":"2010-07-08","status":"ACTIVE"},"U29299MH2012PTC234567":{"cin":"U29299MH2012PTC234567","company_name":"Bharat Mech Works","incorporation_date":"2012-06-18","status":"ACTIVE"},"U29300MH2016PTC345678":{"cin":"U29300MH2016PTC345678","company_name":"Crestline Trading Co","incorporation_date":"2016-09-14","status":"ACTIVE"},"U31900MH2014PTC789012":{"cin":"U31900MH2014PTC789012","company_name":"Ganesh Controls","incorporation_date":"2014-05-30","status":"ACTIVE"}}
+{
+  "U25200MH2022PTC890123": {
+    "cin": "U25200MH2022PTC890123",
+    "company_name": "Harsh Safety Gear",
+    "incorporation_date": "2022-02-17",
+    "status": "ACTIVE"
+  },
+  "U28100MH2011PTC456789": {
+    "cin": "U28100MH2011PTC456789",
+    "company_name": "Deccan Industrial Traders",
+    "incorporation_date": "2011-03-25",
+    "status": "ACTIVE"
+  },
+  "U28200MH2019PTC678901": {
+    "cin": "U28200MH2019PTC678901",
+    "company_name": "Fusion Petro Equipment LLP",
+    "incorporation_date": "2019-11-20",
+    "status": "ACTIVE"
+  },
+  "U28999MH2015PTC123456": {
+    "cin": "U28999MH2015PTC123456",
+    "company_name": "Apex Flow Systems Private Limited",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U29100MH2010PTC567890": {
+    "cin": "U29100MH2010PTC567890",
+    "company_name": "Everest Engineering Co",
+    "incorporation_date": "2010-07-08",
+    "status": "ACTIVE"
+  },
+  "U29299MH2012PTC234567": {
+    "cin": "U29299MH2012PTC234567",
+    "company_name": "Bharat Mech Works",
+    "incorporation_date": "2012-06-18",
+    "status": "ACTIVE"
+  },
+  "U29300MH2016PTC345678": {
+    "cin": "U29300MH2016PTC345678",
+    "company_name": "Crestline Trading Co",
+    "incorporation_date": "2016-09-14",
+    "status": "ACTIVE"
+  },
+  "U31900MH2014PTC789012": {
+    "cin": "U31900MH2014PTC789012",
+    "company_name": "Ganesh Controls",
+    "incorporation_date": "2014-05-30",
+    "status": "ACTIVE"
+  },
+  "U28999MH2021PTC445566": {
+    "cin": "U28999MH2021PTC445566",
+    "company_name": "Nova Engineering Works Private Limited",
+    "incorporation_date": "2021-06-18",
+    "status": "ACTIVE"
+  },
+  "U28999KA2018PTC334455": {
+    "cin": "U28999KA2018PTC334455",
+    "company_name": "PrimeTech Industrial Systems Private Limited",
+    "incorporation_date": "2018-11-02",
+    "status": "ACTIVE"
+  },
+  "U91268MH2017PTC195941": {
+    "cin": "U91268MH2017PTC195941",
+    "company_name": "Apex Flow Systems Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U84774MH2023PTC870283": {
+    "cin": "U84774MH2023PTC870283",
+    "company_name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U11986MH2024PTC916771": {
+    "cin": "U11986MH2024PTC916771",
+    "company_name": "Scenario Clean Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U62437MH2014PTC234111": {
+    "cin": "U62437MH2014PTC234111",
+    "company_name": "Scenario GST Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U85460MH2021PTC835663": {
+    "cin": "U85460MH2021PTC835663",
+    "company_name": "Scenario PAN Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U55652MH2006PTC552451": {
+    "cin": "U55652MH2006PTC552451",
+    "company_name": "Scenario ITR Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U44695MH2003PTC321376": {
+    "cin": "U44695MH2003PTC321376",
+    "company_name": "Scenario Turnover Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U75045MH2001PTC425454": {
+    "cin": "U75045MH2001PTC425454",
+    "company_name": "Scenario ISO Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U70721MH2017PTC369756": {
+    "cin": "U70721MH2017PTC369756",
+    "company_name": "Scenario EMD Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U64106MH2002PTC617143": {
+    "cin": "U64106MH2002PTC617143",
+    "company_name": "Scenario Debarred Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U70674MH2012PTC613303": {
+    "cin": "U70674MH2012PTC613303",
+    "company_name": "Scenario Missing Pvt. Ltd.",
+    "incorporation_date": "2015-03-12",
+    "status": "ACTIVE"
+  },
+  "U28999MH2019PTC000101": {
+    "cin": "U28999MH2019PTC000101",
+    "company_name": "Aarohan Industries",
+    "incorporation_date": "09-05-2019",
+    "status": "ACTIVE"
+  },
+  "U29299MH2017PTC000202": {
+    "cin": "U29299MH2017PTC000202",
+    "company_name": "Meridian Systems",
+    "incorporation_date": "22-08-2017",
+    "status": "ACTIVE"
+  },
+  "U29199MH2016PTC000303": {
+    "cin": "U29199MH2016PTC000303",
+    "company_name": "Kestrel Enterprises",
+    "incorporation_date": "11-03-2016",
+    "status": "ACTIVE"
+  },
+  "U29399MH2018PTC000404": {
+    "cin": "U29399MH2018PTC000404",
+    "company_name": "Vardaan Technologies",
+    "incorporation_date": "14-07-2018",
+    "status": "ACTIVE"
+  },
+  "U28999MH2020PTC000505": {
+    "cin": "U28999MH2020PTC000505",
+    "company_name": "Nimbus Heavy Fab Pvt. Ltd.",
+    "incorporation_date": "05-02-2020",
+    "status": "ACTIVE"
+  },
+  "U28999KA2021PTC000506": {
+    "cin": "U28999KA2021PTC000506",
+    "company_name": "Nimbus Fabrication Works",
+    "incorporation_date": "19-06-2021",
+    "status": "ACTIVE"
+  },
+  "U28999MH2019PTC000606": {
+    "cin": "U28999MH2019PTC000606",
+    "company_name": "Brightline Tools Co.",
+    "incorporation_date": "17-02-2019",
+    "status": "ACTIVE"
+  },
+  "U29199MH2018PTC000707": {
+    "cin": "U29199MH2018PTC000707",
+    "company_name": "Crestline Valves Ltd.",
+    "incorporation_date": "28-09-2018",
+    "status": "ACTIVE"
+  },
+  "U28999MH2017PTC000909": {
+    "cin": "U28999MH2017PTC000909",
+    "company_name": "Godavari Forge Pvt. Ltd.",
+    "incorporation_date": "03-12-2017",
+    "status": "ACTIVE"
+  },
+  "U29199MH2019PTC001001": {
+    "cin": "U29199MH2019PTC001001",
+    "company_name": "Kaveri Pumps Ltd.",
+    "incorporation_date": "25-04-2019",
+    "status": "ACTIVE"
+  },
+  "U29299MH2020PTC002002": {
+    "cin": "U29299MH2020PTC002002",
+    "company_name": "Narmada Trading Co.",
+    "incorporation_date": "16-01-2020",
+    "status": "ACTIVE"
+  },
+  "U28999MH2021PTC003003": {
+    "cin": "U28999MH2021PTC003003",
+    "company_name": "Tapi Engineering Works",
+    "incorporation_date": "08-08-2021",
+    "status": "ACTIVE"
+  },
+  "U28999GJ2018PTC004004": {
+    "cin": "U28999GJ2018PTC004004",
+    "company_name": "Sabarmati Industrial Co.",
+    "incorporation_date": "30-06-2018",
+    "status": "ACTIVE"
+  },
+  "U29399OD2019PTC005005": {
+    "cin": "U29399OD2019PTC005005",
+    "company_name": "Mahanadi Equipments Pvt. Ltd.",
+    "incorporation_date": "12-11-2019",
+    "status": "ACTIVE"
+  },
+  "U51999OD2020PTC006006": {
+    "cin": "U51999OD2020PTC006006",
+    "company_name": "Brahmani Traders",
+    "incorporation_date": "21-05-2020",
+    "status": "ACTIVE"
+  }
+}

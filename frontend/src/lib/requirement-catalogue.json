@@ -1,0 +1,728 @@
+{
+  "entries": [
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Every bidder must hold an active GST registration.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": true,
+      "default_weight": 15,
+      "demo_note": "Demo bidders carry fictional GSTINs matched against mock GSTN fixtures.",
+      "description": "Active GST registration certificate in the state of supply; status verified with the GSTN portal.",
+      "expected_document_types": [
+        "GST_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": true,
+      "key": "gst_registration",
+      "policy_reference": "GFR 2017 Rule 144(i) & GeM General Terms",
+      "requirement_name": "Active GST Registration (Form GST REG-06)",
+      "rule_config": {
+        "identifier_field": "gstin",
+        "require_status": "ACTIVE",
+        "source": "GSTN"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Active GST registration",
+      "verification_source": "GSTN"
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Every bidder must hold a valid PAN.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": true,
+      "default_weight": 10,
+      "demo_note": "Nova's mock PAN_IT record carries a different legal name, producing the intended verification MISMATCH.",
+      "description": "Permanent Account Number in the bidder entity name; active taxpayer status verified with the PAN_IT portal.",
+      "expected_document_types": [
+        "PAN_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": true,
+      "key": "pan_verification",
+      "policy_reference": "Income Tax Act 1961 Section 139A",
+      "requirement_name": "Valid Income Tax PAN & Compliance",
+      "rule_config": {
+        "identifier_field": "pan",
+        "require_status": "ACTIVE",
+        "source": "PAN_IT"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Active PAN",
+      "verification_source": "PAN_IT"
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Financial soundness check for every bidder.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": true,
+      "default_weight": 5,
+      "demo_note": "Verification-backed: no evidence document is needed. A bidder with no PAN_IT check evaluates to MISSING (never an assumed pass).",
+      "description": "Income tax return filed for the latest assessment year, read from the PAN_IT portal record.",
+      "expected_document_types": [],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "itr_filing",
+      "policy_reference": "Income Tax Act 1961 Section 139(1)",
+      "requirement_name": "Income Tax Return Filing (Latest Assessment Year)",
+      "rule_config": {
+        "value_source": "verification.PAN_IT.itr_filed_upto"
+      },
+      "rule_type": "EXISTENCE",
+      "threshold": "ITR filed for the latest assessment year",
+      "verification_source": "PAN_IT"
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Only evaluated when the bidder claims MSE benefit (EMD exemption / purchase preference).",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "REGISTRATION",
+      "default_mandatory": false,
+      "default_weight": 10,
+      "demo_note": "Non-mandatory: bidders without Udyam evaluate to REVIEW_REQUIRED (factor 0.5), never FAIL.",
+      "description": "Valid Udyam Registration Certificate for micro/small enterprise benefits under the Public Procurement Policy.",
+      "expected_document_types": [
+        "UDYAM_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": true,
+      "key": "udyam_registration",
+      "policy_reference": "Public Procurement Policy for MSEs Order 2012",
+      "requirement_name": "MSME / Udyam Registration (If claiming benefit)",
+      "rule_config": {
+        "identifier_field": "udyam_number",
+        "require_status": "ACTIVE",
+        "source": "UDYAM"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Valid Udyam registration",
+      "verification_source": "UDYAM"
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Every incorporated bidder must have an active CIN.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": true,
+      "default_weight": 5,
+      "demo_note": "Portal-only verification: no evidence document is generated. Mock MCA21 fixtures cover all demo profiles.",
+      "description": "Corporate Identity Number active on the MCA21 registry; company identity verified against the portal record.",
+      "expected_document_types": [],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "company_incorporation",
+      "policy_reference": "Companies Act 2013",
+      "requirement_name": "Company Incorporation (MCA21 CIN Active)",
+      "rule_config": {
+        "identifier_field": "cin",
+        "require_status": "ACTIVE",
+        "source": "MCA21"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Active CIN on MCA21",
+      "verification_source": "MCA21"
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Financial capacity check for every bidder.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "FINANCIAL",
+      "default_mandatory": true,
+      "default_weight": 15,
+      "demo_note": "Demo evidence carries a 1.5x margin over the threshold. Vertex is the only profile without turnover evidence.",
+      "description": "Average annual financial turnover during the last 3 consecutive financial years must meet the required threshold.",
+      "expected_document_types": [
+        "TURNOVER_CERTIFICATE"
+      ],
+      "expected_value": "15000000",
+      "in_default_template": false,
+      "key": "turnover",
+      "policy_reference": "CPCL Procurement Manual §4.2",
+      "requirement_name": "Minimum 3-Year Average Annual Turnover",
+      "rule_config": {
+        "operator": ">=",
+        "value": 15000000,
+        "value_source": "extracted.turnover_inr"
+      },
+      "rule_type": "MINIMUM",
+      "threshold": "₹1.50 Crore",
+      "verification_source": null
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Technical capacity check for every bidder.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "EXPERIENCE",
+      "default_mandatory": true,
+      "default_weight": 10,
+      "demo_note": "Demo evidence carries threshold + 2 years. Vertex is the only profile with experience evidence among its missing-evidence set.",
+      "description": "Satisfactory completion of similar supply or execution contracts with PSUs or industrial refineries.",
+      "expected_document_types": [
+        "EXPERIENCE_CERTIFICATE"
+      ],
+      "expected_value": "3",
+      "in_default_template": false,
+      "key": "experience",
+      "policy_reference": "Public Procurement Policy for CPSEs §3.1",
+      "requirement_name": "Prior Relevant Experience & Commissioning",
+      "rule_config": {
+        "operator": ">=",
+        "value": 3,
+        "value_source": "extracted.experience_years"
+      },
+      "rule_type": "MINIMUM",
+      "threshold": "3 years",
+      "verification_source": null
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Execution track-record check for every bidder.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "EXPERIENCE",
+      "default_mandatory": true,
+      "default_weight": 10,
+      "demo_note": "Demo evidence carries threshold + 15 percentage points.",
+      "description": "Satisfactory completion of at least one single contract of 40% or more of the estimated tender value.",
+      "expected_document_types": [
+        "PAST_PERFORMANCE_CERTIFICATE"
+      ],
+      "expected_value": "40",
+      "in_default_template": false,
+      "key": "past_performance",
+      "policy_reference": "CPCL Procurement Manual §4.3",
+      "requirement_name": "Past Contract Performance (Single Order ≥ 40% of Estimate)",
+      "rule_config": {
+        "operator": ">=",
+        "value": 40,
+        "value_source": "extracted.past_performance_pct"
+      },
+      "rule_type": "MINIMUM",
+      "threshold": "40% of estimated value",
+      "verification_source": null
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Applies to goods/supply tenders where OEM authorization is required. Not applicable to pure works tenders.",
+      "applicable_tender_types": [
+        "GOODS"
+      ],
+      "category": "OEM",
+      "default_mandatory": true,
+      "default_weight": 10,
+      "demo_note": "Boolean extraction: affirmative values only (negation-safe since the 2026-10-04 audit fix).",
+      "description": "Manufacturer Authorization Form (MAF) signed by the OEM's authorized signatory, valid for this tender.",
+      "expected_document_types": [
+        "OEM_AUTHORIZATION"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "oem_authorization",
+      "policy_reference": "GeM General Terms — OEM authorization",
+      "requirement_name": "OEM Authorization Undertaking (MAF)",
+      "rule_config": {
+        "expected": true,
+        "value_source": "extracted.oem_authorization_valid"
+      },
+      "rule_type": "BOOLEAN",
+      "threshold": "Valid OEM authorization",
+      "verification_source": null
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "PPP-MII applies to goods tenders. Demo default is NON-mandatory so the Apex partial-compliance scenario is preserved.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "LOCAL_CONTENT",
+      "default_mandatory": false,
+      "default_weight": 10,
+      "demo_note": "Apex deliberately declares 35% local content on this non-mandatory requirement: a real FAIL that cannot sink the bid.",
+      "description": "Self-certification or CA certificate indicating minimum 50% local value addition under the PPP-MII order.",
+      "expected_document_types": [
+        "MII_DECLARATION"
+      ],
+      "expected_value": "50",
+      "in_default_template": false,
+      "key": "mii_local_content",
+      "policy_reference": "DPIIT Order No. P-45021/2/2017-PP (BE-II)",
+      "requirement_name": "Make in India (MII) Local Content Declaration",
+      "rule_config": {
+        "operator": ">=",
+        "value": 50,
+        "value_source": "extracted.local_content_pct"
+      },
+      "rule_type": "MINIMUM",
+      "threshold": "50% Local Content",
+      "verification_source": null
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "MSE/NSIC-registered bidders may claim EMD exemption; mark non-mandatory when the exemption applies.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "FINANCIAL",
+      "default_mandatory": true,
+      "default_weight": 5,
+      "demo_note": "Demo evidence matches the threshold exactly (a deposit, not a capacity metric).",
+      "description": "EMD via bank guarantee or online payment receipt for the stipulated amount, in favour of the tendering authority.",
+      "expected_document_types": [
+        "EMD_PAYMENT"
+      ],
+      "expected_value": "500000",
+      "in_default_template": false,
+      "key": "emd_payment",
+      "policy_reference": "GFR 2017 Rule 170",
+      "requirement_name": "Earnest Money Deposit (EMD)",
+      "rule_config": {
+        "operator": ">=",
+        "value": 500000,
+        "value_source": "extracted.emd_amount_inr"
+      },
+      "rule_type": "MINIMUM",
+      "threshold": "₹5,00,000",
+      "verification_source": null
+    },
+    {
+      "applicability": "REQUIRED",
+      "applicability_note": "Integrity check for every bidder.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "INTEGRITY",
+      "default_mandatory": true,
+      "default_weight": 10,
+      "demo_note": "Never fabricates a clean chit: a missing BLACKLIST check evaluates to REVIEW_REQUIRED. PrimeTech's mock blacklist record produces the intended FAIL.",
+      "description": "Bidder is not debarred or blacklisted by any government authority; declaration cross-checked against the debarment registry.",
+      "expected_document_types": [
+        "NON_DEBARMENT_DECLARATION"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "non_debarment",
+      "policy_reference": "DoE OM F.1/20/2018-PPD; GFR Rule 151",
+      "requirement_name": "Non-Debarment / Blacklist Clearance",
+      "rule_config": {
+        "expression": "('REVIEW_REQUIRED' if ctx.get('verification', {}).get('BLACKLIST') is None else ('FAIL' if ctx['verification']['BLACKLIST'].get('data', {}).get('blacklisted', False) else 'PASS'))"
+      },
+      "rule_type": "CUSTOM_RULE",
+      "threshold": "No debarment record",
+      "verification_source": "BLACKLIST"
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Enable for technically intensive tenders. Satisfied by the technical bid dossier; otherwise an unclassified technical document (OTHER) also satisfies.",
+      "applicable_tender_types": [
+        "GOODS",
+        "WORKS"
+      ],
+      "category": "TECHNICAL",
+      "default_mandatory": true,
+      "default_weight": 5,
+      "demo_note": "'Any one of' semantics: BID_DOSSIER or any unclassified document satisfies.",
+      "description": "Bidder's technical bid complies with the tender's technical specifications (datasheets, compliance statement).",
+      "expected_document_types": [
+        "BID_DOSSIER"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "technical_compliance",
+      "policy_reference": "Tender technical specifications",
+      "requirement_name": "Technical Specification Compliance",
+      "rule_config": {
+        "document_types": [
+          "BID_DOSSIER",
+          "OTHER"
+        ]
+      },
+      "rule_type": "DOCUMENT_REQUIRED",
+      "threshold": "Technical bid / compliance statement submitted",
+      "verification_source": null
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Applicable for services/works tenders involving deployed manpower.",
+      "applicable_tender_types": [
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": false,
+      "default_weight": 10,
+      "demo_note": "Demo evidence is generated only for profiles carrying an epfo_code (Apex, PrimeTech).",
+      "description": "Active Employees' Provident Fund Organisation registration for establishments deploying manpower.",
+      "expected_document_types": [
+        "EPFO_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": true,
+      "key": "epfo_registration",
+      "policy_reference": "Employees' Provident Funds Act 1952",
+      "requirement_name": "EPFO Registration (Provident Fund)",
+      "rule_config": {
+        "identifier_field": "epfo_code",
+        "require_status": "ACTIVE",
+        "source": "EPFO"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Active EPFO registration",
+      "verification_source": "EPFO"
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Applicable for services/works tenders involving deployed manpower.",
+      "applicable_tender_types": [
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "STATUTORY",
+      "default_mandatory": false,
+      "default_weight": 5,
+      "demo_note": "No demo profile carries an esic_code, so enabling this yields REVIEW_REQUIRED until evidence exists.",
+      "description": "Active Employee State Insurance Corporation registration for establishments deploying manpower.",
+      "expected_document_types": [
+        "ESIC_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "esic_registration",
+      "policy_reference": "Employees' State Insurance Act 1948",
+      "requirement_name": "ESIC Registration (Employee State Insurance)",
+      "rule_config": {
+        "identifier_field": "esic_code",
+        "require_status": "ACTIVE",
+        "source": "ESIC"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Active ESIC registration",
+      "verification_source": "ESIC"
+    },
+    {
+      "applicability": "OPTIONAL",
+      "applicability_note": "Officer's discretion; relevant only when startup benefits apply.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "REGISTRATION",
+      "default_mandatory": false,
+      "default_weight": 5,
+      "demo_note": "Demo evidence is generated only for the Apex profile.",
+      "description": "Valid DPIIT Startup India recognition certificate, where startup benefits are claimed.",
+      "expected_document_types": [
+        "STARTUP_INDIA_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "startup_india",
+      "policy_reference": "Startup India Action Plan (DPIIT)",
+      "requirement_name": "Startup India Recognition (DPIIT)",
+      "rule_config": {
+        "document_types": [
+          "STARTUP_INDIA_CERTIFICATE"
+        ]
+      },
+      "rule_type": "DOCUMENT_REQUIRED",
+      "threshold": "Valid DPIIT recognition",
+      "verification_source": null
+    },
+    {
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Only when NSIC-registered MSE participation is expected. NOTE: the NSIC mock adapter is registered but not yet wired to an extractor or fixtures — enabling this requirement will honestly report REVIEW_REQUIRED until then.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "REGISTRATION",
+      "default_mandatory": false,
+      "default_weight": 5,
+      "demo_note": "Adapter registered but unreachable: no extractor emits nsic_number and the fixture store is empty.",
+      "description": "Valid NSIC Single Point Registration for MSEs (EMD exemption / tender set purchase benefits).",
+      "expected_document_types": [
+        "NSIC_CERTIFICATE"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "nsic_registration",
+      "policy_reference": "NSIC Single Point Registration Scheme",
+      "requirement_name": "NSIC Registration (Single Point)",
+      "rule_config": {
+        "identifier_field": "nsic_number",
+        "require_status": "ACTIVE",
+        "source": "NSIC"
+      },
+      "rule_type": "REGISTRATION_STATUS",
+      "threshold": "Valid NSIC registration",
+      "verification_source": "NSIC"
+    },
+    {
+      "applicability": "OPTIONAL",
+      "applicability_note": "Legacy consolidated-dossier check. 'Any one of' semantics: any single listed document type satisfies.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "category": "DOCUMENT",
+      "default_mandatory": true,
+      "default_weight": 5,
+      "demo_note": "Kept for backward compatibility with tenders created by the legacy wizard template.",
+      "description": "Complete signed technical packet and statutory annexures submitted as one consolidated dossier.",
+      "expected_document_types": [
+        "BID_DOSSIER"
+      ],
+      "expected_value": null,
+      "in_default_template": false,
+      "key": "bid_dossier",
+      "policy_reference": null,
+      "requirement_name": "Consolidated Bid Dossier",
+      "rule_config": {
+        "document_types": [
+          "BID_DOSSIER",
+          "PAN_CERTIFICATE",
+          "GST_CERTIFICATE",
+          "TURNOVER_CERTIFICATE",
+          "EXPERIENCE_CERTIFICATE",
+          "PAST_PERFORMANCE_CERTIFICATE",
+          "OEM_AUTHORIZATION",
+          "MII_DECLARATION",
+          "EMD_PAYMENT",
+          "NON_DEBARMENT_DECLARATION"
+        ]
+      },
+      "rule_type": "DOCUMENT_REQUIRED",
+      "threshold": "Complete bid dossier",
+      "verification_source": null
+    },
+    {
+      "key": "itr_document",
+      "requirement_name": "Income Tax Return — FY 2023–24 (AY 2024–25)",
+      "description": "Bidder must furnish the Income Tax Return for financial year 2023–24. The extracted financial year must match the required year.",
+      "category": "STATUTORY",
+      "default_mandatory": true,
+      "applicability": "REQUIRED",
+      "applicability_note": "Applies to every tender of the listed types.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "MATCH",
+      "rule_config": {
+        "value_source": "extracted.itr_financial_year",
+        "pattern": "2023-24"
+      },
+      "threshold": "FY 2023–24",
+      "expected_value": "2023-24",
+      "verification_source": null,
+      "default_weight": 10,
+      "in_default_template": true,
+      "expected_document_types": [
+        "ITR_DOCUMENT"
+      ],
+      "policy_reference": "Income-tax Act (demo)",
+      "demo_note": "Document-backed: the ITR PDF is generated per scenario; the FY mismatch scenario fails this rule."
+    },
+    {
+      "key": "mca21_certificate",
+      "requirement_name": "MCA21 Certificate of Incorporation",
+      "description": "Bidder should hold an active MCA21-registered company (CIN). Verified against the mock MCA21 registry; the certificate PDF is supporting evidence.",
+      "category": "REGISTRATION",
+      "default_mandatory": true,
+      "applicability": "REQUIRED",
+      "applicability_note": "Applies to every tender of the listed types.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "REGISTRATION_STATUS",
+      "rule_config": {
+        "source": "MCA21",
+        "identifier_field": "cin",
+        "require_status": "ACTIVE"
+      },
+      "threshold": "Active CIN",
+      "expected_value": "ACTIVE",
+      "verification_source": "MCA21",
+      "default_weight": 5,
+      "in_default_template": true,
+      "expected_document_types": [
+        "MCA21_CERTIFICATE"
+      ],
+      "policy_reference": "Companies Act (demo)",
+      "demo_note": "Registry-backed with a generated certificate PDF. Mock MCA21 fixtures are written per scenario."
+    },
+    {
+      "key": "balance_sheet",
+      "requirement_name": "Balance Sheet — FY 2023–24 (Turnover)",
+      "description": "Bidder must meet the minimum average annual turnover evidenced by the audited balance sheet for FY 2023–24.",
+      "category": "FINANCIAL",
+      "default_mandatory": true,
+      "applicability": "REQUIRED",
+      "applicability_note": "Applies to every tender of the listed types.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "MINIMUM",
+      "rule_config": {
+        "value_source": "extracted.turnover_inr",
+        "operator": ">=",
+        "value": 15000000
+      },
+      "threshold": "Rs 1.5 crore",
+      "expected_value": ">= Rs 1.5 crore",
+      "verification_source": null,
+      "default_weight": 15,
+      "in_default_template": true,
+      "expected_document_types": [
+        "BALANCE_SHEET"
+      ],
+      "policy_reference": "Financial eligibility (demo)",
+      "demo_note": "Turnover shortfall scenario generates a below-threshold balance sheet."
+    },
+    {
+      "key": "work_experience",
+      "requirement_name": "Work Experience Certificate",
+      "description": "Bidder must furnish a work experience/completion certificate for relevant prior work.",
+      "category": "EXPERIENCE",
+      "default_mandatory": true,
+      "applicability": "REQUIRED",
+      "applicability_note": "Applies to every tender of the listed types.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "DOCUMENT_REQUIRED",
+      "rule_config": {
+        "document_types": [
+          "EXPERIENCE_CERTIFICATE"
+        ]
+      },
+      "threshold": "Certificate required",
+      "expected_value": "uploaded",
+      "verification_source": null,
+      "default_weight": 10,
+      "in_default_template": true,
+      "expected_document_types": [
+        "EXPERIENCE_CERTIFICATE"
+      ],
+      "policy_reference": "Experience eligibility (demo)",
+      "demo_note": "Experience-conflict scenario pairs the certificate with a contradictory work order."
+    },
+    {
+      "key": "iso_9001",
+      "requirement_name": "ISO 9001 Quality Management Certificate",
+      "description": "Bidder should hold a valid (unexpired) ISO 9001 certificate.",
+      "category": "TECHNICAL",
+      "default_mandatory": false,
+      "applicability": "CONDITIONAL",
+      "applicability_note": "Applies when the tender requires quality certification.",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "DATE_VALIDITY",
+      "rule_config": {
+        "value_source": "extracted.iso_valid_until"
+      },
+      "threshold": "Valid on bid date",
+      "expected_value": "unexpired",
+      "verification_source": null,
+      "default_weight": 5,
+      "in_default_template": true,
+      "expected_document_types": [
+        "ISO_9001_CERTIFICATE"
+      ],
+      "policy_reference": "Quality certification (demo)",
+      "demo_note": "Expired-ISO scenario generates a lapsed validity date; number-mismatch scenario contradicts the fixture."
+    },
+    {
+      "key": "emd_receipt",
+      "requirement_name": "EMD Receipt (Bid Security)",
+      "description": "Bidder must deposit the earnest money deposit; the receipt amount must meet the tender requirement.",
+      "category": "FINANCIAL",
+      "default_mandatory": true,
+      "applicability": "REQUIRED",
+      "applicability_note": "Applies unless the bidder is exempt (MSE/Startup).",
+      "applicable_tender_types": [
+        "GOODS",
+        "SERVICES",
+        "WORKS"
+      ],
+      "rule_type": "MINIMUM",
+      "rule_config": {
+        "value_source": "extracted.emd_amount_inr",
+        "operator": ">=",
+        "value": 500000
+      },
+      "threshold": "Rs 5,00,000",
+      "expected_value": ">= Rs 5,00,000",
+      "verification_source": null,
+      "default_weight": 10,
+      "in_default_template": true,
+      "expected_document_types": [
+        "EMD_RECEIPT"
+      ],
+      "policy_reference": "Bid security (demo)",
+      "demo_note": "Wrong-amount scenario generates a short receipt; wrong-beneficiary is visible in extracted fields."
+    }
+  ],
+  "meta": {
+    "applicability": {
+      "CONDITIONAL": "Applies only when the tender's facts trigger it (tender type, manpower, MSE benefit claim, EMD exemption, ...).",
+      "OPTIONAL": "At the officer's discretion; off by default.",
+      "REQUIRED": "Applies to every tender of the listed types."
+    },
+    "description": "Single authoritative source of tender requirement templates for the Create Tender wizard and the TenderWizard dialog. Every entry's rule_config uses the exact schema consumed by the backend deterministic rules engine (backend/app/engines/rules_engine.py). backend/tests/test_requirement_catalogue.py validates this file against the engine — edit entries there, not in the UI components.",
+    "name": "BIDWISE requirement catalogue",
+    "version": 2,
+    "weight_note": "Entries with in_default_template=true form the demo default template; their default_weight values MUST total exactly 100. The default template covers the 10 document types (Udyam, GST, PAN, ITR 2023-24, MCA21, Balance Sheet 2024, Work Experience, ISO 9001, EMD, EPFO). These are illustrative demonstration defaults, not official GeM/CPCL-prescribed weights."
+  }
+}

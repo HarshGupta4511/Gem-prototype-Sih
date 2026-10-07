@@ -26,6 +26,24 @@ def _validate_check_status(value: str) -> str:
         ) from None
 
 
+@router.get("/adapters")
+def list_adapters(user=Depends(_OFFICER)):
+    """Read-only inventory of the verification adapters configured in this
+    build. Every adapter is a MOCK (``is_mock: True``); nothing here implies
+    live government API connectivity."""
+    from app.adapters.registry import ADAPTERS, ADAPTER_DISPLAY_NAMES
+
+    return [
+        {
+            "source": source,
+            "display_name": ADAPTER_DISPLAY_NAMES.get(source, source),
+            "mode": "Mock Adapter",
+            "is_mock": True,
+        }
+        for source in ADAPTERS
+    ]
+
+
 @router.get("", response_model=list[VerificationCheckOut])
 def list_checks(
     bid_id: int | None = Query(default=None),

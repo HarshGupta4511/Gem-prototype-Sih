@@ -137,11 +137,40 @@ export const bidsApi = {
   create: (body: CreateBidRequest) => api.post('/bids', body).then((r) => r.data),
   get: (bid_id: number) => api.get<BidDetail>(`/bids/${bid_id}`).then((r) => r.data),
   /** Attach a demo bidder's fictional evidence dossier via the real backend pipeline. */
-  seedDemoEvidence: (bid_id: number, profile_key: string) =>
-    api.post(`/bids/${bid_id}/seed-demo-evidence`, { profile_key }).then((r) => r.data),
+  seedDemoEvidence: (
+    bid_id: number,
+    profile_key: string,
+    scenario_id?: string,
+    seed?: number,
+  ) =>
+    api.post(`/bids/${bid_id}/seed-demo-evidence`, {
+      profile_key,
+      scenario_id: scenario_id ?? null,
+      seed: seed ?? null,
+    }).then((r) => r.data),
   /** Delete a bid and all its derived data. Procurement Officer only. */
   delete: (bid_id: number) => api.delete(`/bids/${bid_id}`).then((r) => r.data),
+  /** Upload or replace a bidder's display-only logo (officer only; jpg/jpeg/png/webp ≤ 2MB, normalized to PNG). */
+  uploadBidderLogo: (bidder_id: number, file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api
+      .post<{ bidder_id: number; logo_url: string; size_bytes: number }>(
+        `/bidders/${bidder_id}/logo`,
+        fd,
+      )
+      .then((r) => r.data);
+  },
+  /** Remove a bidder's logo (idempotent). */
+  deleteBidderLogo: (bidder_id: number) =>
+    api.delete(`/bidders/${bidder_id}/logo`).then((r) => r.data),
+  /** Fetch a bidder's logo as a blob (the endpoint is auth-protected, so <img> can't hit it directly). */
+  getBidderLogoBlob: (bidder_id: number) =>
+    api.get(`/bidders/${bidder_id}/logo`, { responseType: 'blob' }).then((r) => r.data as Blob),
 };
+
+/** Public URL form of a bidder's logo (reference only — use getBidderLogoBlob for rendering). */
+export const bidderLogoUrl = (bidder_id: number) => `${API_BASE_URL}/bidders/${bidder_id}/logo`;
 
 // --------------------------------------------------------------- documents
 export const documentsApi = {
@@ -166,6 +195,56 @@ export const documentsApi = {
   },
   process: (id: number) =>
     api.post<{ document: Document; extracted_fields: ExtractedField[]; classification: string }>(`/documents/${id}/process`).then((r) => r.data),
+  /** Semantic extracted-information view for a bid: shared identity
+   * fields consolidated across documents, document-specific fields kept
+   * separate, genuine cross-document conflicts flagged. */
+  semanticView: (bid_id: number) =>
+    api
+      .get<{
+        bid_id: number;
+        entities: {
+          field_name: string;
+          display_label: string;
+          scope: 'shared' | 'document';
+          document_type: string | null;
+          values: {
+            normalized_value: string;
+            raw_value: string;
+            method: string | null;
+            confidence: number | null;
+            page: number | null;
+            sources: { document_id: number; document_type: string | null; filename: string | null }[];
+          }[];
+          has_conflict: boolean;
+          is_empty: boolean;
+          source_count: number;
+        }[];
+      }>(`/documents/semantic-view`, { params: { bid_id } })
+      .then((r) => r.data),
+  /** Bidder-registration preview: extract details from a PDF without
+   * creating any Document row. Returns the same pipeline output shape
+   * as process(), plus filename/status. */
+  registrationPreview: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api
+      .post<{
+        status: string;
+        filename: string;
+        document_type: string | null;
+        classification_confidence: number | null;
+        type_detected?: boolean;
+        pages: number;
+        ocr_used: boolean;
+        provider?: string;
+        extraction_warning?: string;
+        error?: string;
+        extracted_fields: ExtractedField[];
+      }>('/documents/registration-preview', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data);
+  },
   get: (id: number) =>
     api.get<{ document: Document; extracted_fields: ExtractedField[] }>(`/documents/${id}`).then((r) => r.data),
   correctType: (id: number, document_type: string) =>
@@ -173,11 +252,19 @@ export const documentsApi = {
 };
 
 // ------------------------------------------------------------ verification
+export interface VerificationAdapterInfo {
+  source: string;
+  display_name: string;
+  mode: string;
+  is_mock: boolean;
+}
 export const verificationApi = {
   run: (bid_id: number) =>
     api.post<{ checks: VerificationCheck[] }>('/verification/run', { bid_id }).then((r) => r.data),
   list: (bid_id: number) => api.get<{ checks: VerificationCheck[] }>(`/verification/${bid_id}`).then((r) => r.data),
   all: () => api.get<VerificationCheck[]>('/verification').then((r) => r.data),
+  /** Read-only inventory of the verification adapters configured in this build. */
+  adapters: () => api.get<VerificationAdapterInfo[]>('/verification/adapters').then((r) => r.data),
 };
 
 // ----------------------------------------------------- compliance & risk
@@ -253,6 +340,8 @@ export const API_BASE_URL = API_URL;
 // --------------------------------------------------------------- integrity
 export const integrityApi = {
   analyze: () => api.post('/integrity/analyze', {}).then((r) => r.data as IntegrityAnalysisResult),
+  dedupe: () => api.post('/integrity/dedupe', {}).then((r) => r.data as { removed_duplicates: number; remaining_open: number }),
+  cleanupStale: () => api.post('/integrity/cleanup-stale', {}).then((r) => r.data as Record<string, number>),
   overview: () => api.get('/integrity/overview').then((r) => r.data as IntegrityOverview),
   findings: (params?: {
     status?: string;
@@ -269,6 +358,22 @@ export const integrityApi = {
       .then((r) => r.data as IntegrityFinding),
   bidSignals: (bidId: number) =>
     api.get(`/integrity/bid/${bidId}/signals`).then((r) => r.data as IntegrityFinding[]),
+  loadDemoDataset: () => api.post('/integrity/demo-dataset').then((r) => r.data),
+  resetDemoDataset: () => api.delete('/integrity/demo-dataset').then((r) => r.data),
+  demoDatasetStatus: () =>
+    api.get('/integrity/demo-dataset/status').then(
+      (r) => r.data as { loaded: boolean; tenders: Array<{ id: number; tender_number: string }>; [k: string]: unknown },
+    ),
+};
+
+// -------------------------------------------------------------- variety demo dataset
+export const demoVarietyApi = {
+  loadDataset: () => api.post('/demo-variety/dataset').then((r) => r.data),
+  resetDataset: () => api.delete('/demo-variety/dataset').then((r) => r.data),
+  datasetStatus: () =>
+    api.get('/demo-variety/dataset').then(
+      (r) => r.data as { loaded: boolean; tenders: Array<{ id: number; tender_number: string }>; [k: string]: unknown },
+    ),
 };
 
 // -------------------------------------------------------------- consistency

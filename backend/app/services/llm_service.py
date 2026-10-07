@@ -76,6 +76,12 @@ ALLOWED_KEYS = {
     "gstin",
     "startup_certificate_number",
     "debarment_declaration",
+    "payment_reference",
+    "payment_date",
+    "beneficiary",
+    "client_name",
+    "dpiit_recognition",
+    "registration_date",
     "confidence",
     "provider",
 }
@@ -138,7 +144,22 @@ class MockLLMProvider(LLMProvider):
         ("PAN", "pan", "str"),
         ("GSTIN", "gstin", "str"),
         ("Certificate Number", "startup_certificate_number", "str"),
+        ("DPIIT Recognition", "dpiit_recognition", "str"),
         ("Debarment Declaration", "debarment_declaration", "str"),
+        ("Payment Reference", "payment_reference", "str"),
+        ("Payment Date", "payment_date", "date"),
+        ("Beneficiary", "beneficiary", "str"),
+        ("Client", "client_name", "str"),
+        ("Registration Date", "registration_date", "date"),
+        ("ISO Certificate Number", "iso_certificate_number", "str"),
+        ("ISO Valid From", "iso_valid_from", "date"),
+        ("ISO Valid Until", "iso_valid_until", "date"),
+        ("Financial Year", "itr_financial_year", "str"),
+        ("Balance Sheet Year", "financial_year", "str"),
+        ("Assessment Year", "assessment_year", "str"),
+        ("Total Income", "total_income", "amount"),
+        ("Auditor Name", "auditor_name", "str"),
+        ("Company Status", "company_status", "str"),
     )
 
     def extract_fields(self, document_type: str, text: str, filename: str) -> dict:
@@ -147,9 +168,13 @@ class MockLLMProvider(LLMProvider):
         out: dict = {}
         confidences: list[float] = []
         for label, field, kind in self._LABELS:
+            # NOTE: horizontal whitespace only ([ \t]). The earlier \s*
+            # form let an empty label swallow the next non-empty line
+            # (e.g. "Client:" with no value consumed the next paragraph),
+            # producing a false-positive extraction. Values stay single-line.
             pattern = re.compile(
-                r"(?im)^\s*" + re.escape(label)
-                + r"(?:\s+(?:number|registration|no\.?))?\s*:\s*(.+?)\s*$"
+                r"(?im)^[ \t]*" + re.escape(label)
+                + r"(?:[ \t]+(?:number|registration|no\.?))?[ \t]*:[ \t]*([^\n]+?)[ \t]*$"
             )
             m = pattern.search(text or "")
             if not m:
@@ -182,11 +207,14 @@ class MockLLMProvider(LLMProvider):
             m = re.search(r"\d+(?:\.\d+)?", raw)
             return float(m.group(0)) if m else None
         if kind == "bool":
+            # Negation wins: "Invalid" contains "valid", so affirmative
+            # substrings must never be tested first. Word boundaries keep
+            # "no" from matching inside words like "notarized".
             lowered = raw.lower()
-            if any(w in lowered for w in ("yes", "valid", "true", "authorized", "approved")):
-                return True
-            if any(w in lowered for w in ("no", "invalid", "false", "rejected")):
+            if re.search(r"\b(no|not|invalid|unauthorized|false|rejected|denied)\b", lowered):
                 return False
+            if re.search(r"\b(yes|valid|true|authorized|approved)\b", lowered):
+                return True
             return None
         return raw or None  # pragma: no cover
 

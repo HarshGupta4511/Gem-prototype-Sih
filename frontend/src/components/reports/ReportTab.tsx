@@ -25,6 +25,7 @@ export function ReportTab({ bidId }: { bidId: number }) {
   const { toast } = useToast();
   const [observation, setObservation] = React.useState('');
   const [busy, setBusy] = React.useState(false);
+  const [regenerating, setRegenerating] = React.useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['summary-lifecycle', bidId],
@@ -41,6 +42,24 @@ export function ReportTab({ bidId }: { bidId: number }) {
     } catch (e) {
       toast('error', `${label} failed`, getErrorMessage(e));
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRegenerate() {
+    if (regenerating || busy) return; // prevent duplicate clicks
+    setRegenerating(true);
+    setBusy(true);
+    try {
+      await summariesApi.regenerate(bidId);
+      await qc.invalidateQueries({ queryKey: ['summary-lifecycle', bidId] });
+      await qc.invalidateQueries({ queryKey: ['verification-summary', bidId] });
+      await qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast('success', 'Verification summary regenerated successfully.');
+    } catch (e) {
+      toast('error', 'Regenerate summary failed', getErrorMessage(e));
+    } finally {
+      setRegenerating(false);
       setBusy(false);
     }
   }
@@ -164,17 +183,12 @@ export function ReportTab({ bidId }: { bidId: number }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              runAction('Regenerate summary', async () => {
-                await summariesApi.regenerate(bidId);
-                toast('success', 'Verification summary regenerated from current evidence');
-              })
-            }
-            disabled={busy}
+            onClick={handleRegenerate}
+            disabled={busy || regenerating}
             className="border-slate-300 text-slate-700"
           >
-            <RefreshCw className="mr-1.5 h-4 w-4" />
-            Regenerate Summary
+            <RefreshCw className={cn('mr-1.5 h-4 w-4', regenerating && 'animate-spin')} />
+            {regenerating ? 'Regenerating Summary...' : 'Regenerate Summary'}
           </Button>
         )}
       </div>

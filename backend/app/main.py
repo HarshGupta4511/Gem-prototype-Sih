@@ -8,12 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import (
     audit,
     auth,
+    bidder_logos,
     bids,
     compliance,
     consistency,
     dashboard,
     documents,
     integrity,
+    demo_variety,
     officer,
     recommendation,
     seed,
@@ -115,6 +117,30 @@ def _ensure_demo_history_column() -> None:
         logger.exception("Could not add is_demo_history column; continuing")
 
 
+def _ensure_extraction_warning_column() -> None:
+    """Additive, idempotent migration for documents.extraction_warning.
+
+    Persists the honest, user-visible warning when a pipeline stage degraded
+    (e.g. the LLM provider failed so only rule-based fields were extracted).
+    Follows the same pattern as the other startup column migrations.
+    """
+    from sqlalchemy import inspect, text
+
+    try:
+        existing = {c["name"] for c in inspect(engine).get_columns("documents")}
+    except Exception:
+        logger.exception("Could not inspect documents table; skipping column migration")
+        return
+    if "extraction_warning" in existing:
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE documents ADD COLUMN extraction_warning TEXT"))
+        logger.info("Added extraction_warning column to documents")
+    except Exception:
+        logger.exception("Could not add extraction_warning column; continuing")
+
+
 def _backfill_tender_wizard_fields(db=None) -> None:
     """Fill Step-1 wizard fields on demo tenders that predate the wizard.
 
@@ -158,6 +184,7 @@ async def lifespan(app: FastAPI):
     _ensure_tender_wizard_columns()
     _ensure_policy_context_column()
     _ensure_demo_history_column()
+    _ensure_extraction_warning_column()
     _backfill_tender_wizard_fields()
     if is_dev_secret():
         logger.warning("JWT_SECRET is the dev default — set JWT_SECRET env var")
@@ -204,6 +231,7 @@ for router in (
     auth.router,
     tenders.router,
     bids.router,
+    bidder_logos.router,
     documents.router,
     verification.router,
     compliance.router,
@@ -214,6 +242,7 @@ for router in (
     seed.router,
     verification_summaries.router,
     integrity.router,
+    demo_variety.router,
     consistency.router,
 ):
     app.include_router(router)

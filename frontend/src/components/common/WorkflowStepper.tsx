@@ -30,8 +30,8 @@ export function WorkflowStepper({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-700">Evaluation workflow</p>
-        <p className="text-xs text-slate-500">
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Evaluation workflow</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           {allDone
             ? 'All steps complete — ready for officer decision'
             : `Next: ${steps[currentIdx].label} — ${steps[currentIdx].hint}`}
@@ -48,8 +48,8 @@ export function WorkflowStepper({
                 step.done
                   ? 'border-emerald-600 bg-emerald-600 text-white'
                   : isCurrent
-                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                    : 'border-slate-300 bg-white text-slate-400',
+                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400'
+                    : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500',
               )}
             >
               {step.done ? <Check className="h-4 w-4" /> : step.icon}
@@ -62,17 +62,17 @@ export function WorkflowStepper({
                   type="button"
                   onClick={() => onStepClick(step.tab as string)}
                   title={`Go to ${step.label}`}
-                  className="group flex flex-col items-center gap-1 rounded-md px-1 py-1 text-center hover:bg-slate-50"
+                  className="group flex flex-col items-center gap-1 rounded-md px-1 py-1 text-center hover:bg-slate-50 dark:hover:bg-slate-800/70"
                 >
                   {circle}
                   <span
                     className={cn(
                       'whitespace-nowrap text-xs font-medium',
                       step.done
-                        ? 'text-emerald-700'
+                        ? 'text-emerald-700 dark:text-emerald-400'
                         : isCurrent
-                          ? 'text-indigo-700 group-hover:underline'
-                          : 'text-slate-500 group-hover:underline',
+                          ? 'text-indigo-700 dark:text-indigo-400 group-hover:underline'
+                          : 'text-slate-500 dark:text-slate-400 group-hover:underline',
                     )}
                   >
                     {i + 1}. {step.label}
@@ -84,7 +84,7 @@ export function WorkflowStepper({
                   <span
                     className={cn(
                       'whitespace-nowrap text-xs font-medium',
-                      step.done ? 'text-emerald-700' : 'text-slate-500',
+                      step.done ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400',
                     )}
                   >
                     {i + 1}. {step.label}
@@ -96,7 +96,7 @@ export function WorkflowStepper({
                   aria-hidden
                   className={cn(
                     'mx-1 mt-4 h-0.5 flex-1 rounded',
-                    step.done ? 'bg-emerald-500' : 'bg-slate-200',
+                    step.done ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700',
                   )}
                 />
               )}

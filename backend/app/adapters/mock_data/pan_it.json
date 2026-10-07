@@ -1730,5 +1730,258 @@
     "name": "Palakkad Steel Works Pvt. Ltd.",
     "itr_filed_upto": 2025,
     "status": "ACTIVE"
+  },
+  "EKPZH0965R": {
+    "pan": "EKPZH0965R",
+    "name": "Apex Flow Systems Pvt. Ltd.",
+    "legal_name": "Apex Flow Systems Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "AVJWW3427O": {
+    "pan": "AVJWW3427O",
+    "name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "legal_name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "RJTIE8448R": {
+    "pan": "RJTIE8448R",
+    "name": "Scenario Clean Pvt. Ltd.",
+    "legal_name": "Scenario Clean Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "IPJTT1688D": {
+    "pan": "IPJTT1688D",
+    "name": "Scenario GST Pvt. Ltd.",
+    "legal_name": "Scenario GST Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "UCXFT3427V": {
+    "pan": "UCXFT3427V",
+    "name": "Supreme Infra Projects LLP",
+    "legal_name": "Supreme Infra Projects LLP",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "IHHGD8185V": {
+    "pan": "IHHGD8185V",
+    "name": "Scenario ITR Pvt. Ltd.",
+    "legal_name": "Scenario ITR Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "DHFTS7032Q": {
+    "pan": "DHFTS7032Q",
+    "name": "Scenario Turnover Pvt. Ltd.",
+    "legal_name": "Scenario Turnover Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "EMYKQ3159K": {
+    "pan": "EMYKQ3159K",
+    "name": "Scenario ISO Pvt. Ltd.",
+    "legal_name": "Scenario ISO Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "IFGHN1330I": {
+    "pan": "IFGHN1330I",
+    "name": "Scenario EMD Pvt. Ltd.",
+    "legal_name": "Scenario EMD Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "SAINO2429V": {
+    "pan": "SAINO2429V",
+    "name": "Scenario Debarred Pvt. Ltd.",
+    "legal_name": "Scenario Debarred Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "CGMAC0646A": {
+    "pan": "CGMAC0646A",
+    "name": "Scenario Missing Pvt. Ltd.",
+    "legal_name": "Scenario Missing Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "KPVPL1234K": {
+    "pan": "KPVPL1234K",
+    "name": "Kestrel Pumps & Valves Pvt. Ltd.",
+    "legal_name": "Kestrel Pumps & Valves Pvt. Ltd.",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "MFCPL5678M": {
+    "pan": "MFCPL5678M",
+    "name": "Meridian Flow Controls Pvt. Ltd.",
+    "legal_name": "Meridian Flow Controls Pvt. Ltd.",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "SEWPL9012S": {
+    "pan": "SEWPL9012S",
+    "name": "Solace Engineering Works",
+    "legal_name": "Solace Engineering Works",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "VITPL3456V": {
+    "pan": "VITPL3456V",
+    "name": "Vardaan Industrial Traders",
+    "legal_name": "Vardaan Industrial Traders",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "NPEPL7890N": {
+    "pan": "NPEPL7890N",
+    "name": "Northline Process Equipment Ltd.",
+    "legal_name": "Northline Process Equipment Ltd.",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "ASPL2345A": {
+    "pan": "ASPL2345A",
+    "name": "Aarohan Systems Pvt. Ltd.",
+    "legal_name": "Aarohan Systems Pvt. Ltd.",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "BTRPL6789B": {
+    "pan": "BTRPL6789B",
+    "name": "Brightline Traders",
+    "legal_name": "Brightline Traders",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "XYZPL9999X": {
+    "pan": "XYZPL9999X",
+    "name": "XYZ Plastics Pvt. Ltd.",
+    "legal_name": "XYZ Plastics Pvt. Ltd.",
+    "status": "ACTIVE",
+    "name_match": true,
+    "itr_filed_upto": 2025
+  },
+  "MMDDS2202M": {
+    "pan": "MMDDS2202M",
+    "name": "Meridian Systems",
+    "legal_name": "Meridian Systems",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "KKEEN3303K": {
+    "pan": "KKEEN3303K",
+    "name": "Kestrel Enterprises",
+    "legal_name": "Kestrel Enterprises",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "VVTTN4404V": {
+    "pan": "VVTTN4404V",
+    "name": "Vardaan Technologies",
+    "legal_name": "Vardaan Technologies",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "NNHHF5505N": {
+    "pan": "NNHHF5505N",
+    "name": "Nimbus Heavy Fab Pvt. Ltd.",
+    "legal_name": "Nimbus Heavy Fab Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "BBLLE6606B": {
+    "pan": "BBLLE6606B",
+    "name": "Brightline Tools Co.",
+    "legal_name": "Brightline Tools Co.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "CCCLL7707C": {
+    "pan": "CCCLL7707C",
+    "name": "Crestline Valves Ltd.",
+    "legal_name": "Crestline Valves Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "CCDDY8808D": {
+    "pan": "CCDDY8808D",
+    "name": "Crestline Valves Ltd.",
+    "legal_name": "Crestline Valves Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "GGDDR9909G": {
+    "pan": "GGDDR9909G",
+    "name": "Godavari Forge Pvt. Ltd.",
+    "legal_name": "Godavari Forge Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "KKAAV1010K": {
+    "pan": "KKAAV1010K",
+    "name": "Kaveri Pumps Ltd.",
+    "legal_name": "Kaveri Pumps Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "NNRMM2020N": {
+    "pan": "NNRMM2020N",
+    "name": "Narmada Systems Pvt. Ltd.",
+    "legal_name": "Narmada Systems Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "TTAAP3030T": {
+    "pan": "TTAAP3030T",
+    "name": "Tapi Engineering Works",
+    "legal_name": "Tapi Engineering Works",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "SSBBM4040S": {
+    "pan": "SSBBM4040S",
+    "name": "Sabarmati Industrial Co.",
+    "legal_name": "Sabarmati Industrial Co.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "MMHHN5050M": {
+    "pan": "MMHHN5050M",
+    "name": "Mahanadi Equipments Pvt. Ltd.",
+    "legal_name": "Mahanadi Equipments Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "BBRRH6060B": {
+    "pan": "BBRRH6060B",
+    "name": "Brahmani Traders",
+    "legal_name": "Brahmani Traders",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "GGDDY9919D": {
+    "pan": "GGDDY9919D",
+    "name": "Godavari Forge Pvt. Ltd.",
+    "legal_name": "Godavari Forge Pvt. Ltd.",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
+  },
+  "KKEEY3313Y": {
+    "pan": "KKEEY3313Y",
+    "name": "Kestrel Enterprises",
+    "legal_name": "Kestrel Enterprises",
+    "status": "ACTIVE",
+    "itr_filed_upto": 2025
   }
 }

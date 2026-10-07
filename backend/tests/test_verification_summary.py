@@ -90,7 +90,7 @@ def _setup(db):
         bid_id=bid.id, risk_level="LOW", risk_score=12.0,
         signals=["no adverse signals"], explanation="Clean record.",
     ))
-    bid.recommendation = "PROCEED"
+    bid.recommendation = "APPROVE"
     bid.recommendation_reason = "All mandatory requirements met."
     db.commit()
     return bid, officer
@@ -136,7 +136,7 @@ def test_full_summary_lifecycle(db):
     assert summary["compliance"][0]["result"] == "PASS"
     assert summary["risk"]["level"] == "LOW"
     # AI section uses the stored recommendation only.
-    assert summary["ai_summary"]["recommendation"] == "PROCEED"
+    assert summary["ai_summary"]["recommendation"] == "APPROVE"
     # Observations are officer observations (renamed key).
     assert "officer_observations" in summary
     assert len(summary["officer_observations"]) == 1
@@ -259,3 +259,34 @@ def test_summary_endpoints_require_officer():
     # No handoff endpoints remain.
     assert not any(p.endswith(("/inbox", "/send", "/received", "/opened"))
                    for p in paths)
+
+
+def test_generated_at_reflects_actual_generation_event(db):
+    """generated_at comes from the audit event, never 'now'."""
+    bid, officer = _setup(db)
+
+    # DRAFT: no generation event yet -> generated_at is None.
+    assert vss.build_summary(db, bid.id)["generated_at"] is None
+
+    summary = vss.generate_summary(db, bid.id, officer)
+    gen_at = summary["generated_at"]
+    assert gen_at is not None
+    # Matches the REPORT_GENERATED audit event timestamp (same instant).
+    from datetime import timezone
+
+    actions = {
+        e.action: e.timestamp for e in vss._summary_events(db, bid.id)
+    }
+    assert gen_at == actions["VERIFICATION_REPORT_GENERATED"].replace(
+        tzinfo=timezone.utc
+    ).isoformat()
+
+    # Regenerate -> generated_at moves to the regeneration event.
+    summary = vss.regenerate_summary(db, bid.id, officer)
+    assert summary["status"] == "UPDATED"
+    actions = {
+        e.action: e.timestamp for e in vss._summary_events(db, bid.id)
+    }
+    assert summary["generated_at"] == actions[
+        "VERIFICATION_SUMMARY_REGENERATED"
+    ].replace(tzinfo=timezone.utc).isoformat()

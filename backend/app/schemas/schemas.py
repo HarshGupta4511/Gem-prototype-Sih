@@ -305,10 +305,16 @@ class BidCreateResponse(BaseModel):
 class DemoEvidenceSeedRequest(BaseModel):
     """Attach a fictional demo-bidder evidence dossier to an existing bid.
 
-    ``profile_key`` is one of ``apex`` | ``vertex`` | ``nova`` | ``primetech``.
+    ``profile_key`` is one of ``apex`` | ``vertex`` | ``nova`` | ``primetech``
+    (the fictional bidder identity). ``scenario_id`` optionally selects a
+    mismatch-focused scenario (see ``app/seed/demo_scenarios.py``);
+    ``seed`` makes the generated dataset reproducible (``None`` picks a
+    fresh seed, which is returned in the response).
     """
 
     profile_key: str
+    scenario_id: str | None = None
+    seed: int | None = None
 
 
 class BidListItem(BaseModel):
@@ -346,7 +352,6 @@ class DocumentOut(BaseModel):
     bid_id: int
     document_type: DocumentType
     filename: str
-    file_path: str
     file_hash: str
     file_size: int
     mime_type: str
@@ -357,6 +362,7 @@ class DocumentOut(BaseModel):
     page_count: int | None = None
     ocr_used: bool = False
     error: str | None = None
+    extraction_warning: str | None = None
 
 
 class DocumentTypeUpdate(BaseModel):

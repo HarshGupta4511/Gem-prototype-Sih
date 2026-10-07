@@ -186,7 +186,28 @@ def evaluate_bid(db, bid_id: int, *, user_id=None) -> dict:
 
     results = RulesEngine().evaluate_all(requirements, context)
     score, results = compute_score(results)
-    risk = risk_engine.assess(context, results, context.get("verification"))
+
+    # Integrity signals touching this bid feed the risk assessment as
+    # evidence — review-grade patterns are serious risk indicators even
+    # when the compliance score is high. Never fails the evaluation if
+    # integrity analysis has not run (empty list).
+    try:
+        from app.services import integrity_service
+
+        integrity_signals = [
+            {
+                "signal_type": f.signal_type,
+                "severity": f.severity,
+                "title": f.title,
+            }
+            for f in integrity_service.active_signals_for_bid(db, bid_id)
+        ]
+    except Exception:
+        integrity_signals = []
+    risk = risk_engine.assess(
+        context, results, context.get("verification"),
+        integrity_signals=integrity_signals,
+    )
 
     # Persist: replace previous compliance results for this bid.
     db.query(ComplianceResult).filter(ComplianceResult.bid_id == bid_id).delete()

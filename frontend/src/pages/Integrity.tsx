@@ -8,12 +8,13 @@ import {
   ChevronDown,
   FileText,
   CheckCircle2,
+  Database,
   Eye,
   Search,
   XCircle,
   StickyNote,
 } from 'lucide-react';
-import { integrityApi, getErrorMessage } from '../lib/api';
+import { integrityApi, demoVarietyApi, getErrorMessage, getErrorStatus } from '../lib/api';
 import { useToast } from '../components/ui/toaster';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -34,36 +35,69 @@ import { labelize } from '../lib/utils';
 import type { IntegrityFinding } from '../types';
 
 const SEVERITY_STYLES: Record<string, string> = {
-  REVIEW_REQUIRED: 'bg-red-50 text-red-800 border-red-200',
-  ELEVATED: 'bg-amber-50 text-amber-800 border-amber-200',
-  INFORMATIONAL: 'bg-slate-100 text-slate-700 border-slate-200',
+  REVIEW_REQUIRED: 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-900',
+  ELEVATED: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-900',
+  INFORMATIONAL: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700',
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  OPEN: 'bg-blue-50 text-blue-800 border-blue-200',
-  ACKNOWLEDGED: 'bg-slate-100 text-slate-700 border-slate-200',
-  UNDER_REVIEW: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-  INVESTIGATING: 'bg-purple-50 text-purple-800 border-purple-200',
-  CLOSED: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  OPEN: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900',
+  ACKNOWLEDGED: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700',
+  UNDER_REVIEW: 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900',
+  INVESTIGATING: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900',
+  CLOSED: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-900',
 };
 
 const SIGNAL_LABELS: Record<string, string> = {
-  RECURRING_BIDDER_COHORT: 'Recurring Bidder Cohort',
+  RECURRING_BIDDER_COHORT: 'Cross-Tender Co-Participation',
   REPEATED_PARTICIPATION: 'Repeated Participation',
   BID_ROTATION_PATTERN: 'Possible Bid Rotation',
   BIDDER_RELATIONSHIP: 'Bidder Relationship',
   OFFICER_BIDDER_ASSOCIATION: 'Officer–Bidder Association',
   CROSS_TENDER_CONCENTRATION: 'Cross-Tender Concentration',
-  DOCUMENT_IDENTITY_RELATIONSHIP: 'Document/Identity Relationship',
+  DOCUMENT_IDENTITY_RELATIONSHIP: 'Duplicate / Related Bidder Identity',
+  CROSS_BID_DOCUMENT_SIMILARITY: 'Cross-Bid Document Similarity',
+  IDENTITY_REGISTRATION_INCONSISTENCY: 'Identity / Registration Inconsistency',
+  REPEATED_HISTORICAL_ANOMALIES: 'Repeated Historical Anomalies',
 };
 
-const ACTIONS = [
-  { key: 'acknowledge', label: 'Acknowledge', icon: Eye, needsNote: false },
-  { key: 'mark_review', label: 'Mark for Review', icon: Search, needsNote: false },
-  { key: 'investigate', label: 'Investigate', icon: ShieldAlert, needsNote: false },
-  { key: 'close', label: 'Close Signal', icon: CheckCircle2, needsNote: true },
-  { key: 'add_note', label: 'Add Review Note', icon: StickyNote, needsNote: true },
-] as const;
+interface SignalAction {
+  key: 'acknowledge' | 'mark_review' | 'investigate' | 'close' | 'add_note';
+  label: string;
+  icon: typeof Eye;
+  purpose: string;
+  needsNote?: boolean;
+  uiOnly?: boolean;
+  enabledFor?: readonly string[];
+}
+
+const ACTIONS: SignalAction[] = [
+  {
+    key: 'acknowledge', label: 'Acknowledge', icon: Eye,
+    purpose: 'I have seen this signal.',
+    needsNote: false, enabledFor: ['OPEN'],
+  },
+  {
+    key: 'mark_review', label: 'Mark for Review', icon: Search,
+    purpose: 'This signal requires formal examination.',
+    needsNote: false, enabledFor: ['OPEN', 'ACKNOWLEDGED'],
+  },
+  {
+    key: 'investigate', label: 'Investigate', icon: ShieldAlert,
+    purpose: 'Open the supporting evidence and investigate the underlying records.',
+    uiOnly: true,
+  },
+  {
+    key: 'close', label: 'Close Signal', icon: CheckCircle2,
+    purpose: 'Review completed; close this signal with a recorded reason.',
+    needsNote: true, enabledFor: ['OPEN', 'ACKNOWLEDGED', 'UNDER_REVIEW'],
+  },
+  {
+    key: 'add_note', label: 'Add Review Note', icon: StickyNote,
+    purpose: 'Add evidence-based officer comments.',
+    needsNote: true, enabledFor: ['OPEN', 'ACKNOWLEDGED', 'UNDER_REVIEW'],
+  },
+];
 
 function formatDateTime(iso: string | null) {
   if (!iso) return '—';
@@ -81,7 +115,7 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = React.useState(false);
-  const [dialogAction, setDialogAction] = React.useState<(typeof ACTIONS)[number] | null>(null);
+  const [dialogAction, setDialogAction] = React.useState<SignalAction | null>(null);
   const [note, setNote] = React.useState('');
 
   const actionMutation = useMutation({
@@ -98,23 +132,35 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
   });
 
   const submit = () => {
-    if (!dialogAction) return;
+    if (!dialogAction || dialogAction.uiOnly) return;
     if (dialogAction.needsNote && !note.trim()) {
-      toast('error', 'A review note is required for this action');
+      toast('error',
+        dialogAction.key === 'close'
+          ? 'A closure reason is required to close a signal'
+          : 'A review note is required for this action');
       return;
     }
     actionMutation.mutate({ action: dialogAction.key, note: note.trim() || undefined });
   };
 
+  const handleActionClick = (a: SignalAction) => {
+    if (a.uiOnly) {
+      // Investigate opens the evidence panel — it is not a status change.
+      setExpanded(true);
+      return;
+    }
+    setDialogAction(a);
+  };
+
   return (
-    <Card className="border-slate-200">
+    <Card className="border-slate-200 dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-start gap-2">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-sm font-semibold text-slate-900">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {finding.title}
             </CardTitle>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {SIGNAL_LABELS[finding.signal_type] ?? labelize(finding.signal_type)} ·{' '}
               detected {formatDateTime(finding.created_at)}
             </p>
@@ -127,7 +173,7 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
               {labelize(finding.status)}
             </Badge>
             {finding.is_demo_history && (
-              <Badge variant="outline" className="bg-violet-50 text-violet-800 border-violet-200">
+              <Badge variant="outline" className="bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-900">
                 DEMO DATA
               </Badge>
             )}
@@ -135,14 +181,24 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-1">
-        <p className="text-sm leading-relaxed text-slate-700">{finding.description}</p>
+        <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">{finding.description}</p>
 
         {finding.affected_tenders.length > 0 && (
-          <div className="text-xs text-slate-600">
-            <span className="font-medium text-slate-700">Tenders: </span>
-            {finding.affected_tenders.map((t) => t.tender_number).join(', ')}
+          <div className="text-xs text-slate-600 dark:text-slate-400">
+            <span className="font-medium text-slate-700 dark:text-slate-200">Tenders: </span>
+            {finding.affected_tenders.map((t, i) => (
+              <span key={t.tender_id}>
+                {i > 0 && ', '}
+                <Link
+                  to={`/app/tenders/${t.tender_id}`}
+                  className="text-brand-700 hover:text-brand-800 hover:underline dark:text-brand-400 dark:hover:text-brand-300"
+                >
+                  {t.tender_number}
+                </Link>
+              </span>
+            ))}
             {finding.is_demo_history && (
-              <span className="ml-1 text-violet-700">(synthetic DEMO history)</span>
+              <span className="ml-1 text-violet-700 dark:text-violet-400">(synthetic DEMO history)</span>
             )}
           </div>
         )}
@@ -150,7 +206,7 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800"
+          className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
           aria-expanded={expanded}
         >
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -158,30 +214,30 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
         </button>
 
         {expanded && (
-          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-950/60">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Supporting evidence</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Supporting evidence</p>
               <ul className="mt-1.5 space-y-1.5">
                 {finding.evidence.map((e, i) => (
-                  <li key={i} className="text-xs leading-relaxed text-slate-700">
+                  <li key={i} className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
                     <span className="font-medium">{e.label}:</span> {e.detail}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rule / signal logic</p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-600">{finding.rule_logic}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Rule / signal logic</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{finding.rule_logic}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Recommended procedural action</p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-600">{finding.recommended_action}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Recommended procedural action</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{finding.recommended_action}</p>
             </div>
             {finding.officer_note && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Officer note</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-700">{finding.officer_note}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Officer note</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-700 dark:text-slate-200">{finding.officer_note}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                   Last reviewed {formatDateTime(finding.reviewed_at)}
                 </p>
               </div>
@@ -190,53 +246,72 @@ function FindingCard({ finding }: { finding: IntegrityFinding }) {
         )}
 
         {isOfficer && finding.status !== 'CLOSED' && (
-          <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
-            {ACTIONS.map((a) => (
-              <Button
-                key={a.key}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setDialogAction(a)}
-                disabled={actionMutation.isPending}
-              >
-                <a.icon className="mr-1 h-3 w-3" />
-                {a.label}
-              </Button>
-            ))}
+          <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
+            {ACTIONS.map((a) => {
+              const gated = a.enabledFor !== undefined && !a.enabledFor.includes(finding.status);
+              return (
+                <Button
+                  key={a.key}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  title={a.purpose}
+                  onClick={() => handleActionClick(a)}
+                  disabled={actionMutation.isPending || gated}
+                >
+                  <a.icon className="mr-1 h-3 w-3" />
+                  {a.label}
+                </Button>
+              );
+            })}
           </div>
         )}
 
         <Dialog open={dialogAction !== null} onOpenChange={(o) => !o && setDialogAction(null)}>
-          <DialogContent className="max-w-md bg-white">
+          <DialogContent className="max-w-md bg-white dark:bg-slate-900">
             <DialogHeader>
-              <DialogTitle className="text-base font-bold text-slate-900">
-                {dialogAction?.label}
+              <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {dialogAction?.key === 'close' ? 'Close Integrity Signal?' : dialogAction?.label}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-600">
-                This action is recorded in the audit trail. Signals are patterns requiring
-                review — they are not findings of misconduct.
+              <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">
+                {dialogAction?.key === 'close'
+                  ? 'Add a brief closure reason before closing this signal.'
+                  : dialogAction?.purpose}
               </DialogDescription>
             </DialogHeader>
-            <div className="py-2">
-              <label className="mb-1 block text-xs font-medium text-slate-700">
-                Officer note {dialogAction?.needsNote ? '(required)' : '(optional)'}
-              </label>
-              <Input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Record the basis for this action…"
-                className="text-sm"
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" size="sm" onClick={() => setDialogAction(null)}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={submit} disabled={actionMutation.isPending}>
-                {actionMutation.isPending ? 'Saving…' : 'Confirm'}
-              </Button>
-            </DialogFooter>
+            {!dialogAction?.uiOnly && (
+              <>
+                <div className="py-2">
+                  <label className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-200">
+                    {dialogAction?.key === 'close'
+                      ? 'Closure reason (required)'
+                      : <>Officer note {dialogAction?.needsNote ? '(required)' : '(optional)'}</>}
+                  </label>
+                  <Input
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={
+                      dialogAction?.key === 'close'
+                        ? 'e.g. Verified bidder records; no further action needed…'
+                        : 'Record the basis for this action…'
+                    }
+                    className="text-sm"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" size="sm" onClick={() => setDialogAction(null)}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={submit} disabled={actionMutation.isPending}>
+                    {actionMutation.isPending
+                      ? 'Saving…'
+                      : dialogAction?.key === 'close'
+                        ? 'Close Signal'
+                        : 'Confirm'}
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
           </DialogContent>
         </Dialog>
       </CardContent>
@@ -277,7 +352,103 @@ export default function Integrity() {
       queryClient.invalidateQueries({ queryKey: ['integrity-findings'] });
       queryClient.invalidateQueries({ queryKey: ['integrity-overview'] });
     },
-    onError: (err) => toast('error', 'Analysis failed', getErrorMessage(err)),
+    onError: (err) => {
+      // 409 = analysis already running (double-click protection) — not a failure.
+      if (getErrorStatus(err) === 409) {
+        toast('info', 'Analysis already running', 'Please wait for the current run to finish.');
+        return;
+      }
+      toast('error', 'Analysis failed', getErrorMessage(err));
+    },
+  });
+
+  const dedupeMutation = useMutation({
+    mutationFn: integrityApi.dedupe,
+    onSuccess: (res) => {
+      toast(
+        'success',
+        res.removed_duplicates > 0
+          ? `Removed ${res.removed_duplicates} duplicate signal${res.removed_duplicates === 1 ? '' : 's'}`
+          : 'No duplicate signals found',
+        `${res.remaining_open} open signals remain`,
+      );
+      queryClient.invalidateQueries({ queryKey: ['integrity-findings'] });
+      queryClient.invalidateQueries({ queryKey: ['integrity-overview'] });
+    },
+    onError: (err) => toast('error', 'Cleanup failed', getErrorMessage(err)),
+  });
+
+  const cleanupMutation = useMutation({
+    mutationFn: integrityApi.cleanupStale,
+    onSuccess: (res) => {
+      const parts: string[] = [];
+      const r = res as Record<string, number>;
+      if (r.demo_tenders) parts.push(`${r.demo_tenders} demo tenders`);
+      if (r.orphan_findings) parts.push(`${r.orphan_findings} orphan signals`);
+      if (r.demo_findings) parts.push(`${r.demo_findings} stale signals`);
+      if (r.duplicate_findings_removed) parts.push(`${r.duplicate_findings_removed} duplicates`);
+      toast(
+        'success',
+        parts.length > 0 ? 'Stale integrity data cleaned' : 'Integrity data is clean',
+        parts.length > 0 ? parts.join(' · ') : 'No stale records found',
+      );
+      queryClient.invalidateQueries({ queryKey: ['integrity-findings'] });
+      queryClient.invalidateQueries({ queryKey: ['integrity-overview'] });
+    },
+    onError: (err) => toast('error', 'Cleanup failed', getErrorMessage(err)),
+  });
+
+  const varietyStatusQuery = useQuery({
+    queryKey: ['variety-demo-status'],
+    queryFn: demoVarietyApi.datasetStatus,
+    staleTime: 30_000,
+    retry: 1,
+  });
+  const varietyLoaded = varietyStatusQuery.data?.loaded === true;
+
+  const loadVarietyMutation = useMutation({
+    mutationFn: demoVarietyApi.loadDataset,
+    onSuccess: (res: unknown) => {
+      const r = (res ?? {}) as Record<string, unknown>;
+      const parts: string[] = [];
+      for (const [k, v] of Object.entries(r)) {
+        if (typeof v === 'number') parts.push(`${v} ${k.replace(/_/g, ' ')}`);
+      }
+      toast(
+        'success',
+        'Variety demo dataset loaded',
+        parts.length > 0 ? parts.join(' \u00b7 ') : undefined,
+      );
+      queryClient.invalidateQueries({ queryKey: ['variety-demo-status'] });
+      analyzeMutation.mutate();
+    },
+    onError: (err) => {
+      if (getErrorStatus(err) === 409) {
+        toast('info', 'Load already in progress', 'Please wait for the current load to finish.');
+        return;
+      }
+      toast('error', 'Variety dataset load failed', getErrorMessage(err));
+    },
+  });
+
+  const [varietyResetDialogOpen, setVarietyResetDialogOpen] = React.useState(false);
+
+  const resetVarietyMutation = useMutation({
+    mutationFn: demoVarietyApi.resetDataset,
+    onSuccess: () => {
+      toast('success', 'Variety demo dataset reset successfully.');
+      setVarietyResetDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['variety-demo-status'] });
+      queryClient.invalidateQueries({ queryKey: ['integrity-findings'] });
+      queryClient.invalidateQueries({ queryKey: ['integrity-overview'] });
+    },
+    onError: (err) => {
+      const msg = getErrorMessage(err);
+      const hint = !getErrorStatus(err)
+        ? 'The request did not reach the server. Check that the backend is running and reachable, then try again.'
+        : undefined;
+      toast('error', 'Variety dataset reset failed', hint ? `${msg} \u2014 ${hint}` : msg);
+    },
   });
 
   const refreshAll = () => {
@@ -309,11 +480,44 @@ export default function Integrity() {
               size="sm"
               onClick={refreshAll}
               disabled={refreshing}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
+            {canVerify && !varietyLoaded && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadVarietyMutation.mutate()}
+                disabled={loadVarietyMutation.isPending || varietyStatusQuery.isLoading}
+                className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <Database className={`mr-1.5 h-3.5 w-3.5 ${loadVarietyMutation.isPending ? 'animate-pulse' : ''}`} />
+                {loadVarietyMutation.isPending ? 'Loading variety data…' : 'Load Variety Demo Data'}
+              </Button>
+            )}
+            {canVerify && varietyLoaded && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="border-emerald-300 text-emerald-700 text-xs dark:border-emerald-800 dark:text-emerald-400 cursor-default"
+                >
+                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                  Variety Demo Data Loaded
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setVarietyResetDialogOpen(true)}
+                  disabled={resetVarietyMutation.isPending}
+                  className="self-center text-xs font-medium text-red-700 hover:text-red-800 hover:underline disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  {resetVarietyMutation.isPending ? 'Resetting Variety Data…' : 'Reset'}
+                </button>
+              </>
+            )}
             {canVerify && (
               <Button
                 size="sm"
@@ -323,6 +527,30 @@ export default function Integrity() {
               >
                 <Play className={`mr-1.5 h-3.5 w-3.5 ${analyzeMutation.isPending ? 'animate-spin' : ''}`} />
                 {analyzeMutation.isPending ? 'Analysing…' : 'Run Analysis'}
+              </Button>
+            )}
+            {canVerify && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => dedupeMutation.mutate()}
+                disabled={dedupeMutation.isPending}
+                className="text-xs"
+                title="Remove duplicate integrity signals, keeping the oldest of each"
+              >
+                {dedupeMutation.isPending ? 'Cleaning…' : 'Clean Duplicates'}
+              </Button>
+            )}
+            {canVerify && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => cleanupMutation.mutate()}
+                disabled={cleanupMutation.isPending}
+                className="text-xs"
+                title="Remove demo-history tenders, orphan signals and stale records"
+              >
+                {cleanupMutation.isPending ? 'Cleaning…' : 'Clean Stale Data'}
               </Button>
             )}
           </div>
@@ -342,34 +570,34 @@ export default function Integrity() {
         <LoadingBlock rows={4} />
       ) : overview ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <CardContent className="pt-4">
-              <p className="text-xs font-medium text-slate-500">Open signals</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{overview.open_signals}</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Open signals</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{overview.open_signals}</p>
             </CardContent>
           </Card>
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <CardContent className="pt-4">
-              <p className="text-xs font-medium text-slate-500">Requiring review</p>
-              <p className="mt-1 text-2xl font-bold text-red-700">{overview.high_priority_signals}</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Requiring review</p>
+              <p className="mt-1 text-2xl font-bold text-red-700 dark:text-red-400">{overview.high_priority_signals}</p>
             </CardContent>
           </Card>
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <CardContent className="pt-4">
-              <p className="text-xs font-medium text-slate-500">Records analysed</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Records analysed</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {overview.tenders_analyzed}
-                <span className="text-sm font-medium text-slate-500"> tenders</span>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400"> tenders</span>
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {overview.bidders_analyzed} bidders · {overview.bids_analyzed} bids
               </p>
             </CardContent>
           </Card>
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <CardContent className="pt-4">
-              <p className="text-xs font-medium text-slate-500">Last analysis</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Last analysis</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {formatDateTime(overview.last_analysis_at)}
               </p>
             </CardContent>
@@ -381,18 +609,18 @@ export default function Integrity() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           aria-label="Filter by status"
         >
           <option value="">All statuses</option>
-          {['OPEN', 'ACKNOWLEDGED', 'UNDER_REVIEW', 'INVESTIGATING', 'CLOSED'].map((s) => (
+          {['OPEN', 'ACKNOWLEDGED', 'UNDER_REVIEW', 'CLOSED'].map((s) => (
             <option key={s} value={s}>{labelize(s)}</option>
           ))}
         </select>
         <select
           value={severityFilter}
           onChange={(e) => setSeverityFilter(e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           aria-label="Filter by severity"
         >
           <option value="">All severities</option>
@@ -423,11 +651,47 @@ export default function Integrity() {
       )}
 
       {isOfficer && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           <FileText className="mr-1 inline h-3 w-3" />
           Every officer action on a signal is recorded in the audit trail with its basis note.
         </p>
       )}
+
+      {/* Variety reset confirmation is handled below */}
+
+      {/* Reset variety demo dataset confirmation */}
+      <Dialog open={varietyResetDialogOpen} onOpenChange={(o) => !o && setVarietyResetDialogOpen(false)}>
+        <DialogContent className="max-w-md bg-white dark:bg-slate-900">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Reset the Variety demo dataset?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">
+              This removes only the 6 synthetic Variety demo tenders (VAR-DEMO-2026-01..06),
+              their 42 bids and all associated documents, verification, compliance, risk,
+              recommendation and integrity records. Existing records are untouched.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setVarietyResetDialogOpen(false)}
+              disabled={resetVarietyMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => resetVarietyMutation.mutate()}
+              disabled={resetVarietyMutation.isPending}
+              className="bg-red-700 hover:bg-red-800 text-white"
+            >
+              {resetVarietyMutation.isPending ? 'Resetting Variety Data…' : 'Reset Variety Data'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

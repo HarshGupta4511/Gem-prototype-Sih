@@ -33,7 +33,7 @@ IDENTIFIER_SOURCES: list[tuple[str, list[str]]] = [
     ("MCA21", ["cin"]),
     ("EPFO", ["epfo_code"]),
     ("ESIC", ["esic_code"]),
-    ("STARTUP_INDIA", ["startup_cert_no"]),
+    ("STARTUP_INDIA", ["startup_certificate_number"]),
     ("NSIC", ["nsic_number"]),
     ("DIGILOCKER", ["digilocker_id"]),
     ("BLACKLIST", ["legal_name"]),
@@ -190,16 +190,9 @@ def run_verification(db, bid_id: int, *, user_id: int | None = None) -> list[dic
     resolved = resolve_identifiers(db, bid_id)
     results: list[dict] = []
 
-    for source, identifier in resolved.items():
-        adapter = get_adapter(source)
-        if adapter is None:
-            continue
-        response = adapter.verify(identifier)
-        response = _apply_name_cross_check(source, declared_name, response)
-        status = response["status"]
-        confidence = response["confidence"]
-
-        # Replace previous checks for this bid+source.
+    def _persist(source: str, identifier: str, response: dict,
+                status: str, confidence: float) -> dict:
+        """Replace the previous check for (bid, source) and persist one row."""
         db.query(VerificationCheck).filter(
             VerificationCheck.bid_id == bid_id,
             VerificationCheck.source == source,
@@ -223,24 +216,45 @@ def run_verification(db, bid_id: int, *, user_id: int | None = None) -> list[dic
         )
         db.add(check)
         db.flush()
-        results.append(
-            {
-                "id": check.id,
-                "bid_id": bid_id,
-                "requirement_id": None,
+        return {
+            "id": check.id,
+            "bid_id": bid_id,
+            "requirement_id": None,
+            "source": source,
+            "identifier": identifier,
+            "request_payload": check.request_payload,
+            "response_payload": response,
+            "verification_status": status,
+            "verified_at": check.verified_at.isoformat()
+            if check.verified_at
+            else None,
+            "confidence": confidence,
+            "is_mock": True,
+            "evidence_reference": check.evidence_reference,
+        }
+
+    for source, identifier in resolved.items():
+        adapter = get_adapter(source)
+        if adapter is None:
+            continue
+        try:
+            response = adapter.verify(identifier)
+            response = _apply_name_cross_check(source, declared_name, response)
+            status = response["status"]
+            confidence = response["confidence"]
+        except Exception as exc:
+            # One failing adapter must not abort the whole run with zero
+            # persisted rows: record the source as UNAVAILABLE so the rules
+            # engine can distinguish "source unreachable" from non-compliance.
+            response = {
                 "source": source,
-                "identifier": identifier,
-                "request_payload": check.request_payload,
-                "response_payload": response,
-                "verification_status": status,
-                "verified_at": check.verified_at.isoformat()
-                if check.verified_at
-                else None,
-                "confidence": confidence,
+                "status": "UNAVAILABLE",
+                "data": {},
+                "error": f"{type(exc).__name__}: {exc}",
                 "is_mock": True,
-                "evidence_reference": check.evidence_reference,
             }
-        )
+            status, confidence = "UNAVAILABLE", 0.0
+        results.append(_persist(source, identifier, response, status, confidence))
 
     counts: dict[str, int] = {}
     for item in results:

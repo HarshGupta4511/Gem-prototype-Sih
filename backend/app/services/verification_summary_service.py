@@ -259,11 +259,25 @@ def build_summary(db: Session, bid_id: int) -> dict:
 
     lifecycle = summary_lifecycle(db, bid_id)
 
+    # generated_at is the timestamp of the latest generate/regenerate event —
+    # never "now". A DRAFT summary has no generation event yet.
+    _GENERATION_ACTIONS = {
+        REPORT_GENERATED,
+        SUMMARY_REGENERATED,
+        _LEGACY_SENT,
+        _LEGACY_RECEIVED,
+        _LEGACY_OPENED,
+    }
+    generated_at = None
+    for entry in lifecycle["timeline"]:
+        if entry["action"] in _GENERATION_ACTIONS:
+            generated_at = entry["at"]
+
     doc_issue_statuses = {"FAILED", "UNCLASSIFIED", "REVIEW_REQUIRED"}
 
     summary = {
         "bid_id": bid.id,
-        "generated_at": _iso(_utcnow()),
+        "generated_at": generated_at,
         "compliance_score": bid.compliance_score,
         "bid_info": {
             "tender_number": tender.tender_number if tender else None,

@@ -66,6 +66,22 @@ def test_maximum():
     assert ENGINE.evaluate(req, _ctx(extracted={"deviation_pct": "60"}))["status"] == "FAIL"
 
 
+def test_minmax_misconfigured_without_threshold_never_crashes():
+    # Regression: a MINIMUM/MAXIMUM requirement whose rule_config has no
+    # "value" (e.g. stale wizard payloads) must NOT crash the evaluation with
+    # TypeError — it is flagged for officer review instead.
+    for rule_type in ("MINIMUM", "MAXIMUM"):
+        req = _req(rule_type, {"value_source": "extracted.turnover_inr",
+                               "operator": ">="})
+        # Value present but no threshold configured...
+        res = ENGINE.evaluate(req, _ctx(extracted={"turnover_inr": "124000000"}))
+        assert res["status"] == "REVIEW_REQUIRED"
+        assert "misconfigured" in res["explanation"]
+        # ...and value missing too — still no crash.
+        res2 = ENGINE.evaluate(req, _ctx())
+        assert res2["status"] == "REVIEW_REQUIRED"
+
+
 # ------------------------------------------------------------- DATE_VALIDITY
 def test_date_validity():
     req = _req("DATE_VALIDITY", {"value_source": "extracted.valid_until",
@@ -208,3 +224,40 @@ def test_fail_stands_despite_low_confidence():
              "confidence": 0.5, "document_id": 1}]},
     )
     assert ENGINE.evaluate(req, ctx)["status"] == "FAIL"
+
+
+# --------------------------------------- DATE_VALIDITY document-aware states
+def test_date_validity_distinguishes_document_states():
+    """ISO 9001 rule must distinguish four states:
+    1. document not submitted -> MISSING
+    2. document present + date unclear -> REVIEW_REQUIRED (not MISSING)
+    3. document present + expired -> EXPIRED (never MISSING)
+    4. document present + valid -> PASS
+    """
+    req = _req("DATE_VALIDITY", {"value_source": "extracted.iso_valid_until",
+                                 "document_type": "ISO_9001_CERTIFICATE"})
+    # 1. No document at all -> MISSING
+    assert ENGINE.evaluate(
+        req, _ctx(extracted={}, documents=["PAN_CERTIFICATE"]))["status"] == "MISSING"
+    # 2. Document present but no usable date -> REVIEW_REQUIRED
+    r = ENGINE.evaluate(
+        req, _ctx(extracted={}, documents=["ISO_9001_CERTIFICATE"]))
+    assert r["status"] == "REVIEW_REQUIRED"
+    assert "could be extracted" in r["explanation"]
+    # 3. Expired date -> EXPIRED, never MISSING
+    r = ENGINE.evaluate(
+        req, _ctx(extracted={"iso_valid_until": "2022-04-01"},
+                  documents=["ISO_9001_CERTIFICATE"]))
+    assert r["status"] == "EXPIRED"
+    # 4. Valid date -> PASS
+    assert ENGINE.evaluate(
+        req, _ctx(extracted={"iso_valid_until": "2028-03-31"},
+                  documents=["ISO_9001_CERTIFICATE"]))["status"] == "PASS"
+
+
+def test_date_validity_backward_compat_without_document_type():
+    """Configs without document_type keep the legacy MISSING behavior."""
+    req = _req("DATE_VALIDITY", {"value_source": "extracted.iso_valid_until"})
+    assert ENGINE.evaluate(req, _ctx())["status"] == "MISSING"
+    assert ENGINE.evaluate(
+        req, _ctx(extracted={"iso_valid_until": "2022-04-01"}))["status"] == "EXPIRED"

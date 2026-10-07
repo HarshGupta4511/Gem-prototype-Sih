@@ -183,5 +183,22 @@
     "debarred": true,
     "period": "2024-06-01 to 2027-05-31",
     "reason": "Debarred for submission of unsatisfactory performance credentials in tender CPCL-2023-214 (demo record)"
+  },
+  {
+    "company_name": "Scenario Debarred Pvt. Ltd.",
+    "blacklisted": true,
+    "debarred": false,
+    "authority": "CPCL",
+    "period": "2025-01-01 to 2028-12-31",
+    "reason": "Blacklisted (demo record) for submission of forged turnover certificates in tender CPCL-2024-207"
+  },
+  {
+    "company_name": "Brahmani Traders",
+    "blacklisted": true,
+    "debarred": false,
+    "authority": "CPCL",
+    "reason": "Blacklisted for submission of forged turnover certificates in tender CPCL-2024-118 (fictional demo record)",
+    "period": "2025-03-01 to 2028-02-29",
+    "is_mock": true
   }
 ]

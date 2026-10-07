@@ -11,10 +11,10 @@ The test therefore simulates the officer flow per profile
 services the buttons call) and asserts the four profiles produce
 meaningfully different, honest outcomes:
 
-- apex:      mostly compliant (PROCEED, high score, LOW risk)
+- apex:      mostly compliant (APPROVE, high score, LOW risk)
 - vertex:    missing evidence (REVIEW_REQUIRED, MISSING statuses)
 - nova:      portal name conflict (MISMATCH, REVIEW_REQUIRED)
-- primetech: blacklist signal (CRITICAL risk, NOT_RECOMMENDED, high score —
+- primetech: blacklist signal (HIGH risk, REJECT, high score —
   compliance and risk stay separate)
 
 Re-seeding the same profile must not duplicate bidders or documents.
@@ -63,8 +63,12 @@ REQUIREMENTS = [
     ("Earnest Money Deposit (EMD)", "MINIMUM",
      {"value_source": "extracted.emd_amount_inr", "operator": ">=", "value": 500000},
      None, True, 10),
-    ("Consolidated Bid Dossier", "DOCUMENT_REQUIRED",
-     {"document_types": ["BID_DOSSIER"]}, None, True, 10),
+    ("Bid Evidence Documents", "DOCUMENT_REQUIRED",
+     {"document_types": ["PAN_CERTIFICATE", "GST_CERTIFICATE",
+                         "BALANCE_SHEET", "EXPERIENCE_CERTIFICATE",
+                         "PAST_PERFORMANCE_CERTIFICATE", "OEM_AUTHORIZATION",
+                         "MII_DECLARATION", "EMD_RECEIPT",
+                         "NON_DEBARMENT_DECLARATION"]}, None, True, 10),
 ]
 
 
@@ -112,9 +116,12 @@ def test_demo_seed_stops_at_extraction(db, tmp_path):
     res = seed_demo_bidder_evidence(db, bid.id, "apex")
     assert res["seeded"] is True
 
-    doc = db.query(Document).filter_by(bid_id=bid.id).one()
-    assert doc.processing_status == "PROCESSED"
-    assert db.query(ExtractedField).filter_by(document_id=doc.id).count() > 0
+    doc = db.query(Document).filter_by(bid_id=bid.id).all()
+    assert len(doc) > 1, "apex seeds one standalone document per evidence section"
+    assert all(d.processing_status == "PROCESSED" for d in doc)
+    assert sum(
+        db.query(ExtractedField).filter_by(document_id=d.id).count() for d in doc
+    ) > 0
 
     # Nothing derived yet: the officer hasn't clicked anything.
     db.refresh(bid)
@@ -145,9 +152,9 @@ def test_demo_profiles_produce_distinct_real_outcomes(db, tmp_path):
         assert bid.recommendation, "recommendation stored"
         assert bid.compliance_score is not None
 
-    # Apex: mostly compliant — high score, PROCEED, LOW risk, no missing/mismatch.
+    # Apex: mostly compliant — high score, APPROVE, LOW risk, no missing/mismatch.
     assert apex.compliance_score >= 85
-    assert apex.recommendation == "PROCEED"
+    assert apex.recommendation == "APPROVE"
     assert apex.risk_level == "LOW"
     assert "MISSING" not in _statuses(db, apex.id)
     assert "MISMATCH" not in _statuses(db, apex.id)
@@ -165,11 +172,11 @@ def test_demo_profiles_produce_distinct_real_outcomes(db, tmp_path):
                        if c.verification_status == "MISMATCH"]
     assert mismatch_checks, "expected MISMATCH verification checks for nova"
 
-    # PrimeTech: compliance stays high but the blacklist drives CRITICAL risk
-    # and NOT_RECOMMENDED — score and risk are separate concepts.
+    # PrimeTech: compliance stays high but the blacklist drives HIGH risk
+    # and REJECT — score and risk are separate concepts.
     assert prime.compliance_score >= 85
-    assert prime.risk_level == "CRITICAL"
-    assert prime.recommendation == "NOT_RECOMMENDED"
+    assert prime.risk_level == "HIGH"
+    assert prime.recommendation == "REJECT"
     risk = db.query(RiskAssessment).filter_by(bid_id=prime.id).one()
     assert any(s.get("code") in ("BLACKLISTED", "DEBARRED") for s in (risk.signals or []))
 
@@ -236,7 +243,8 @@ def test_seed_endpoint_matches_frontend_flow(db, tmp_path):
 
     Calls the endpoint function directly (same arguments FastAPI would
     inject) and asserts the response shape the frontend consumes plus the
-    resulting bid detail state (1 processed dossier document).
+    resulting bid detail state (N processed standalone documents, one per
+    evidence section).
     """
     import app.api.bids as bids_mod
     from app.schemas.schemas import DemoEvidenceSeedRequest
@@ -259,9 +267,16 @@ def test_seed_endpoint_matches_frontend_flow(db, tmp_path):
     assert res["processing_status"] == "PROCESSED"
     assert res["fields_extracted"] > 0
 
-    doc = db.query(Document).filter_by(bid_id=bid.id).one()
-    assert doc.processing_status == "PROCESSED"
-    assert doc.document_type == "BID_DOSSIER"
+    docs = db.query(Document).filter_by(bid_id=bid.id).all()
+    assert len(docs) > 1, "apex seeds one standalone document per evidence section"
+    assert all(d.processing_status == "PROCESSED" for d in docs)
+    doc_types = {d.document_type for d in docs}
+    assert doc_types == {
+        "PAN_CERTIFICATE", "GST_CERTIFICATE", "BALANCE_SHEET",
+        "EXPERIENCE_CERTIFICATE", "PAST_PERFORMANCE_CERTIFICATE",
+        "OEM_AUTHORIZATION", "MII_DECLARATION", "EMD_RECEIPT",
+        "NON_DEBARMENT_DECLARATION",
+    }, f"unexpected document types: {doc_types}"
 
 
 def test_seed_endpoint_unknown_profile_is_404(db):

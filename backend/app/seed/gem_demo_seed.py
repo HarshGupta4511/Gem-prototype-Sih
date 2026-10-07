@@ -122,8 +122,10 @@ def _tender4_requirements() -> list[dict]:
              description="Bidder must not be blacklisted or debarred.",
              mandatory=True, rule_type="CUSTOM_RULE",
              rule_config={"expression": (
-                 "not (ctx['verification'].get('BLACKLIST') or {}).get('data', {}).get('blacklisted', False) "
-                 "and not (ctx['verification'].get('BLACKLIST') or {}).get('data', {}).get('debarred', False)"
+                 # Never fabricate a clean chit: no BLACKLIST check -> REVIEW_REQUIRED.
+                 "('REVIEW_REQUIRED' if ctx.get('verification', {}).get('BLACKLIST') is None "
+                 "else ('FAIL' if (ctx['verification']['BLACKLIST'].get('data', {}).get('blacklisted', False) "
+                 "or ctx['verification']['BLACKLIST'].get('data', {}).get('debarred', False)) else 'PASS'))"
              )},
              threshold="Not blacklisted / debarred", expected_value="PASS",
              verification_source="BLACKLIST", weight=5,

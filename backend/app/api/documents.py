@@ -160,6 +160,95 @@ async def upload_document(
     return DocumentOut.model_validate(doc)
 
 
+@router.post("/registration-preview")
+async def registration_preview(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Extract bidder-registration details from an uploaded PDF without
+    creating any Document row.
+
+    Runs the exact same pipeline steps as document processing (text
+    extraction → OCR fallback → classification → regex + LLM extraction)
+    and returns {status, filename, document_type, classification_confidence,
+    extracted_fields}. Used by Stage 3 bidder registration so the officer
+    reviews extracted details before registering the bidder. Nothing is
+    persisted.
+    """
+    filename = file.filename or "upload.pdf"
+    ext = os.path.splitext(filename)[1].lower()
+    if ext != ".pdf":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Only PDF documents are supported for bidder registration (got '{ext or '(none)'}').",
+        )
+    content = await file.read()
+    if not content.startswith(b"%PDF"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File content does not match its '.pdf' extension (magic bytes mismatch). The file may be corrupt or renamed.",
+        )
+    if len(content) > 25 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large: registration documents are limited to 25 MB.",
+        )
+    try:
+        result = pipeline_service.preview_registration_document(content, filename)
+    except Exception:
+        log.exception("Registration preview failed for %s", filename)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Extraction failed unexpectedly. Please try again or enter the details manually.",
+        ) from None
+    return result
+
+
+@router.get("/semantic-view")
+def semantic_view(
+    bid_id: int = Query(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Semantic extracted-information view for a bid.
+
+    Groups the bid's raw extraction rows into semantic entities via
+    semantic_fields.build_semantic_view: shared identity fields
+    (PAN/GSTIN/CIN/...) consolidate across documents with all sources
+    retained, document-specific fields stay separate, and genuine
+    cross-document value conflicts are flagged. Raw extraction records
+    are never altered.
+    """
+    from app.services import semantic_fields
+
+    bid = db.get(BidSubmission, bid_id)
+    if bid is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found")
+    rows = (
+        db.query(ExtractedField, Document)
+        .join(Document, ExtractedField.document_id == Document.id)
+        .filter(Document.bid_id == bid_id)
+        .order_by(ExtractedField.id)
+        .all()
+    )
+    raw = [
+        {
+            "field_name": ef.field_name,
+            "field_value": ef.field_value,
+            "normalized_value": ef.normalized_value,
+            "extraction_method": ef.extraction_method,
+            "confidence": ef.confidence,
+            "page_number": ef.page_number,
+            "document_id": ef.document_id,
+            "document_type": doc.document_type,
+            "filename": doc.filename,
+        }
+        for ef, doc in rows
+    ]
+    return {"bid_id": bid_id, "entities": semantic_fields.build_semantic_view(raw)}
+
+
 @router.get("/{document_id}", response_model=DocumentDetailOut)
 def get_document(
     document_id: int,

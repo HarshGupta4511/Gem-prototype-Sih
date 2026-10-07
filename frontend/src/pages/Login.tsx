@@ -204,7 +204,7 @@ export default function Login() {
       </div>
 
       {/* Right authentication form */}
-      <div className="flex flex-1 items-center justify-center bg-slate-50 p-6 sm:p-12">
+      <div className="flex flex-1 items-center justify-center bg-slate-50 p-6 sm:p-12 dark:bg-slate-950">
         <div className="w-full max-w-md">
           {/* Mobile identity banner */}
           <div className="mb-6 flex items-center gap-3 lg:hidden">
@@ -215,29 +215,29 @@ export default function Login() {
               draggable={false}
             />
             <div>
-              <p className="text-lg font-bold text-slate-900">BIDWISE</p>
-              <p className="text-xs text-slate-500">Smart &amp; Evidence-Based Bid Verification</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-slate-100">BIDWISE</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Smart &amp; Evidence-Based Bid Verification</p>
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-300 bg-white p-7 sm:p-8 shadow-sm">
-            <div className="border-b border-slate-200 pb-5">
+          <div className="rounded-lg border border-slate-300 bg-white p-7 sm:p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="border-b border-slate-200 pb-5 dark:border-slate-700">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200">
-                  <Lock className="h-3 w-3 text-slate-500" /> Secure Officer Access
+                <span className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                  <Lock className="h-3 w-3 text-slate-500 dark:text-slate-400" /> Secure Officer Access
                 </span>
-                <span className="text-[11px] font-mono text-slate-400">SIH-26100</span>
+                <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">SIH-26100</span>
               </div>
-              <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-900 font-serif">
+              <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-900 font-serif dark:text-slate-100">
                 Officer Sign In
               </h2>
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                 Authenticate with your official CPSE credentials to access the bid evaluation workspace.
               </p>
             </div>
 
             {authError && (
-              <div className="mt-4 rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+              <div className="mt-4 rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
                 {authError}
               </div>
             )}
@@ -245,7 +245,7 @@ export default function Login() {
             {/* Standard Credentials Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="email">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200" htmlFor="email">
                   Official Email Address
                 </label>
                 <div className="mt-1.5">
@@ -254,16 +254,16 @@ export default function Login() {
                     type="email"
                     placeholder="officer@demo.cpcl.in"
                     autoComplete="email"
-                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm"
+                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                     {...register('email')}
                   />
                 </div>
-                {errors.email && <p className="mt-1 text-xs text-rose-600">{errors.email.message}</p>}
+                {errors.email && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p>}
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="password">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200" htmlFor="password">
                     Password
                   </label>
                 </div>
@@ -273,23 +273,23 @@ export default function Login() {
                     type="password"
                     placeholder="••••••••••••"
                     autoComplete="current-password"
-                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm"
+                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                     {...register('password')}
                   />
                 </div>
-                {errors.password && <p className="mt-1 text-xs text-rose-600">{errors.password.message}</p>}
+                {errors.password && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="captchaText">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200" htmlFor="captchaText">
                   Security Check
                 </label>
                 <div className="mt-1.5 flex items-stretch gap-2">
-                  <div className="flex h-11 items-center overflow-hidden rounded-md border border-slate-300 bg-slate-100 select-none">
+                  <div className="flex h-11 items-center overflow-hidden rounded-md border border-slate-300 bg-slate-100 select-none dark:border-slate-700 dark:bg-slate-800">
                     {captcha ? (
                       <img src={captcha.image} alt="Security code" className="h-full" draggable={false} />
                     ) : (
-                      <span className="px-4 text-xs text-slate-400">
+                      <span className="px-4 text-xs text-slate-400 dark:text-slate-500">
                         {captchaLoading ? 'Loading…' : 'Unavailable'}
                       </span>
                     )}
@@ -300,7 +300,7 @@ export default function Login() {
                     disabled={captchaLoading}
                     title="Get a new security code"
                     aria-label="Get a new security code"
-                    className="flex w-11 items-center justify-center rounded-md border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50"
+                    className="flex w-11 items-center justify-center rounded-md border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                   >
                     <RefreshCw className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`} />
                   </button>
@@ -311,12 +311,12 @@ export default function Login() {
                     type="text"
                     placeholder="Enter the code shown above"
                     autoComplete="off"
-                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm uppercase"
+                    className="border-slate-300 focus:border-blue-600 focus:ring-blue-600 text-sm uppercase dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                     {...register('captchaText')}
                   />
                 </div>
-                {errors.captchaText && <p className="mt-1 text-xs text-rose-600">{errors.captchaText.message}</p>}
-                <p className="mt-1 text-[11px] text-slate-500">
+                {errors.captchaText && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.captchaText.message}</p>}
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                   Type the characters shown in the image. Each code works once and expires after 5 minutes.
                 </p>
               </div>
@@ -335,9 +335,9 @@ export default function Login() {
 
             <div className="relative my-6 text-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
+                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
               </div>
-              <span className="relative bg-white px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="relative bg-white px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:bg-slate-900 dark:text-slate-500">
                 Evaluation &amp; Demo Access
               </span>
             </div>
@@ -347,20 +347,20 @@ export default function Login() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2"
+                className="w-full border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-200"
                 onClick={onDemo}
                 loading={demoBusy}
               >
-                <Building2 className="mr-2 h-4 w-4 text-blue-700" />
+                <Building2 className="mr-2 h-4 w-4 text-blue-700 dark:text-blue-400" />
                 Quick Launch: Demo Procurement Officer
               </Button>
-              <p className="mt-2 text-center text-[11px] text-slate-500">
+              <p className="mt-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Demo account: officer@demo.cpcl.in
               </p>
             </div>
           </div>
 
-          <div className="mt-6 text-center text-xs text-slate-500">
+          <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
             <span>Chennai Petroleum Corporation Limited</span> • <span>Ministry of Petroleum &amp; Natural Gas</span>
           </div>
         </div>

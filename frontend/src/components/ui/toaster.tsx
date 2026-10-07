@@ -76,10 +76,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   };
 
   const borders: Record<ToastKind, string> = {
-    success: 'border-emerald-200',
-    error: 'border-red-200',
+    success: 'border-emerald-200 dark:border-emerald-800',
+    error: 'border-red-200 dark:border-red-800',
     info: 'border-brand-200',
-    warning: 'border-amber-200',
+    warning: 'border-amber-200 dark:border-amber-800',
   };
 
   return (
@@ -90,14 +90,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              'pointer-events-auto flex items-start gap-3 rounded-lg border bg-white p-4 shadow-lg',
+              'pointer-events-auto flex items-start gap-3 rounded-lg border bg-white dark:bg-slate-900 p-4 shadow-lg',
               borders[t.kind],
             )}
           >
             <div className="mt-0.5 shrink-0">{icons[t.kind]}</div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-slate-900">{t.title}</div>
-              {t.description && <div className="mt-0.5 break-words text-sm text-slate-600">{t.description}</div>}
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t.title}</div>
+              {t.description && <div className="mt-0.5 break-words text-sm text-slate-600 dark:text-slate-400">{t.description}</div>}
               {t.actions && t.actions.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {t.actions.map((a, i) => (
@@ -111,7 +111,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                         'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
                         i === 0
                           ? 'bg-brand-700 text-white hover:bg-brand-800'
-                          : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/70'
                       )}
                     >
                       {a.label}
@@ -122,7 +122,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={() => dismiss(t.id)}
-              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="rounded p-0.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-400"
               aria-label="Dismiss notification"
             >
               ✕

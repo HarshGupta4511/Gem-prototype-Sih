@@ -49,6 +49,9 @@ export type DocumentType =
   | 'NSIC_CERTIFICATE'
   | 'DIGILOCKER_DOCUMENT'
   | 'AUDITED_FINANCIAL_STATEMENT'
+  | 'EMD_PAYMENT'
+  | 'PAST_PERFORMANCE_CERTIFICATE'
+  | 'NON_DEBARMENT_DECLARATION'
   | 'OTHER'
   | 'UNCLASSIFIED';
 
@@ -84,10 +87,9 @@ export type AdapterSource =
   | 'BLACKLIST';
 
 export type Recommendation =
-  | 'PROCEED'
-  | 'PROCEED_WITH_CONDITIONS'
+  | 'APPROVE'
   | 'REVIEW_REQUIRED'
-  | 'NOT_RECOMMENDED';
+  | 'REJECT';
 
 /** The single application role. The Procurement Officer is the only human user. */
 export type Role = 'PROCUREMENT_OFFICER';
@@ -238,6 +240,7 @@ export interface Document {
   page_count: number | null;
   ocr_used: boolean;
   error: string | null;
+  extraction_warning: string | null;
 }
 
 export interface ExtractedField {
@@ -643,7 +646,7 @@ export interface VerificationReportData {
   risk: {
     level: string;
     score: number | null;
-    factors: string[];
+    factors: RiskSignal[];
     explanation: string | null;
   } | null;
   ai_summary: {
@@ -651,7 +654,7 @@ export interface VerificationReportData {
     reason: string | null;
     evidence: unknown[];
   } | null;
-  observations: ReportObservation[];
+  officer_observations: ReportObservation[];
   status: ReportStatus;
   timeline: ReportTimelineEvent[];
   decision: {

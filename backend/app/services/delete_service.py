@@ -22,6 +22,7 @@ from app.models.models import (
     BidSubmission,
     Clarification,
     ComplianceResult,
+    ConsistencyCheck,
     Document,
     ExtractedField,
     Override,
@@ -39,6 +40,17 @@ def _delete_bid_rows(db: Session, bid: BidSubmission) -> dict:
 
     doc_ids = [d.id for d in db.query(Document.id).filter_by(bid_id=bid.id).all()]
 
+    # Consistency checks reference documents (doc1_id/doc2_id FKs) and the
+    # bid itself; drop them before documents to stay FK-safe on Postgres.
+    counts["consistency_checks"] = (
+        db.query(ConsistencyCheck)
+        .filter(
+            (ConsistencyCheck.bid_id == bid.id)
+            | (ConsistencyCheck.doc1_id.in_(doc_ids))
+            | (ConsistencyCheck.doc2_id.in_(doc_ids))
+        )
+        .delete(synchronize_session=False)
+    )
     # Extracted fields + overrides reference documents; drop them first.
     if doc_ids:
         counts["extracted_fields"] = (

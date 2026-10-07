@@ -53,16 +53,16 @@ export function SheetContent({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-slate-200 bg-white shadow-2xl',
+          'absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl',
           'animate-in slide-in-from-right',
           className,
         )}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <div className="text-base font-semibold text-slate-900">{title}</div>
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+          <div className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</div>
           <button
             onClick={() => setOpen(false)}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-md p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-400"
             aria-label="Close panel"
           >
             <X className="h-5 w-5" />

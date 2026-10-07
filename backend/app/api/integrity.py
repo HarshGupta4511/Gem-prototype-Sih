@@ -61,8 +61,41 @@ def analyze(
     db: Session = Depends(get_db),
     user: User = Depends(_OFFICER),
 ):
-    """Run deterministic integrity analysis over tender/bid/audit data."""
-    return integrity_service.run_integrity_analysis(db, user_id=user.id)
+    """Run deterministic integrity analysis over tender/bid/audit data.
+
+    Returns 409 if an analysis is already running (double-click protection).
+    """
+    result = integrity_service.run_integrity_analysis(db, user_id=user.id)
+    if result.get("already_running"):
+        raise HTTPException(status_code=409, detail=result["message"])
+    return result
+
+
+@router.post("/dedupe")
+def dedupe_findings(
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Remove duplicate non-closed integrity findings (keeps oldest of each).
+
+    Repairs databases that accumulated duplicates from concurrent analysis
+    runs. Officer actions on surviving findings are preserved.
+    """
+    return integrity_service.dedupe_existing_findings(db)
+
+
+@router.post("/cleanup-stale")
+def cleanup_stale(
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Remove stale integrity data: demo-history tenders, orphan findings,
+    findings tied to non-current tenders, and duplicates.
+
+    Keeps all current valid Tender/Bid/Bidder records. After cleanup, the
+    Integrity module's counts match the Tender Registry.
+    """
+    return integrity_service.cleanup_stale_integrity_data(db)
 
 
 @router.get("/overview")
@@ -147,3 +180,45 @@ def bid_signals(
     """Active (non-closed) integrity signals touching a bid."""
     findings = integrity_service.active_signals_for_bid(db, bid_id)
     return [_finding_out(f) for f in findings]
+
+
+@router.post("/demo-dataset")
+def load_demo_dataset(
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Idempotently load the separate Integrity demo dataset (synthetic
+    tenders/bidders/bids/documents/fixtures, clearly labelled DEMO DATA).
+    Never touches existing demo records.
+
+    Returns 409 if a load is already in progress (double-click protection).
+    """
+    from app.seed import integrity_demo_seed
+
+    result = integrity_demo_seed.load_integrity_demo_dataset(db, user_id=user.id)
+    if result.get("already_running"):
+        raise HTTPException(status_code=409, detail=result["reason"])
+    return result
+
+
+@router.delete("/demo-dataset")
+def reset_demo_dataset(
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Delete ONLY the Integrity demo dataset tenders (cascades to their
+    bids/documents) and findings referencing them. Everything else stays."""
+    from app.seed import integrity_demo_seed
+
+    return integrity_demo_seed.reset_integrity_demo_dataset(db, user_id=user.id)
+
+
+@router.get("/demo-dataset/status")
+def demo_dataset_status(
+    db: Session = Depends(get_db),
+    user: User = Depends(_OFFICER),
+):
+    """Whether the Integrity demo dataset is currently loaded."""
+    from app.seed import integrity_demo_seed
+
+    return integrity_demo_seed.integrity_demo_dataset_status(db)

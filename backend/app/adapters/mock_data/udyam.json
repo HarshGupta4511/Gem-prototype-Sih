@@ -2016,5 +2016,187 @@
     "category": "MICRO",
     "registration_date": "2018-02-27",
     "status": "ACTIVE"
+  },
+  "UDYAM-MH-63-6749466": {
+    "udyam_number": "UDYAM-MH-63-6749466",
+    "enterprise_name": "Apex Flow Systems Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-32-9778079": {
+    "udyam_number": "UDYAM-MH-32-9778079",
+    "enterprise_name": "PrimeTech Industrial Systems Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-58-1822931": {
+    "udyam_number": "UDYAM-MH-58-1822931",
+    "enterprise_name": "Scenario Clean Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-49-5222847": {
+    "udyam_number": "UDYAM-MH-49-5222847",
+    "enterprise_name": "Scenario GST Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-17-3347209": {
+    "udyam_number": "UDYAM-MH-17-3347209",
+    "enterprise_name": "Scenario PAN Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-25-5127807": {
+    "udyam_number": "UDYAM-MH-25-5127807",
+    "enterprise_name": "Scenario ITR Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-38-9296774": {
+    "udyam_number": "UDYAM-MH-38-9296774",
+    "enterprise_name": "Scenario Turnover Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-66-6819722": {
+    "udyam_number": "UDYAM-MH-66-6819722",
+    "enterprise_name": "Scenario ISO Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-50-6555147": {
+    "udyam_number": "UDYAM-MH-50-6555147",
+    "enterprise_name": "Scenario EMD Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-56-9650266": {
+    "udyam_number": "UDYAM-MH-56-9650266",
+    "enterprise_name": "Scenario Debarred Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-52-5333909": {
+    "udyam_number": "UDYAM-MH-52-5333909",
+    "enterprise_name": "Scenario Missing Pvt. Ltd.",
+    "category": "MEDIUM",
+    "registration_date": "2021-07-02",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0001101": {
+    "udyam_number": "UDYAM-MH-27-0001101",
+    "enterprise_name": "Aarohan Industries",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0002202": {
+    "udyam_number": "UDYAM-MH-27-0002202",
+    "enterprise_name": "Meridian Systems",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0003303": {
+    "udyam_number": "UDYAM-MH-27-0003303",
+    "enterprise_name": "Kestrel Enterprises",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0004404": {
+    "udyam_number": "UDYAM-MH-27-0004404",
+    "enterprise_name": "Vardaan Technologies",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0005505": {
+    "udyam_number": "UDYAM-MH-27-0005505",
+    "enterprise_name": "Nimbus Heavy Fab Pvt. Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-KA-29-0005506": {
+    "udyam_number": "UDYAM-KA-29-0005506",
+    "enterprise_name": "Nimbus Fabrication Works",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0006606": {
+    "udyam_number": "UDYAM-MH-27-0006606",
+    "enterprise_name": "Brightline Tools Co.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0007707": {
+    "udyam_number": "UDYAM-MH-27-0007707",
+    "enterprise_name": "Crestline Valves Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0009909": {
+    "udyam_number": "UDYAM-MH-27-0009909",
+    "enterprise_name": "Godavari Forge Pvt. Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0010101": {
+    "udyam_number": "UDYAM-MH-27-0010101",
+    "enterprise_name": "Kaveri Pumps Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0020202": {
+    "udyam_number": "UDYAM-MH-27-0020202",
+    "enterprise_name": "Narmada Systems Pvt. Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-MH-27-0030303": {
+    "udyam_number": "UDYAM-MH-27-0030303",
+    "enterprise_name": "Tapi Engineering Corporation",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-GJ-24-0040404": {
+    "udyam_number": "UDYAM-GJ-24-0040404",
+    "enterprise_name": "Sabarmati Industrial Co.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-OD-21-0050505": {
+    "udyam_number": "UDYAM-OD-21-0050505",
+    "enterprise_name": "Mahanadi Equipments Pvt. Ltd.",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  "UDYAM-OD-21-0060606": {
+    "udyam_number": "UDYAM-OD-21-0060606",
+    "enterprise_name": "Brahmani Traders",
+    "registration_date": "2021-07-02",
+    "category": "MEDIUM",
+    "status": "ACTIVE"
   }
 }

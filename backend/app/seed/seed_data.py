@@ -38,8 +38,10 @@ OLD_FICTIONAL_POLICY_TITLES = {
 }
 
 BLACKLIST_EXPR = (
-    "not (ctx['verification'].get('BLACKLIST') or {}).get('data', {}).get('blacklisted', False) "
-    "and not (ctx['verification'].get('BLACKLIST') or {}).get('data', {}).get('debarred', False)"
+    # Never fabricate a clean chit: no BLACKLIST check -> REVIEW_REQUIRED.
+    "('REVIEW_REQUIRED' if ctx.get('verification', {}).get('BLACKLIST') is None "
+    "else ('FAIL' if (ctx['verification']['BLACKLIST'].get('data', {}).get('blacklisted', False) "
+    "or ctx['verification']['BLACKLIST'].get('data', {}).get('debarred', False)) else 'PASS'))"
 )
 ITR_EXPR = (
     """"PASS" if (ctx['extracted'].get('itr') or (((ctx['verification'].get('PAN_IT') or {}).get('data') or {}).get('itr_filed_upto') or 0) >= 2024) """

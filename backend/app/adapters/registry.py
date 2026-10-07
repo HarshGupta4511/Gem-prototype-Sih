@@ -25,6 +25,21 @@ ADAPTERS: dict[str, GovernmentVerificationAdapter] = {
     "BLACKLIST": BlacklistAdapter(),
 }
 
+# Human-readable names for dashboards and reports. Every adapter is a MOCK:
+# no live government API connectivity is implied or claimed.
+ADAPTER_DISPLAY_NAMES: dict[str, str] = {
+    "GSTN": "Goods & Services Tax Network (GSTN)",
+    "UDYAM": "MSME Udyam Portal",
+    "PAN_IT": "Income Tax Department (NSDL/PAN)",
+    "MCA21": "Ministry of Corporate Affairs (MCA21)",
+    "EPFO": "Employees Provident Fund Org (EPFO)",
+    "ESIC": "Employees State Insurance (ESIC)",
+    "STARTUP_INDIA": "Startup India (DPIIT)",
+    "NSIC": "National Small Industries Corp (NSIC)",
+    "DIGILOCKER": "DigiLocker Document Registry",
+    "BLACKLIST": "CPSE & GeM Debarment Registry",
+}
+
 
 def get_adapter(source: str) -> GovernmentVerificationAdapter | None:
     """Return the singleton adapter for an AdapterSource value, or None."""

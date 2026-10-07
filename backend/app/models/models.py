@@ -132,6 +132,14 @@ class DocumentType(str, enum.Enum):
     NSIC_CERTIFICATE = "NSIC_CERTIFICATE"
     DIGILOCKER_DOCUMENT = "DIGILOCKER_DOCUMENT"
     AUDITED_FINANCIAL_STATEMENT = "AUDITED_FINANCIAL_STATEMENT"
+    EMD_PAYMENT = "EMD_PAYMENT"
+    EMD_RECEIPT = "EMD_RECEIPT"
+    PAST_PERFORMANCE_CERTIFICATE = "PAST_PERFORMANCE_CERTIFICATE"
+    NON_DEBARMENT_DECLARATION = "NON_DEBARMENT_DECLARATION"
+    ITR_DOCUMENT = "ITR_DOCUMENT"
+    MCA21_CERTIFICATE = "MCA21_CERTIFICATE"
+    BALANCE_SHEET = "BALANCE_SHEET"
+    ISO_9001_CERTIFICATE = "ISO_9001_CERTIFICATE"
     BID_DOSSIER = "BID_DOSSIER"
     OTHER = "OTHER"
     # System could not confidently classify the document — never invent a
@@ -154,10 +162,9 @@ class OfficerDecision(str, enum.Enum):
 
 
 class Recommendation(str, enum.Enum):
-    PROCEED = "PROCEED"
-    PROCEED_WITH_CONDITIONS = "PROCEED_WITH_CONDITIONS"
+    APPROVE = "APPROVE"
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
-    NOT_RECOMMENDED = "NOT_RECOMMENDED"
+    REJECT = "REJECT"
 
 
 class AdapterSource(str, enum.Enum):
@@ -367,6 +374,10 @@ class Document(Base):
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ocr_used: Mapped[bool] = mapped_column(Boolean, default=False)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Honest, user-visible warning when a pipeline stage degraded (e.g. the
+    # LLM provider failed so only rule-based fields were extracted). Cleared
+    # on the next successful re-process. Never blocks the pipeline.
+    extraction_warning: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     bid: Mapped["BidSubmission"] = relationship("BidSubmission")
     extracted_fields: Mapped[list["ExtractedField"]] = relationship("ExtractedField")
@@ -544,6 +555,9 @@ class IntegritySignalType(str, enum.Enum):
     OFFICER_BIDDER_ASSOCIATION = "OFFICER_BIDDER_ASSOCIATION"
     CROSS_TENDER_CONCENTRATION = "CROSS_TENDER_CONCENTRATION"
     DOCUMENT_IDENTITY_RELATIONSHIP = "DOCUMENT_IDENTITY_RELATIONSHIP"
+    CROSS_BID_DOCUMENT_SIMILARITY = "CROSS_BID_DOCUMENT_SIMILARITY"
+    IDENTITY_REGISTRATION_INCONSISTENCY = "IDENTITY_REGISTRATION_INCONSISTENCY"
+    REPEATED_HISTORICAL_ANOMALIES = "REPEATED_HISTORICAL_ANOMALIES"
 
 
 class IntegrityStatus(str, enum.Enum):

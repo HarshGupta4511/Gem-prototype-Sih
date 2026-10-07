@@ -35,6 +35,21 @@ _RULES: list[tuple[str, list[str], list[str] | None]] = [
     ),
     ("DIGILOCKER_DOCUMENT", ["digilocker"], None),
     ("GST_RETURN", ["gst return", "gstr"], None),
+    ("EMD_PAYMENT", ["earnest money", "emd"], None),
+    ("PAST_PERFORMANCE_CERTIFICATE", ["past performance"], None),
+    (
+        "NON_DEBARMENT_DECLARATION",
+        ["non-debarment", "debarment declaration", "not debarred"],
+        None,
+    ),
+    # New demo evidence types (Stage 2 catalogue). Keywords are chosen so
+    # each type outscores its nearest neighbour (e.g. EMD_RECEIPT vs
+    # EMD_PAYMENT, BALANCE_SHEET vs AUDITED_FINANCIAL_STATEMENT).
+    ("BALANCE_SHEET", ["balance sheet", "statutory auditor", "financial year"], None),
+    ("ISO_9001_CERTIFICATE", ["iso 9001", "quality management"], None),
+    ("MCA21_CERTIFICATE", ["mca21", "certificate of incorporation"], None),
+    ("ITR_DOCUMENT", ["income tax return", "assessment year", "total income"], None),
+    ("EMD_RECEIPT", ["emd receipt", "deposit confirmation", "bid security"], None),
 ]
 
 _FALLBACK = ("UNCLASSIFIED", 0.4)
