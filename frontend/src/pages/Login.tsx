@@ -1,10 +1,5 @@
 import * as React from 'react';
 import {
-  FileText,
-  CheckCircle,
-  Scale,
-  UserCheck,
-  ArrowRight,
   Lock,
   Building2,
   KeyRound,
@@ -25,33 +20,6 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-
-const WORKFLOW_STEPS = [
-  {
-    step: '01',
-    name: 'DOCUMENTS',
-    desc: 'Ingest bidder tender submissions & statutory filings',
-    icon: FileText,
-  },
-  {
-    step: '02',
-    name: 'VERIFICATION',
-    desc: 'Cross-reference GSTN, PAN, MCA, EPFO & Debarment lists',
-    icon: CheckCircle,
-  },
-  {
-    step: '03',
-    name: 'COMPLIANCE',
-    desc: 'Deterministic rule evaluation & independent risk scoring',
-    icon: Scale,
-  },
-  {
-    step: '04',
-    name: 'DECISION',
-    desc: 'Evidence-backed approval, rejection, or clarification by Officer',
-    icon: UserCheck,
-  },
-];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -126,80 +94,138 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen bg-slate-900">
-      {/* Left institutional authority column */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-slate-800 bg-slate-950 p-12 lg:flex xl:p-16">
-        {/* Subtle grid pattern overlay */}
+      {/* Left aesthetic & minimalist intelligence showcase column */}
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-slate-800/80 bg-[#020b18] p-10 lg:flex xl:p-14 select-none">
+        {/* Continuous 24*7 ambient floating aurora auras */}
+        <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-gradient-to-br from-blue-600/20 via-cyan-500/15 to-transparent blur-3xl animate-float-drift" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 h-96 w-96 rounded-full bg-gradient-to-tl from-indigo-600/20 via-blue-500/15 to-transparent blur-3xl animate-float-reverse" />
+        <div className="pointer-events-none absolute left-1/3 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-cyan-500/10 blur-3xl animate-glow-breathe" />
+
+        {/* Ambient fine grid overlay */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          className="pointer-events-none absolute inset-0 opacity-[0.035]"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-            backgroundSize: '24px 24px',
+              'radial-gradient(circle at 1px 1px, #93c5fd 1px, transparent 0)',
+            backgroundSize: '28px 28px',
           }}
         />
 
-        {/* Top Product Identity */}
-        <div className="relative z-10">
-          <img
-            src="/bidwise-logo.jpg"
-            alt="BIDWISE — Smart & Evidence-Based Bid Verification"
-            className="w-full max-w-xs mix-blend-screen"
-            draggable={false}
-          />
-          <div className="mt-3 inline-flex items-center rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-400/30">
-            CPSE PROCUREMENT
+        {/* Continuous 24*7 subtle scanning beam */}
+        <div className="pointer-events-none absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent animate-scan" />
+
+        {/* Top Minimalist Header */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/25 bg-blue-950/60 px-3.5 py-1 text-xs font-medium text-blue-300 backdrop-blur-md shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="tracking-wide">CPSE Verification Engine</span>
+            <span className="text-blue-500/50">•</span>
+            <span className="font-mono text-[11px] text-cyan-400">SIH-26100</span>
           </div>
 
-          <div className="mt-8 max-w-lg">
-            <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl font-serif">
-              AI-assisted verification and decision support for GeM procurement.
+          <div className="flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/60 px-3 py-1 text-[11px] font-mono text-slate-400 backdrop-blur-md">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>SYSTEM ACTIVE</span>
+          </div>
+        </div>
+
+        {/* Centerpiece: 24*7 Animated Celestial Orbital Stage with Logo */}
+        <div className="relative z-10 my-auto flex flex-col items-center text-center py-6">
+          {/* Orbital Celestial System (Runs 24*7) */}
+          <div className="relative flex h-56 w-56 sm:h-64 sm:w-64 items-center justify-center">
+            {/* 24*7 Breathing Glow Core */}
+            <div className="pointer-events-none absolute h-44 w-44 rounded-full bg-gradient-to-tr from-blue-600/35 via-cyan-500/30 to-indigo-600/25 animate-glow-breathe" />
+
+            {/* 24*7 Outward Radiating Ripple Waves */}
+            <div className="pointer-events-none absolute h-48 w-48 rounded-full border border-cyan-400/30 animate-ripple-wave-1" />
+            <div className="pointer-events-none absolute h-48 w-48 rounded-full border border-blue-500/25 animate-ripple-wave-2" />
+
+            {/* 24*7 Rotating Outer Celestial Ring (Dashed, slow clockwise) */}
+            <div className="pointer-events-none absolute h-52 w-52 sm:h-60 sm:w-60 rounded-full border border-dashed border-blue-400/25 animate-spin-slow" />
+
+            {/* 24*7 Rotating Inner Orbital Ring with Orbiting Satellites (Counter-clockwise) */}
+            <div className="pointer-events-none absolute h-40 w-40 sm:h-48 sm:w-48 rounded-full border border-blue-500/30 animate-spin-reverse-slow">
+              {/* Orbiting Satellite Node 1 */}
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                <span className="h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_12px_#38bdf8]" />
+              </div>
+              {/* Orbiting Satellite Node 2 */}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]" />
+              </div>
+            </div>
+
+            {/* Logo Glass Emblem - Seamlessly fitted, gently floating 24*7 */}
+            <div className="relative z-10 flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-3xl border border-blue-500/30 bg-gradient-to-b from-[#081e42]/85 via-[#02132e]/90 to-[#010916]/95 p-4 shadow-[0_0_50px_-10px_rgba(56,189,248,0.35)] backdrop-blur-xl animate-float-slow transition-transform hover:scale-105 duration-500 group">
+              <img
+                src="/bidwise-logo-transparent.png"
+                alt="BIDWISE"
+                className="h-full w-full object-contain drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]"
+                draggable={false}
+              />
+            </div>
+          </div>
+
+          {/* Minimalist, High-Impact Typography */}
+          <div className="mt-5 max-w-md">
+            <h1 className="text-2xl xl:text-3xl font-semibold tracking-tight text-white font-serif leading-tight">
+              Evidence-Based Bid Verification
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-slate-400">
-              Deterministic rule evaluation, statutory portal cross-referencing, and verifiable evidence dossiers designed exclusively for procurement officers and committee evaluations.
+            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-400">
+              Deterministic statutory cross-checks and cryptographically sealed decision intelligence for CPSE procurement committees.
             </p>
           </div>
-        </div>
 
-        {/* Subtle Workflow Visualization: DOCUMENTS → VERIFICATION → COMPLIANCE → DECISION */}
-        <div className="relative z-10 my-8 max-w-md">
-          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-400">
-            Bid Verification Pipeline
-          </p>
-          <div className="space-y-3">
-            {WORKFLOW_STEPS.map((s, idx) => {
-              const Icon = s.icon;
-              return (
-                <div key={s.name} className="relative">
-                  <div className="flex items-start gap-3.5 rounded-md border border-slate-800/80 bg-slate-900/60 p-3 transition-colors hover:border-slate-700">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-blue-950/80 border border-blue-800/60 text-blue-300">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold tracking-wider text-slate-200">
-                          {s.name}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-500">{s.step}</span>
-                      </div>
-                      <p className="mt-0.5 text-xs text-slate-400 leading-snug">{s.desc}</p>
-                    </div>
-                  </div>
-                  {idx < WORKFLOW_STEPS.length - 1 && (
-                    <div className="flex justify-center py-1">
-                      <ArrowRight className="h-3 w-3 rotate-90 text-slate-700" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          {/* Minimalist 24*7 Live Status Badges */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 max-w-lg">
+            <div className="group flex items-center gap-1.5 rounded-full border border-slate-800/90 bg-slate-900/60 px-3 py-1 text-[11px] text-slate-300 backdrop-blur-md transition-all hover:border-blue-500/40 hover:bg-slate-900/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
+              <span>GSTN &amp; PAN</span>
+              <span className="font-mono text-[9px] text-emerald-400">VERIFIED</span>
+            </div>
+
+            <div className="group flex items-center gap-1.5 rounded-full border border-slate-800/90 bg-slate-900/60 px-3 py-1 text-[11px] text-slate-300 backdrop-blur-md transition-all hover:border-blue-500/40 hover:bg-slate-900/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
+              <span>MCA-21 &amp; EPFO</span>
+              <span className="font-mono text-[9px] text-emerald-400">ACTIVE</span>
+            </div>
+
+            <div className="group flex items-center gap-1.5 rounded-full border border-slate-800/90 bg-slate-900/60 px-3 py-1 text-[11px] text-slate-300 backdrop-blur-md transition-all hover:border-blue-500/40 hover:bg-slate-900/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
+              <span>Debarment Watch</span>
+              <span className="font-mono text-[9px] text-emerald-400">CLEAR</span>
+            </div>
+          </div>
+
+          {/* 24*7 Animated Telemetry Scanner Ribbon */}
+          <div className="mt-5 w-full max-w-xs overflow-hidden rounded-full border border-slate-800/80 bg-slate-950/70 p-1 backdrop-blur-md">
+            <div className="relative flex items-center justify-between px-3.5 py-1 text-[10px] font-mono text-slate-400">
+              {/* Continuous 24*7 light shimmer wave */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent animate-shimmer" />
+              <span className="flex items-center gap-1.5 text-cyan-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
+                100% Deterministic
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">SHA-256 Chained</span>
+            </div>
           </div>
         </div>
 
-        {/* Institutional notice at footer */}
-        <div className="relative z-10 border-t border-slate-800/80 pt-4 text-[11.5px] text-slate-500">
-          <p>
-            Official Decision-Support Environment • Verification data simulated via statutory mock adapters. Final award decisions rest solely with the authorized Procurement Officer.
-          </p>
+        {/* Minimalist Institutional Trust Footer */}
+        <div className="relative z-10 flex items-center justify-between border-t border-slate-800/80 pt-4 text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+            <span className="text-[11px] font-medium text-slate-300">Official Decision Support Gateway</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+            <span>GFR-2017</span>
+            <span>•</span>
+            <span>CPSE Compliant</span>
+          </div>
         </div>
       </div>
 
